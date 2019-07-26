@@ -556,10 +556,12 @@ vagrant halt
 vagrant reload&provision
 vagrant global-status
 EOF`
+    test -z "$select_command" && return
     local arg=`echo $select_command | sed "s/vagrant //g"`
     case "${arg}" in
         'ssh' )
             fqdn=`echo "default\norigin\nclone" | fzf`
+            test -z "$fqdn" && return
             vagrant ssh $fqdn;;
         'up' ) vagrant up ;;
         'provision' ) vagrant provision ;;
