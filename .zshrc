@@ -35,6 +35,7 @@ bindkey "^N" history-beginning-search-forward-end
 
 alias l='ls -ltrG'
 alias la='ls -laG'
+alias laa='ls -ld .*'
 alias ll='ls -lG'
 alias ls='ls -G'
 alias grep='grep --color=auto'
