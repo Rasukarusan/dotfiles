@@ -586,9 +586,6 @@ EOF`
 alias fin='echo `ls -t | head -n 1`'
 # less `fin`と打つのが面倒だったため関数化。finはコマンドとして残しておきたいので残す
 alias late='less $(echo `ls -t | head -n 1`)'
-#function late() {
-#    less $(echo `ls -t | head -n 1`)
-#}
 alias execBatch='sh ~/execBatch.sh'
 alias cl='sh ~/clipboard.sh'
 alias ch='sh ~/chromeHistory.sh'
@@ -966,6 +963,7 @@ fi
 alias tt='_tmux_commands'
 function _tmux_commands() {
     local commands=(
+        'rename-window'
         'man'
         'list-keys'
         'list-commands'
@@ -979,6 +977,11 @@ function _tmux_commands() {
     test -z "$command" && return
 
     case "${command}" in
+        'rename-window')
+            /bin/echo  -n 'INPUT NAME>'
+            read  name
+            tmux rename-window $name
+            ;;
         'man')
             man tmux
             ;;
