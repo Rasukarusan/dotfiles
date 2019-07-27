@@ -50,29 +50,15 @@ endif
 " ===============グローバル設定関連===================== "
 " 別ファイルのviの設定を読み込む
 runtime! myautoload/*.vim
-" 全角スペースを可視化
-function! ZenkakuSpace()
-    highlight ZenkakuSpace cterm=reverse ctermfg=DarkMagenta gui=reverse guifg=DarkMagenta
-endfunction
-if has('syntax')
-    augroup ZenkakuSpace
-        autocmd!
-        autocmd ColorScheme       * call ZenkakuSpace()
-        autocmd VimEnter,WinEnter * match ZenkakuSpace /　/
-    augroup END
-    call ZenkakuSpace()
-endif
 " cmd+vでペーストしても勝手にインデントしない
 if &term =~ "xterm"
     let &t_ti .= "\e[?2004h"
     let &t_te .= "\e[?2004l"
     let &pastetoggle = "\e[201~"
-
     function XTermPasteBegin(ret)
         set paste
         return a:ret
     endfunction
-
     noremap <special> <expr> <Esc>[200~ XTermPasteBegin("0i")
     inoremap <special> <expr> <Esc>[200~ XTermPasteBegin("")
     cnoremap <special> <Esc>[200~ <nop>
@@ -90,7 +76,9 @@ if has('mouse')
     endif
 endif
 
-" ========denite============= "
+" ============================== "
+"           denite               "
+" ============================== "
 call denite#custom#option('default', 'prompt', '>')
 " denite/insert モードのときは，C- で移動できるようにする
 call denite#custom#map('insert', "<C-j>", '<denite:move_to_next_line>')
@@ -108,7 +96,9 @@ if executable('ag')
   call denite#custom#var('grep', 'command', ['ag'])
 endif
 
-" ========unite============= "
+" ============================== "
+"           unite                "
+" ============================== "
 " insert modeで開始しない
 let g:unite_enable_start_insert = 0
 " 大文字小文字を区別しない
@@ -121,24 +111,35 @@ if executable('ag')
   let g:unite_source_grep_recursive_opt = ''
 endif
 
-" =========vim-easy-align============ "
+" ============================== "
+"           vim-easy-align       "
+" ============================== "
 xmap ga <Plug>(EasyAlign)
 nmap ga <Plug>(EasyAlign)
 
-" ========vim-airline============= "
+" ============================== "
+"           vim-airline          "
+" ============================== "
 " @See: https://original-game.com/vim-airline/
 let g:airline#extensions#default#layout = [
     \ [ 'a', 'b', 'c'],
     \ [ 'x', 'y']
     \ ]
 
-" ========emmet-vim============= "
+" ============================== "
+"           emmet-vim            "
+" ============================== "
 " let g:user_emmet_leader_key = ','
-" ========linter============= "
+
+" ============================== "
+"           linter               "
+" ============================== "
 " @See :help ale-highlights
 let g:ale_set_highlights = 0
 
-" ========vim-submode============= "
+" ============================== "
+"           vim-submode          "
+" ============================== "
 call submode#enter_with('bufmove', 'n', '', 's>', '<C-w>>')
 call submode#enter_with('bufmove', 'n', '', 's<', '<C-w><')
 call submode#enter_with('bufmove', 'n', '', 's+', '<C-w>+')
@@ -148,7 +149,9 @@ call submode#map('bufmove', 'n', '', '<', '<C-w><')
 call submode#map('bufmove', 'n', '', '+', '<C-w>+')
 call submode#map('bufmove', 'n', '', '-', '<C-w>-')
 
-" ========vim-go============= "
+" ============================== "
+"           vim-go               "
+" ============================== "
 filetype plugin indent on " これがないと「エディタのコマンドではありません」と出る
 let g:go_highlight_functions = 1
 let g:go_highlight_methods = 1
@@ -157,13 +160,17 @@ let g:go_gocode_unimported_packages = 1
 let g:go_fmt_command = "goimports" " 保存時にimport
 nnoremap gd :GoDef
 
-" ========easy-motion============= "
+" ============================== "
+"          easy-motion           "
+" ============================== "
 let g:EasyMotion_do_mapping = 0 "Disable default mappings
 nmap F <Plug>(easymotion-s2)
 
 
-" quickrunの設定 \rで保存して実行、画面分割を下に出す
-let g:quickrun_no_ds = 1
+" ============================== "
+"           quickrun             "
+" ============================== "
+" \rで保存して実行、画面分割を下に出す
 nnoremap \r :cclose<CR>:write<CR>:QuickRun -mode n<CR>
 xnoremap \r :<C-U>cclose<CR>:write<CR>gv:QuickRun -mode v<CR>
 let g:quickrun_config={'*': {'split': ''}}
@@ -186,6 +193,35 @@ let g:markdown_fenced_languages = [
     \ 'sql',
     \ 'html'
     \]
+
+" ============================== "
+"           Vdebug               "
+" ============================== "
+let g:vdebug_options= {
+\    "port" : 9001,
+\    "timeout" : 20,
+\    "on_close" : 'detach',
+\    "break_on_open" : 0,
+\    "remote_path" : "",
+\    "local_path" : "",
+\    "debug_window_level" : 0,
+\    "debug_file_level" : 0,
+\    "debug_file" : "",
+\    "window_arrangement" : ["DebuggerWatch", "DebuggerStack"]
+\}
+let g:vdebug_keymap = {
+\    "run" : "<F5>",
+\    "run_to_cursor" : "<F9>",
+\    "step_over" : "<F2>",
+\    "step_into" : "<F3>",
+\    "step_out" : "<F4>",
+\    "close" : "<F6>",
+\    "detach" : "<F7>",
+\    "set_breakpoint" : "<F10>",
+\    "get_context" : "<F11>",
+\    "eval_under_cursor" : "<F12>",
+\    "eval_visual" : "<Leader>e"
+\}
 
 " 起動時の画面をスキップ(:introで表示可能)
 set shortmess+=I
@@ -313,18 +349,18 @@ inoremap (<Enter> ()<Left><CR><ESC><S-o>
 " NerdTree表示
 nnoremap <C-n> :NERDTreeTabsToggle<CR>
 " ジャンプしてからヤンクやカットをする
-nnoremap cij( f(ci(
-nnoremap _cij( f("_ci(
-nnoremap caj( f(ca(
-nnoremap yij( f(yi(
-nnoremap cij[ f[ci[
-nnoremap _cij[ f["_ci[
-nnoremap caj[ f[ca[
-nnoremap yij[ f[yi[
-nnoremap cijt f>cit
-nnoremap _cijt f>"_cit
-nnoremap cajt f>cat
-nnoremap yijt f>yit
+nnoremap ci( f(ci(
+nnoremap _ci( f("_ci(
+nnoremap ca( f(ca(
+nnoremap yi( f(yi(
+nnoremap ci[ f[ci[
+nnoremap _ci[ f["_ci[
+nnoremap ca[ f[ca[
+nnoremap yi[ f[yi[
+nnoremap cit f>cit
+nnoremap _cit f>"_cit
+nnoremap cat f>cat
+nnoremap yit f>yit
 " 削除した際ヤンクしないように
 nnoremap x "_x
 nnoremap _ci "_ci
@@ -368,8 +404,6 @@ nnoremap sy byw
 " インデントショートカット
 nnoremap th <<
 nnoremap tl >>
-" ctagsジャンプの時に複数ある時は一覧表示
-" nnoremap <C-]> g<C-]>
 
 " =========neosnippet========= "
 let g:neosnippet#snippets_directory=$HOME.'/.vim/dein/repos/github.com/Shougo/neosnippet-snippets/neosnippets,'.$HOME.'/.vim/mySnippets/'
@@ -431,33 +465,6 @@ nnoremap [denite-gtags]f :Denite -buffer-name=gtags_file -mode=normal -prompt=> 
 nnorema [denite-gtags]d :<C-u>DeniteCursorWord -buffer-name=gtags_def -mode=normal -prompt=> gtags_def<CR>
 " カーソル下の単語の参照先を表示
 nnoremap [denite-gtags]r :<C-u>DeniteCursorWord -buffer-name=gtags_ref -mode=normal -prompt=> gtags_ref<CR>
-
-" ========Vdebug======== "
-let g:vdebug_options= {
-\    "port" : 9001,
-\    "timeout" : 20,
-\    "on_close" : 'detach',
-\    "break_on_open" : 0,
-\    "remote_path" : "",
-\    "local_path" : "",
-\    "debug_window_level" : 0,
-\    "debug_file_level" : 0,
-\    "debug_file" : "",
-\    "window_arrangement" : ["DebuggerWatch", "DebuggerStack"]
-\}
-let g:vdebug_keymap = {
-\    "run" : "<F5>",
-\    "run_to_cursor" : "<F9>",
-\    "step_over" : "<F2>",
-\    "step_into" : "<F3>",
-\    "step_out" : "<F4>",
-\    "close" : "<F6>",
-\    "detach" : "<F7>",
-\    "set_breakpoint" : "<F10>",
-\    "get_context" : "<F11>",
-\    "eval_under_cursor" : "<F12>",
-\    "eval_visual" : "<Leader>e"
-\}
 
 " clog($param)とclog("param")の相互変換関数(範囲指定も可)
 function! s:clog_convert() range
@@ -692,36 +699,6 @@ function! s:open_test_shell()
     execute ':tabnew ~/test.sh'
 endfunction
 command! Testshell call s:open_test_shell()
-
-" プロファイル用関数
-" 実行: vim +'call ProfileCursorMove()' 読み込みたいファイルパス
-function! ProfileCursorMove() abort
-  let profile_file = expand('~/vim-profile.log')
-  if filereadable(profile_file)
-    call delete(profile_file)
-  endif
-
-  normal! gg
-  normal! zR
-
-  execute 'profile start ' . profile_file
-  profile func *
-  profile file *
-
-  augroup ProfileCursorMove
-    autocmd!
-    autocmd CursorHold <buffer> profile pause | q
-  augroup END
-
-  for i in range(100)
-    " 実行したい動作を書く
-    call feedkeys('j')
-  endfor
-  call feedkeys(':q')
-endfunction
-
-" キーコードシーケンスが終了するのを待つ時間を短くする
-set ttimeoutlen=10
 
 " 現在開いているmarkdownをブラウザで開く
 function! s:open_markdown_browser(file_path)
