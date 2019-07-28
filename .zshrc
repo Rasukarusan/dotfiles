@@ -974,6 +974,7 @@ function _tmux_commands() {
         'man'
         'list-keys'
         'list-commands'
+        'kill-session'
         'kill-server'
         'tmux'
     )
@@ -997,6 +998,11 @@ function _tmux_commands() {
             ;;
         'list-keys' | 'list-commands')
             tmux $command | less -S
+            ;;
+        'kill-session')
+            local session_no=$(tmux ls | fzf | awk -F ':' '{print $1}')
+            test -z "$session_no" && return
+            tmux kill-session -t $session_no
             ;;
         *)
             tmux $command
