@@ -41,6 +41,7 @@ alias ls='ls -G'
 alias grep='grep --color=auto'
 alias ...='cd ../../'
 alias his='history -E -i 1 | fzf'
+alias history='history 1'
 
 #centosにsshするとviで下記のエラーが出ることがあるので対策
 # E437: terminal capability "cm" required
@@ -121,7 +122,7 @@ KEYTIMEOUT=0
 # fzf版cdd
 alias cdd='fzf-cdr'
 function fzf-cdr() {
-    local target_dir=$(cdr -l | sed 's/^[^ ][^ ]*  *//' | fzf)
+    local target_dir=$(cdr -l | sed 's/^[^ ][^ ]*  *//' | fzf --bind 'ctrl-t:execute-silent(echo {} | sed "s/~/\/Users\/$(whoami)/g" | xargs -I{} tmux split-window -h -c {})+abort')
     # ~だと移動できないため、/Users/hogeの形にする
     target_dir=$(echo ${target_dir/\~/$HOME})
     if [ -n "$target_dir" ]; then
