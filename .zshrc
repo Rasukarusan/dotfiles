@@ -122,7 +122,11 @@ KEYTIMEOUT=0
 # fzf版cdd
 alias cdd='fzf-cdr'
 function fzf-cdr() {
-    local target_dir=$(cdr -l | sed 's/^[^ ][^ ]*  *//' | fzf --bind 'ctrl-t:execute-silent(echo {} | sed "s/~/\/Users\/$(whoami)/g" | xargs -I{} tmux split-window -h -c {})+abort')
+    local target_dir=$(cdr -l  \
+        | sed 's/^[^ ][^ ]*  *//' \
+        | fzf --bind 'ctrl-t:execute-silent(echo {} | sed "s/~/\/Users\/$(whoami)/g" | xargs -I{} tmux split-window -h -c {})+abort' \
+              --preview "echo {} | sed 's/~/\/Users\/$(whoami)/g' | xargs -I{} ls -l {} | head -n100" \
+        )
     # ~だと移動できないため、/Users/hogeの形にする
     target_dir=$(echo ${target_dir/\~/$HOME})
     if [ -n "$target_dir" ]; then
