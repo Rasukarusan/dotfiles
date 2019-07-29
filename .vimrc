@@ -348,19 +348,6 @@ inoremap [<Enter> []<Left><CR><ESC><S-o>
 inoremap (<Enter> ()<Left><CR><ESC><S-o>
 " NerdTree表示
 nnoremap <C-n> :NERDTreeTabsToggle<CR>
-" ジャンプしてからヤンクやカットをする
-nnoremap ci( f(ci(
-nnoremap _ci( f("_ci(
-nnoremap ca( f(ca(
-nnoremap yi( f(yi(
-nnoremap ci[ f[ci[
-nnoremap _ci[ f["_ci[
-nnoremap ca[ f[ca[
-nnoremap yi[ f[yi[
-nnoremap cit f>cit
-nnoremap _cit f>"_cit
-nnoremap cat f>cat
-nnoremap yit f>yit
 " 削除した際ヤンクしないように
 nnoremap x "_x
 nnoremap _ci "_ci
