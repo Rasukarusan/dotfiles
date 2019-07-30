@@ -360,7 +360,7 @@ function ghero() {
 # fgをfzfで
 alias fgg='_fgg'
 function _fgg() {
-    local wc=$(jobs | wc -l | tr -d ' ')
+    local wc=$(jobs | grep -c ^)
     if [ $wc -ne 0 ]; then
         local job=$(jobs | awk -F "suspended" "{print $1 $2}"|sed -e "s/\-//g" -e "s/\+//g" -e "s/\[//g" -e "s/\]//g" | grep -v pwd | fzf | awk "{print $1}")
         local wc_grep=$(echo $job | grep -v grep | grep 'suspended')
@@ -952,7 +952,7 @@ function _editMyScript() {
     fi
 }
 # クリップボードの行数を出力
-alias wcc='pbpaste | wc -l | tr -d " "'
+alias wcc='pbpaste | grep -c ^'
 
 # vimをvimrcなし, プラグインなしで起動する
 # NONEにvimrcのPATHを入れれば読み込むことができる
