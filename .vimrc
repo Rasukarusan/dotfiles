@@ -566,12 +566,17 @@ nmap <Space>f :ShowFunction<CR>
 function! s:jump_by_grep(...)
     let args = split(@*, ':')
     let filePath = args[0]
+    let extension = fnamemodify(filePath, ":e")
+    if len(args) == 1 && extension == "php"
+        execute ':e ' . filePath
+        return
+    endif
     let line = args[1]
     execute ':e ' . filePath
     execute ':' . line
 endfunction
-command! -nargs=? Vl call s:jump_by_grep(<f-args>)
-nmap <S-r> :Vl<CR>
+command! -nargs=? OpenByGrep call s:jump_by_grep(<f-args>)
+nmap <S-r> :OpenByGrep<CR>
 
 " 選択領域をHTML化→rtf(リッチテキスト)化してクリップボードにコピーする
 " Keynoteなどに貼りたい場合に便利
