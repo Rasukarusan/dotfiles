@@ -959,8 +959,9 @@ alias wcc='pbpaste | grep -c ^'
 alias vimn='vim -u NONE -N'
 alias pbp='pbpaste'
 alias pbc='pbcopy'
-# ディスプレイ明るさを0に。brew install brightnessが必要
-alias 00='brightness 0'
+# ディスプレイ明るさを0に
+alias 00='osascript ~/up_or_down_brightness.sh 1'
+alias 11='osascript ~/up_or_down_brightness.sh 0'
 
 if (which zprof > /dev/null 2>&1) ;then
   zprof
