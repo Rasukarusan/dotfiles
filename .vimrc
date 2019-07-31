@@ -159,13 +159,12 @@ let g:go_highlight_structs = 1
 let g:go_gocode_unimported_packages = 1
 let g:go_metalinter_autosave_enabled = ['vet']
 let g:go_fmt_command = "goimports" " 保存時にimport
-nnoremap gd :GoDef
 augroup GolangSettings
     autocmd!
     autocmd FileType go nmap \r <Plug>(go-run)
     autocmd FileType go nmap <Space>d <Plug>(go-def-tab)
     autocmd FileType go nmap <Space>r <Plug>(go-referrers)
-    " autocmd FileType go nmap <Space>a :GoDecls
+    autocmd FileType go nmap <Space>f :GoDecls<CR>
 augroup END
 
 " ============================== "
