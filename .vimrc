@@ -79,22 +79,23 @@ endif
 " ============================== "
 "           denite               "
 " ============================== "
-call denite#custom#option('default', 'prompt', '>')
-" denite/insert モードのときは，C- で移動できるようにする
-call denite#custom#map('insert', "<C-j>", '<denite:move_to_next_line>')
-call denite#custom#map('insert', "<C-k>", '<denite:move_to_previous_line>')
-" tabopen や vsplit のキーバインドを割り当て
-call denite#custom#map('insert', "<C-t>", '<denite:do_action:tabopen>')
-call denite#custom#map('insert', "<C-v>", '<denite:do_action:vsplit>')
-call denite#custom#map('normal', "v", '<denite:do_action:vsplit>')
-" jj で denite/insert を抜けるようにする
-call denite#custom#map('insert', 'jj', '<denite:enter_mode:normal>')
 " deniteでagを使う
 if executable('ag')
   call denite#custom#var('file_rec', 'command',
         \ ['ag', '--files', '--glob', '!.git'])
   call denite#custom#var('grep', 'command', ['ag'])
 endif
+autocmd FileType denite call s:denite_my_settings()
+function! s:denite_my_settings() abort
+  nnoremap <silent><buffer><expr> <CR>
+  \ denite#do_map('do_action') 
+  nnoremap <silent><buffer><expr> <C-t>
+  \ denite#do_map('do_action','tabopen')
+  nnoremap <silent><buffer><expr> q
+  \ denite#do_map('quit')
+  nnoremap <silent><buffer><expr> i
+  \ denite#do_map('open_filter_buffer')
+endfunction
 
 " ============================== "
 "           unite                "
@@ -454,11 +455,11 @@ noremap <Space>h :Denite command_history<CR>
 noremap [denite-gtags]  <Nop>
 nmap <Space> [denite-gtags]
 " 今のファイルの関数などの一覧
-nnoremap [denite-gtags]f :Denite -buffer-name=gtags_file -mode=normal -prompt=> gtags_file<CR>
+nnoremap [denite-gtags]f :Denite -buffer-name=gtags_file -prompt=> gtags_file<CR>
 " カーソル下の単語の定義元を表示
-nnorema [denite-gtags]d :<C-u>DeniteCursorWord -buffer-name=gtags_def -mode=normal -prompt=> gtags_def<CR>
+nnorema [denite-gtags]d :<C-u>DeniteCursorWord -buffer-name=gtags_def -prompt=> gtags_def<CR>
 " カーソル下の単語の参照先を表示
-nnoremap [denite-gtags]r :<C-u>DeniteCursorWord -buffer-name=gtags_ref -mode=normal -prompt=> gtags_ref<CR>
+nnoremap [denite-gtags]r :<C-u>DeniteCursorWord -buffer-name=gtags_ref -prompt=> gtags_ref<CR>
 
 " clog($param)とclog("param")の相互変換関数(範囲指定も可)
 function! s:clog_convert() range
