@@ -36,7 +36,7 @@ call dein#begin(expand($HOME.'/.vim/dein'))
     call dein#add('ozelentok/denite-gtags')
     call dein#add('pocari/vim-denite-command-history') " コマンドの履歴を表示
     call dein#add('w0rp/ale') "リアルタイムLinter
-    call dein#add('joonty/vdebug') " Vdebug
+    " call dein#add('joonty/vdebug') " Vdebug
     call dein#add('kana/vim-submode') " 画面分割時の画面大きさ変更キーなど連続で打つコマンドを楽にする
     " call dein#add('mhinz/vim-startify') " vim起動時にバッファを表示する
     call dein#add('fatih/vim-go') "go開発環境
@@ -209,29 +209,29 @@ let g:markdown_fenced_languages = [
 "           Vdebug               "
 " ============================== "
 let g:vdebug_options= {
-\    "port" : 9001,
-\    "timeout" : 20,
-\    "on_close" : 'detach',
-\    "break_on_open" : 0,
-\    "remote_path" : "",
-\    "local_path" : "",
-\    "debug_window_level" : 0,
-\    "debug_file_level" : 0,
-\    "debug_file" : "",
-\    "window_arrangement" : ["DebuggerWatch", "DebuggerStack"]
+\    'port' : 9001,
+\    'timeout' : 20,
+\    'on_close' : 'detach',
+\    'break_on_open' : 0,
+\    'remote_path' : '',
+\    'local_path' : '',
+\    'debug_window_level' : 0,
+\    'debug_file_level' : 0,
+\    'debug_file' : '',
+\    'window_arrangement' : ['DebuggerWatch', 'DebuggerStack']
 \}
 let g:vdebug_keymap = {
-\    "run" : "<F5>",
-\    "run_to_cursor" : "<F9>",
-\    "step_over" : "<F2>",
-\    "step_into" : "<F3>",
-\    "step_out" : "<F4>",
-\    "close" : "<F6>",
-\    "detach" : "<F7>",
-\    "set_breakpoint" : "<F10>",
-\    "get_context" : "<F11>",
-\    "eval_under_cursor" : "<F12>",
-\    "eval_visual" : "<Leader>e"
+\    'run' : '<F5>',
+\    'run_to_cursor' : '<F9>',
+\    'step_over' : '<F2>',
+\    'step_into' : '<F3>',
+\    'step_out' : '<F4>',
+\    'close' : '<F6>',
+\    'detach' : '<F7>',
+\    'set_breakpoint' : '<F10>',
+\    'get_context' : '<F11>',
+\    'eval_under_cursor' : '<F12>',
+\    'eval_visual' : '<Leader>e'
 \}
 
 " 起動時の画面をスキップ(:introで表示可能)
@@ -708,3 +708,5 @@ function! s:open_markdown_browser(file_path)
     execute 'r !open -a Google\ Chrome '.a:file_path
 endfunction
 command! Opr call s:open_markdown_browser(expand('%:p'))
+
+
