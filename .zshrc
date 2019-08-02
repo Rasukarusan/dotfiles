@@ -975,6 +975,7 @@ function _tmux_commands() {
         'man'
         'list-keys'
         'list-commands'
+        'kill-window'
         'kill-session'
         'kill-server'
         'tmux'
