@@ -172,6 +172,12 @@ augroup GolangSettings
 augroup END
 
 " ============================== "
+"           Goの設定             "
+" ============================== "
+exe "set rtp+=".globpath($GOPATH, "src/github.com/nsf/gocode/vim")
+set completeopt=menu,preview
+
+" ============================== "
 "          easy-motion           "
 " ============================== "
 let g:EasyMotion_do_mapping = 0 "Disable default mappings
