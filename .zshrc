@@ -895,9 +895,10 @@ local select_command=`cat << EOF | fzf
 docker exec
 docker logs
 docker ps
+docker stop
 docker-compose ps
 docker-compose up
-docker stop
+docker-compose up --force-recreate
 docker-compose stop
 setDotfiles
 EOF`
@@ -916,19 +917,7 @@ EOF`
             echo "docker logs -ft $container"
             docker logs -ft $container
             ;;
-        'ps' )
-            eval $select_command
-            ;;
-        'docker-compose ps' )
-            eval $select_command
-            ;;
-        'docker-compose up' )
-            eval $select_command
-            ;;
         'stop' )
-            eval $select_command
-            ;;
-        'docker-compose stop' )
             eval $select_command
             ;;
         'setDotfiles' )
@@ -940,7 +929,7 @@ EOF`
                 docker cp ${dotfilesPath}/vimrc ${containerId}:/root/.vimrc
             done
             ;;
-        *) ;;
+        *) eval $select_command ;;
     esac
 }
 
