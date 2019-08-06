@@ -42,6 +42,7 @@ alias grep='grep --color=auto'
 alias ...='cd ../../'
 alias his='history -E -i 1 | fzf'
 alias history='history 1'
+alias time='/usr/bin/time -p'
 
 #centosにsshするとviで下記のエラーが出ることがあるので対策
 # E437: terminal capability "cm" required
