@@ -42,6 +42,7 @@ call dein#begin(expand($HOME.'/.vim/dein'))
     call dein#add('fatih/vim-go') "go開発環境
     call dein#add('Lokaltog/vim-easymotion') "vimnium
     call dein#add('junegunn/vim-easy-align') "好きな文字でインデントを揃える
+    call dein#add('aklt/plantuml-syntax') " PlantUML
 call dein#end()
 if dein#check_install()
   call dein#install()
@@ -716,3 +717,5 @@ endfunction
 command! Opr call s:open_markdown_browser(expand('%:p'))
 
 
+" plantumlスクリプトの設定
+let g:plantuml_executable_script='java -jar ~/.plantuml/plantuml.jar -o ~/Desktop/'
