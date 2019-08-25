@@ -42,6 +42,8 @@ call dein#begin(expand($HOME.'/.vim/dein'))
     call dein#add('fatih/vim-go') "go開発環境
     call dein#add('Lokaltog/vim-easymotion') "vimnium
     call dein#add('junegunn/vim-easy-align') "好きな文字でインデントを揃える
+    call dein#add('aklt/plantuml-syntax') " plantUML
+    call dein#add('iamcco/markdown-preview.nvim', {'on_ft': ['markdown', 'pandoc.markdown', 'rmd'], 'build': 'cd app & yarn install' })
 call dein#end()
 if dein#check_install()
   call dein#install()
