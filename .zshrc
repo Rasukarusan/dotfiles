@@ -1002,3 +1002,4 @@ function _tmux_commands() {
 }
 # グローバルIPを確認
 alias myip='curl ifconfig.io'
+alias gg='sh ~/githubAPI.sh'
