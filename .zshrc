@@ -417,8 +417,6 @@ function _noti() {
 # コマンドでgoogle翻訳
 alias trans='trans -b en:ja'
 alias transj='trans -b ja:en'
-# sh redmineを実行
-alias rr='sh ~/redmine.sh'
 # dotfile系
 alias upd='_updateDotfile'
 alias psd='_pushDotfile'
@@ -463,7 +461,6 @@ function _previewMyGitDiff() {
     git -C $target_dir add -p && git -C $target_dir commit
 }
 # 対象のDBでカラム名を検索
-alias findColumn='sh ~/findColumn.sh'
 alias getTable='cat ~/result.txt | tgrep "SELECT * FROM " " WHERE"'
 # 全テーブル検索
 alias findValue='_findValue'
@@ -483,8 +480,6 @@ function _findValue() {
     sh ~/findValue.sh $1 | tee > $anotherTerminal >(grep --color=never -B 2 -A 2 '|' > $currentTerminal) >(grep --color=never -B 2 -A 2 '|' > $RESULT_FILE_PATH)
     getTable
 }
-# 全台実行
-alias allExecute='sh ~/allDbExecute.sh'
 # Docコメントの"*"を削除してダブルクォートで囲む
 alias deled='(echo -n \" ; pbpaste | sed "s/*//g" ; echo -n \")'
 # bcコマンドを簡単にかつ小数点時に.3333となるのを0.3333に直す(0を付け足す)
@@ -594,9 +589,6 @@ EOF`
 alias fin='echo `ls -t | head -n 1`'
 # less `fin`と打つのが面倒だったため関数化。finはコマンドとして残しておきたいので残す
 alias late='less $(echo `ls -t | head -n 1`)'
-alias execBatch='sh ~/execBatch.sh'
-alias cl='sh ~/clipboard.sh'
-alias ch='sh ~/chromeHistory.sh'
 # 現在のブランチの番号のみを取得してコピーする
 alias gget="git rev-parse --abbrev-ref HEAD | grep -oP '[0-9]*' | tr -d '\n' | pbcopy;pbpaste"
 
@@ -630,14 +622,12 @@ alias p1e='vim ~/p1'
 alias p2e='vim ~/p2'
 alias pd='vimdiff ~/p1 ~/p2'
 alias pst='pstree | less -S'
-alias pullReqCaption='sh ~/pullReqCaption.sh'
 alias xcode-restore='update_xcode_plugins --restore'
 alias xcode-unsign='update_xcode_plugins --unsign'
 alias copyMinVimrc='cat ~/dotfiles/min_vimrc | grep -v "\"" | pbcopy'
 alias copyMinBashrc='cat ~/dotfiles/min_bashrc | grep -v "#" | pbcopy'
 alias gol='gol -f'
 alias oo='open .'
-alias showColors='~/getColorPrintf.sh'
 alias hosts='sudo vim /etc/hosts'
 alias dekita='afplay ~/Music/iTunes/iTunes\ Media/Music/Unknown\ Artist/Unknown\ Album/dekita.mp3'
 alias chen='afplay ~/Music/iTunes/iTunes\ Media/Music/Unknown\ Artist/Unknown\ Album/jacky_chen.mp3'
@@ -796,8 +786,6 @@ function _generateRandomNumber() {
     awk 'BEGIN{srand();print int(rand() * '"${range}"')}'
 }
 
-alias itt='sh ~/iterm.sh'
-alias bb='sh ~/bitbucket.sh'
 
 # 文字画像を生成。第一引数に生成したい文字を指定。
 function create_bg_img() {
@@ -852,7 +840,6 @@ function gmail() {
     curl -u ${USER_ID}:${PASS} --silent "https://mail.google.com/mail/feed/atom" | tr -d '\n' | awk -F '<entry>' '{for (i=2; i<=NF; i++) {print $i}}' | sed -n "s/<title>\(.*\)<\/title.*name>\(.*\)<\/name>.*/\2 - \1/p"
 }
 
-alias cdf='cd $(osascript ~/finder.sh)'
 # 定義済み関数をfzfで中身を見ながら出力する
 function func() {
     local func=$(
@@ -936,7 +923,7 @@ EOF`
 # 自作スクリプト編集時、fzfで選択できるようにする
 alias scc='_editMyScript'
 function _editMyScript() {
-    local targetFile=$(ls ~/*.sh | xargs basename | fzf --height=100% --preview 'cd ~; bat --color always {}')
+    local targetFile=$((ls ~/*.sh; ls ~/.zshrc.local) | xargs basename | fzf --height=100% --preview 'cd ~; bat --color always {}')
     if [ -n "$targetFile" ];then 
         vim ~/$targetFile
     fi
@@ -950,8 +937,6 @@ alias vimn='vim -u NONE -N'
 alias pbp='pbpaste'
 alias pbc='pbcopy'
 # ディスプレイ明るさを0に
-alias 00='osascript ~/up_or_down_brightness.sh 1'
-alias 11='osascript ~/up_or_down_brightness.sh 0'
 
 if (which zprof > /dev/null 2>&1) ;then
   zprof
@@ -1002,4 +987,22 @@ function _tmux_commands() {
 }
 # グローバルIPを確認
 alias myip='curl ifconfig.io'
+
+# ============================== #
+#       alias-ShellScript        #
+# ============================== #
+alias phparr='pbpaste | xargs sh ~/phparr.sh | pbcopy'
+alias rr='sh ~/redmine.sh'
+alias findColumn='sh ~/findColumn.sh'
+alias allExecute='sh ~/allDbExecute.sh'
+alias execBatch='sh ~/execBatch.sh'
+alias cl='sh ~/clipboard.sh'
+alias ch='sh ~/chromeHistory.sh'
+alias pullReqCaption='sh ~/pullReqCaption.sh'
+alias showColors='~/getColorPrintf.sh'
+alias itt='sh ~/iterm.sh'
+alias bb='sh ~/bitbucket.sh'
+alias cdf='cd $(osascript ~/finder.sh)'
+alias 00='osascript ~/up_or_down_brightness.sh 1'
+alias 11='osascript ~/up_or_down_brightness.sh 0'
 alias gg='sh ~/githubAPI.sh'
