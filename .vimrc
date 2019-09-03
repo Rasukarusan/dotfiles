@@ -717,6 +717,3 @@ function! s:open_markdown_browser(file_path)
 endfunction
 command! Opr call s:open_markdown_browser(expand('%:p'))
 
-
-" plantumlスクリプトの設定
-let g:plantuml_executable_script='java -jar ~/.plantuml/plantuml.jar -o ~/Desktop/'
