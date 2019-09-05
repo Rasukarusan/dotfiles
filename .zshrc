@@ -750,7 +750,7 @@ EOF`
 
 # 自作スクリプト編集時、fzfで選択できるようにする
 function _editMyScript() {
-    local targetFile=`(ls ~/*.sh; ls ~/.zshrc.local) | xargs basename | fzf --height=100% --preview 'cd ~; bat --color always {}'`
+    local targetFile=`(ls ~/*.sh; ls ~/.zshrc.local ~/.xvimrc) | xargs basename | fzf --height=100% --preview 'cd ~; bat --color always {}'`
     if [ -n "$targetFile" ];then 
         vim ~/$targetFile
     fi
