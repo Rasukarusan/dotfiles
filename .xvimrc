@@ -1,4 +1,4 @@
-set debug
+" set debug
 " シンタックスハイライト
 syntax on
 " 自動でインデントを挿入
@@ -29,7 +29,7 @@ set clipboard=unnamed
 " Toggle Toolbars
 nmap <space>h :xccmd toggleNavigatorsVisibility<CR>
 nmap <space>j :xccmd toggleDebuggerVisibility<CR>
-nmap <space>l :xccmd toggleUtilitiesVisibility<CR>
+nmap <space>l :xcmenucmd Show Inspectors<CR>
 " 定義元にジャンプ
 nmap <space>d :xcmenucmd Jump to Definition<CR>
 " 定義の説明を表示する
@@ -56,6 +56,8 @@ nnoremap j <Down>
 vnoremap j <Down>
 nnoremap k <Up>
 vnoremap k <Up>
+nnoremap H 4h
+nnoremap L 4l
 " jjでエスケープ
 inoremap jj <ESC>
 " 入力モード中:wqと打つとノーマルモードに戻って:wqになる
