@@ -17,24 +17,11 @@ set cindent
 set ignorecase
 " 検索語句を全て英小文字で入力した場合のみ区別を無視
 set smartcase
-" タブを >--- 半スペを . で表示する
-set listchars=tab:»-,trail:･
 " 保存時に行末の空白を削除
 autocmd BufWritePre * :%s/\s\+$//ge
 " vimでバックスペースを有効に
 set backspace=indent,eol,start
-" フォルダ内のファイル一覧表示
-noremap <C-n> :xccmd showGroupFilesMenu<CR>
 set clipboard=unnamed
-" Toggle Toolbars
-nmap <space>h :xccmd toggleNavigatorsVisibility<CR>
-nmap <space>j :xccmd toggleDebuggerVisibility<CR>
-nmap <space>l :xcmenucmd Show Inspectors<CR>
-" 定義元にジャンプ
-nmap <space>d :xcmenucmd Jump to Definition<CR>
-" 定義の説明を表示する
-nmap <space>s :xcmenucmd Show Quick Help for Selected Item<CR>
-
 
 " ===============キーマップ関連===================== "
 " 入力モードでのカーソル移動
@@ -64,10 +51,6 @@ inoremap jj <ESC>
 inoremap :wq <ESC>:wq
 inoremap :w <ESC>:w
 inoremap :q <ESC>:q
-" 閉じかっこをENTERと同時に挿入
-inoremap {<Enter> {}<Left><CR><ESC><S-o>
-inoremap [<Enter> []<Left><CR><ESC><S-o>
-inoremap (<Enter> ()<Left><CR><ESC><S-o>
 " 削除した際ヤンクしないように
 nnoremap x "_x
 nnoremap _ci "_ci
@@ -98,3 +81,13 @@ nnoremap <C--><C-->  :xcmenucmd Comment Selection<CR>
 vnoremap <C--><C-->  :xcmenucmd Comment Selection<CR>
 " ctrl-pみたいなもの
 noremap <C-p> :xccmd openQuickly<CR>
+" フォルダ内のファイル一覧表示
+noremap <C-n> :xccmd showGroupFilesMenu<CR>
+" Toggle Toolbars
+nmap <space>h :xccmd toggleNavigatorsVisibility<CR>
+nmap <space>j :xccmd toggleDebuggerVisibility<CR>
+nmap <space>l :xcmenucmd Show Inspectors<CR>
+" 定義元にジャンプ
+nmap <space>d :xcmenucmd Jump to Definition<CR>
+" 定義の説明を表示する
+nmap <space>s :xcmenucmd Show Quick Help for Selected Item<CR>
