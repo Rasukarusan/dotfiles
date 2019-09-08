@@ -799,6 +799,13 @@ function _tmux_commands() {
     esac
 }
 
+# 起動中のアプリを表示、選択して起動する
+function _openLaunchedApp() {
+    local app=$(ps aux | awk -F '/' '{print "/"$2"/"$3}' | grep Applications | sort -u | sed 's/\/Applications\///g' | fzf ) 
+    test -z "$app" && return
+    open "/Applications/$app"
+}
+
 # ================================================== #
 #
 # ============================== #
@@ -979,6 +986,7 @@ alias dcc='_dockerCommands'
 alias scc='_editMyScript'
 alias tt='_tmux_commands'
 alias agg="_agAndVim"
+alias oaa='_openLaunchedApp'
 
 # zshrc.localを読み込む(行末に書くことで設定を上書きする)
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
