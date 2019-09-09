@@ -239,20 +239,6 @@ EOF`
     esac
 }
 
-# masterのコミットを全て削除する(自分のPublicリポジトリにpushする際使用)
-function deleteAllGitLog() {
-    local PC_ENV=`cat ~/account.json | jq -r '.pc_env["'$USER'"]'` 
-    # プライベートPCでのみ実行する
-    if [ "$PC_ENV" != 'private' ]; then
-        echo 'This computer is not private'
-        return 0
-    fi
-    git checkout --orphan tmp
-    git commit -m "first commit"
-    git checkout -B master
-    git branch -d tmp
-}
-
 # コマンド実行配下にパスワードなど漏れると危険な単語が入力されていないかをチェック
 function checkDangerInput() {
     for danger_word in `cat ~/danger_words.txt`; do
@@ -389,7 +375,11 @@ function _gitPushFzf() {
 }
 # git logをpreviewで差分を表示する
 function _gitLogPreviewOpen() {
-    local hashCommit=`git log --oneline | fzf --height=100% --prompt "SELECT COMMIT>" --preview "echo {} | cut -d' ' -f1 | xargs git show --color=always"`
+    option=''
+    if [ "$1" = "-S" ];then
+        option="-S"
+    fi
+    local hashCommit=`git log --oneline $option $2| fzf --height=100% --prompt "SELECT COMMIT>" --preview "echo {} | cut -d' ' -f1 | xargs git show --color=always"`
     if [ -n "$hashCommit" ]; then
         git show `echo ${hashCommit} | awk '{print $1}'`
     fi
@@ -806,6 +796,49 @@ function _openLaunchedApp() {
     open "/Applications/$app"
 }
 
+# git危険コマンド集
+function _dangerGitCommands() {
+    local actions=(
+        '特定ファイルと関連する履歴を全て削除:_deleteAllHistoriesByFile'
+        'masterのコミットを全て削除:_deleteAllGitLog'
+    )
+    local action=$(echo "${actions[@]}" | tr ' ' '\n' | awk -F ':' '{print $1}' | fzf)
+    test -z "$action" && return
+    eval $(echo "${actions[@]}" | tr ' ' '\n' | grep $action | awk -F ':' '{print $2}')
+
+}
+
+# 特定ファイルの履歴を全て削除(ファイルも削除されるので注意)
+function _deleteAllHistoriesByFile() {
+    local targetFile=$(find . -type f -not -path "./.git/*" -not -path "./Carthage/*" -not -path "./*vendor/*" | fzf)
+    test -z "$targetFile" && return
+    git filter-branch -f --tree-filter "rm -f $targetFile" HEAD
+    git gc --aggressive --prune=now
+}
+
+# masterのコミットを全て削除する(自分のPublicリポジトリにpushする際使用)
+function _deleteAllGitLog() {
+    local PC_ENV=`cat ~/account.json | jq -r '.pc_env["'$USER'"]'` 
+    echo $PC_ENV
+    # プライベートPCでのみ実行する
+    if [ "$PC_ENV" != 'private' ]; then
+        echo 'This computer is not private'
+        return 0
+    fi
+    /bin/echo -n '本当に実行して良いですか？(y/N) > '
+    read isOK
+    case "${isOK}" in
+        y|Y|yes)
+            git checkout --orphan tmp
+            git commit -m "first commit"
+            git checkout -B master
+            git branch -d tmp
+            ;;
+        *)
+            ;;
+    esac
+}
+
 # ================================================== #
 #
 # ============================== #
@@ -987,6 +1020,7 @@ alias scc='_editMyScript'
 alias tt='_tmux_commands'
 alias agg="_agAndVim"
 alias oaa='_openLaunchedApp'
+alias dgg='_dangerGitCommands'
 
 # zshrc.localを読み込む(行末に書くことで設定を上書きする)
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
