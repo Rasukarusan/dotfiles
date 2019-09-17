@@ -700,6 +700,7 @@ local select_command=`cat << EOF | fzf
 docker exec
 docker logs
 docker ps
+docker ps -a
 docker stop
 docker-compose ps
 docker-compose up
@@ -973,6 +974,7 @@ alias selenium-status='ps aux | grep -v grep | grep -c selenium'
 alias wifiConnect='networksetup -setairportpower en0 off && networksetup -setairportpower en0 on'
 # printfの色出力を一覧表示
 alias printColors='for fore in `seq 30 37`; do printf "\e[${fore}m \\\e[${fore}m \e[m\n"; for mode in 1 4 5; do printf "\e[${fore};${mode}m \\\e[${fore};${mode}m \e[m"; for back in `seq 40 47`; do printf "\e[${fore};${back};${mode}m \\\e[${fore};${back};${mode}m \e[m"; done; echo; done; echo; done; printf " \\\e[m\n"'
+alias sshadd='ssh-add ~/.ssh/id_rsa'
 
 # ================================================== #
 #
