@@ -667,7 +667,7 @@ function _generateRandomString() {
 # 乱数ではなく数値文字列であることに注意。 ex.) "0134"
 function _generateRandomNumberStr() {
     local length=${1:-4}
-    od -vAn -to1 /dev/urandom  | tr -d " " | fold -w $length | head -n 1
+    od -vAn -to1 </dev/urandom  | tr -d " " | fold -w $length | head -n 1
 }
 
 # 指定範囲内のランダムな整数を生成。第一引数に範囲を指定。デフォルトは100。
