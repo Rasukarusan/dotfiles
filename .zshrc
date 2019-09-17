@@ -667,7 +667,7 @@ function _generateRandomString() {
 # 乱数ではなく数値文字列であることに注意。 ex.) "0134"
 function _generateRandomNumberStr() {
     local length=${1:-4}
-    od -vAn -to1 </dev/urandom  | tr -d " " | fold -w $length | head -n 1
+    od -vAn -to1 /dev/urandom  | tr -d " " | fold -w $length | head -n 1
 }
 
 # 指定範囲内のランダムな整数を生成。第一引数に範囲を指定。デフォルトは100。
@@ -802,6 +802,7 @@ function _dangerGitCommands() {
     local actions=(
         '特定ファイルと関連する履歴を全て削除:_deleteAllHistoriesByFile'
         'masterのコミットを全て削除:_deleteAllGitLog'
+        'コミットのAuthorを全て書き換える:_changeAuthor'
     )
     local action=$(echo "${actions[@]}" | tr ' ' '\n' | awk -F ':' '{print $1}' | fzf)
     test -z "$action" && return
@@ -834,6 +835,27 @@ function _deleteAllGitLog() {
             git commit -m "first commit"
             git checkout -B master
             git branch -d tmp
+            ;;
+        *)
+            ;;
+    esac
+}
+
+# コミットのAuthor、Committerを全て変更
+function _changeAuthor() {
+    local USER_NAME=`cat ~/account.json | jq -r '.github["user_name"]'` 
+    local MAIL_ADDR=`cat ~/account.json | jq -r '.github["mail_addr"]'` 
+    test "$USER_NAME" = "null" || test "$MAIL_ADDR" = "null" && return
+    echo -n "AUTHOR: $USER_NAME\nEMAIL: $MAIL_ADDR\nに書き換えますがよろしいですか？(y/N) > "
+    read isOK
+    case "${isOK}" in
+        y|Y|yes)
+            git filter-branch -f --env-filter \
+            "GIT_AUTHOR_NAME='${USER_NAME}'; \
+            GIT_AUTHOR_EMAIL='${MAIL_ADDR}'; \
+            GIT_COMMITTER_NAME='${USER_NAME}'; \
+            GIT_COMMITTER_EMAIL='${MAIL_ADDR}';" \
+            HEAD
             ;;
         *)
             ;;
