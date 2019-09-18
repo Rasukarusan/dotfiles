@@ -803,6 +803,7 @@ function _dangerGitCommands() {
         '特定ファイルと関連する履歴を全て削除:_deleteAllHistoriesByFile'
         'masterのコミットを全て削除:_deleteAllGitLog'
         'コミットのAuthorを全て書き換える:_changeAuthor'
+        'ローカル(特定リポジトリ)のConfigを変更:_changeConfigLocal'
     )
     local action=$(echo "${actions[@]}" | tr ' ' '\n' | awk -F ':' '{print $1}' | fzf)
     test -z "$action" && return
@@ -860,6 +861,14 @@ function _changeAuthor() {
         *)
             ;;
     esac
+}
+
+# ローカル(特定リポジトリ)のユーザー名,メールアドレスを変更
+function _changeConfigLocal() {
+    local USER_NAME=`cat ~/account.json | jq -r '.github["user_name"]'` 
+    local MAIL_ADDR=`cat ~/account.json | jq -r '.github["mail_addr"]'` 
+    git config --local user.name "${USER_NAME}"
+    git config --local user.email "${MAIL_ADDR}"
 }
 
 # ================================================== #
