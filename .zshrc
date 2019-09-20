@@ -257,7 +257,7 @@ function create_bg_img() {
     local fontPath=/System/Library/Fonts/ヒラギノ明朝\ ProN.ttc 
     local default_caption='(･∀･)'
     local caption=${1:-$default_caption}
-    local imgPath=~/output.png
+    local imgPath=~/Desktop/${size}_output.png
     convert \
       -size $size  \
       -background $backgroundColor\
