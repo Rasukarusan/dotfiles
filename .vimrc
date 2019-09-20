@@ -44,6 +44,7 @@ call dein#begin(expand($HOME.'/.vim/dein'))
     call dein#add('junegunn/vim-easy-align') "好きな文字でインデントを揃える
     call dein#add('aklt/plantuml-syntax') " plantUML
     call dein#add('iamcco/markdown-preview.nvim', {'on_ft': ['markdown', 'pandoc.markdown', 'rmd'], 'build': 'cd app & yarn install' })
+    call dein#add('flyinshadow/php_localvarcheck.vim') " PHPコードチェック、未使用変数のハイライト
 call dein#end()
 if dein#check_install()
   call dein#install()
@@ -185,6 +186,11 @@ set completeopt=menu,preview
 let g:EasyMotion_do_mapping = 0 "Disable default mappings
 nmap F <Plug>(easymotion-s2)
 
+" ============================== "
+"     php_localvarcheckの設定    "
+" ============================== "
+let g:php_localvarcheck_enable = 1
+let g:php_localvarcheck_global = 0
 
 " ============================== "
 "           quickrun             "
