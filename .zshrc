@@ -249,22 +249,25 @@ function checkDangerInput() {
 
 # 文字画像を生成。第一引数に生成したい文字を指定。
 function create_bg_img() {
-    local sizes=(75x75 100x100 320x240 360x480 500x500 600x390 640x480 720x480 1000x1000 1024x768 1280x960)
-    local size=$(echo ${sizes} | tr ' ' '\n' | fzf)
+    local sizeList=(75x75 100x100 320x240 360x480 500x500 600x390 640x480 720x480 1000x1000 1024x768 1280x960)
+    local sizes=($(echo ${sizeList} | tr ' ' '\n' | fzf))
     local backgroundColor="#000000"
     local fillColor="#ff8ad8" # 文字色
     # フォントによっては日本語対応しておらず「?」になってしまうので注意
     local fontPath=/System/Library/Fonts/ヒラギノ明朝\ ProN.ttc 
     local default_caption='(･∀･)'
     local caption=${1:-$default_caption}
-    local imgPath=~/Desktop/${size}_output.png
-    convert \
-      -size $size  \
-      -background $backgroundColor\
-      -fill $fillColor \
-      -font $fontPath \
-      caption:$caption \
-      $imgPath
+    for size in ${sizes[@]}; do
+        local imgPath=~/Desktop/${size}.png
+        echo $imgPath
+        convert \
+          -size $size  \
+          -background $backgroundColor\
+          -fill $fillColor \
+          -font $fontPath \
+          caption:$caption \
+          $imgPath
+    done
 }
 
 # gmailを既読を付けずにタイトルだけ表示
