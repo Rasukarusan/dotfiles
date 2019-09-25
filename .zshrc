@@ -378,7 +378,7 @@ function _gitPushFzf() {
 }
 # git logをpreviewで差分を表示する
 function _gitLogPreviewOpen() {
-    option=''
+    local option=''
     if [ "$1" = "-S" ];then
         option="-S"
     fi
@@ -394,7 +394,7 @@ function _gitDiffPreviewCopy() {
 }
 # fzfを使ってプロセスKILL
 function _pspk(){
-    process=(`ps aux | awk '{print $2,$9,$11,$12}' | fzf | awk '{print $1}'`)
+    local process=(`ps aux | awk '{print $2,$9,$11,$12}' | fzf | awk '{print $1}'`)
     echo $process | pbcopy
     for item in ${process[@]}
     do
@@ -705,6 +705,8 @@ docker logs
 docker ps
 docker ps -a
 docker stop
+docker system df
+docker images -a
 docker-compose ps
 docker-compose up
 docker-compose up --force-recreate
