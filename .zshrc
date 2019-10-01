@@ -606,7 +606,7 @@ function _loginVMKaliAsRoot() {
 # 記事メモコマンド
 function _writeArticle() {
     local ARTICLE_DIR=/Users/`whoami`/Desktop/ru-she-1nian-mu/articles
-    local article=`ls $ARTICLE_DIR/*.md | xargs basename | fzf`
+    local article=`ls ${ARTICLE_DIR}/*.md | xargs basename | fzf`
 
     # 何も選択しなかった場合は終了
     if [ -z "$article" ]; then
@@ -636,12 +636,8 @@ function _movePostedArticles() {
         tail -n 1 ${ARTICLE_DIR}/${file} | grep $POSTED_MARK > /dev/null
         # 投稿が完了したファイルを別ディレクトリに移す
         if [ $? -eq 0 ]; then 
-            if [ "$1" = '-l' ]; then 
-                echo ${file}
-            else 
-                mv ${ARTICLE_DIR}/${file} $POSTED_DIR/
-                printf "\e[33m${file} is moved!\e[m\n"
-            fi
+            mv ${ARTICLE_DIR}/${file} $POSTED_DIR/
+            printf "\e[33m${file} is moved!\e[m\n"
         fi
     done
 }
