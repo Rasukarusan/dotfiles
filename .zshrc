@@ -298,6 +298,34 @@ function wk() {
     awk -v column="${column}" '{print $column}'
 }
 
+# cddの履歴クリーン。存在しないPATHを履歴から削除
+function clean_cdr_cache_history() {
+    # while文はforkされて別プロセスで実行されるため、while文中の変数が使えない
+    # そのため別関数として切り出す
+    local function getDeleteNumbers() {
+        local delete_line_number=1
+        local delete_line_numbers=()
+        while read line; do
+            ls $line >/dev/null 2>&1 
+            if [ $? -eq 1 ]; then
+                # 削除する際、上から順に削除すると行番号がずれるので逆順で配列に入れる
+                delete_line_numbers=($delete_line_number "${delete_line_numbers[@]}" )
+            fi
+            delete_line_number=$(expr $delete_line_number + 1)
+        done
+        echo "${delete_line_numbers[@]}"
+    }
+
+    local history_cache=~/.cache/cdr/history
+    local delete_line_numbers=($(cat $history_cache | tr -d "$" | tr -d "'" | getDeleteNumbers))
+    for delete_line_number in "${delete_line_numbers[@]}"
+    do
+        printf "\e[31;1m$(sed -n ${delete_line_number}p $history_cache)\n"
+        sed -i '' -e "${delete_line_number}d" $history_cache
+    done
+}
+
+
 # ================================================== #
 #
 # ============================== #
