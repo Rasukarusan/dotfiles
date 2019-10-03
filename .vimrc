@@ -45,6 +45,9 @@ call dein#begin(expand($HOME.'/.vim/dein'))
     call dein#add('aklt/plantuml-syntax') " plantUML
     call dein#add('iamcco/markdown-preview.nvim', {'on_ft': ['markdown', 'pandoc.markdown', 'rmd'], 'build': 'cd app & yarn install' })
     call dein#add('flyinshadow/php_localvarcheck.vim') " PHPコードチェック、未使用変数のハイライト
+    call dein#add('Quramy/tsuquyomi') " Typscript IDE
+    call dein#add('leafgarland/typescript-vim') " Typscriptシンタックスハイライト
+    call dein#add('jason0x43/vim-js-indent') " JS/TSインデント
 call dein#end()
 if dein#check_install()
   call dein#install()
