@@ -94,7 +94,7 @@ endif
 autocmd FileType denite call s:denite_my_settings()
 function! s:denite_my_settings() abort
   nnoremap <silent><buffer><expr> <CR>
-  \ denite#do_map('do_action') 
+  \ denite#do_map('do_action')
   nnoremap <silent><buffer><expr> <C-t>
   \ denite#do_map('do_action','tabopen')
   nnoremap <silent><buffer><expr> q
@@ -616,7 +616,7 @@ function! s:insert_head_and_tail(...) range
     " 範囲選択中かで実行するコマンドが違うので分岐
     if a:firstline == a:lastline
         execute ':%s/^/'.head.'/g | %s/$/'.tail.'/g'
-    else 
+    else
         execute ':'.a:firstline.','.a:lastline.'s/^/'.head.'/g | '.a:firstline.','.a:lastline."s/$/".tail.'/g'
     endif
 endfunction
@@ -626,19 +626,19 @@ augroup vimrc
     autocmd!
     autocmd BufRead,BufNewFile *.sh :call s:insert_shebang() " shファイルを開いたときに自動でシェバン挿入
     autocmd InsertLeave * set nopaste
-    autocmd FileType markdown colorscheme molokai " markdownを開くときはmolokaiテーマ 
+    autocmd FileType markdown colorscheme molokai " markdownを開くときはmolokaiテーマ
 augroup END
 
 " 先頭行にシェバンが存在しないとき、挿入する
-function! s:insert_shebang() 
+function! s:insert_shebang()
     let head = getline(1)
     if head !~ "bin"
-        :execute ':s/^/#!\/bin\/sh\r/g' 
+        :execute ':s/^/#!\/bin\/sh\r/g'
     endif
 endfunction
 
 " カーソル下の単語をGoogleで検索する
-function! s:search_by_google() 
+function! s:search_by_google()
     let line = line(".")
     let col  = col(".")
     let searchWord = expand("<cword>")
@@ -655,7 +655,7 @@ function! s:mode_on_vimnium()
     while 1
         let char = getchar()
         let nr2char = nr2char(char)
-        " execute 'read !osascript ~/ch.sh ' . nr2char 
+        " execute 'read !osascript ~/ch.sh ' . nr2char
         execute 'read !echo ' . nr2char . ' > ~/vim_vimnium.txt'
     endwhile
 endfunction
@@ -709,13 +709,13 @@ endfunction
 command! Today call s:insert_today()
 
 " テスト用のtest.phpを新規タブで開く
-function! s:open_test_php() 
+function! s:open_test_php()
     execute ':tabnew ~/test.php'
 endfunction
 command! Testphp call s:open_test_php()
 
 " テスト用のshellを新規タブで開く
-function! s:open_test_shell() 
+function! s:open_test_shell()
     execute ':tabnew ~/test.sh'
 endfunction
 command! Testshell call s:open_test_shell()
