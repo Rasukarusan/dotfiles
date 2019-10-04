@@ -922,6 +922,7 @@ alias cdf='cd $(osascript ~/finder.sh)'
 alias 00='osascript ~/up_or_down_brightness.sh 1'
 alias 11='osascript ~/up_or_down_brightness.sh 0'
 alias gg='sh ~/githubAPI.sh'
+alias cw='sh ~/chatwork.sh'
 
 # ================================================== #
 #
