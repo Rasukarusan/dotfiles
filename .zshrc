@@ -709,7 +709,6 @@ function _showBadge() {
     $(echo -n "$1" | base64)
 }
 
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
 # Dockerコマンドをfzfで選択
 function _dockerCommands() {
