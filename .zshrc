@@ -978,6 +978,7 @@ alias memo='vim ~/Desktop/ru-she-1nian-mu/memo.md -c ":$"'
 alias co='git checkout $(git branch -a | tr -d " " |fzf --height=100% --prompt "CHECKOUT BRANCH>" --preview "git log --color=always {}" | head -n 1 | sed -e "s/^\*\s*//g" | perl -pe "s/remotes\/origin\///g")'
 alias co-='git checkout -'
 alias gst='git status'
+alias gv='git remote -v'
 # 全てのファイルをgit checkout
 alias gca='git checkout $(git diff --name-only)'
 # ctagsをbrew installしたものを使う
