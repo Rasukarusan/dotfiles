@@ -896,8 +896,17 @@ function _changeAuthor() {
 function _changeConfigLocal() {
     local USER_NAME=`cat ~/account.json | jq -r '.github["user_name"]'` 
     local MAIL_ADDR=`cat ~/account.json | jq -r '.github["mail_addr"]'` 
-    git config --local user.name "${USER_NAME}"
-    git config --local user.email "${MAIL_ADDR}"
+    test "$USER_NAME" = "null" || test "$MAIL_ADDR" = "null" && return
+    echo -n "AUTHOR: $USER_NAME\nEMAIL: $MAIL_ADDR\nに書き換えますがよろしいですか？(y/N) > "
+    read isOK
+    case "${isOK}" in
+        y|Y|yes)
+            git config --local user.name "${USER_NAME}"
+            git config --local user.email "${MAIL_ADDR}"
+            ;;
+        *)
+            ;;
+    esac
 }
 
 # ================================================== #
