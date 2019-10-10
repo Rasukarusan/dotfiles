@@ -712,17 +712,8 @@ function _showBadge() {
 
 # Dockerコマンドをfzfで選択
 function _dockerCommands() {
-    local containers=(
-        main-local51
-        api-local
-        base-local
-        nedevtools
-        vm-ne-dev-clone
-        vm-ne-dev-origin
-        vm-ne-dev-origin-db
-        vm-ne-dev-clone-db
-    )
-local select_command=`cat << EOF | fzf
+    local containers=( $(docker ps --format "{{.Names}}") )
+    local select_command=`cat << EOF | fzf
 docker exec
 docker logs
 docker ps
