@@ -274,7 +274,10 @@ function create_bg_img() {
 function gmail() {
     local USER_ID=`cat ~/account.json | jq -r '.gmail.user_id'` 
     local PASS=`cat ~/account.json | jq -r '.gmail.pass'` 
-    curl -u ${USER_ID}:${PASS} --silent "https://mail.google.com/mail/feed/atom" | tr -d '\n' | awk -F '<entry>' '{for (i=2; i<=NF; i++) {print $i}}' | sed -n "s/<title>\(.*\)<\/title.*name>\(.*\)<\/name>.*/\2 - \1/p"
+    curl -u ${USER_ID}:${PASS} --silent "https://mail.google.com/mail/feed/atom" \
+        | tr -d '\n' \
+        | awk -F '<entry>' '{for (i=2; i<=NF; i++) {print $i}}' \
+        | sed -n "s/<title>\(.*\)<\/title.*name>\(.*\)<\/name>.*/\2 - \1/p"
 }
 
 # 定義済み関数をfzfで中身を見ながら出力する
