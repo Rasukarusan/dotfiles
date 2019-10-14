@@ -728,6 +728,7 @@ docker-compose ps
 docker-compose up
 docker-compose up --force-recreate
 docker-compose stop
+docker rm
 setDotfiles
 EOF`
     local arg=`echo $select_command | sed "s/docker //g"`
@@ -747,6 +748,13 @@ EOF`
             ;;
         'stop' )
             eval $select_command
+            ;;
+        'rm' )
+            docker ps -a --format "{{.Names}}\t{{.ID}}\t{{.RunningFor}}\t{{.Status}}" \
+                | column -t -s "`printf '\t'`" \
+                | fzf --header "$(echo 'NAME\tCONTAINER_ID\tCREATED\tSTATUS' | column -t)" \
+                | awk '{print $2}' \
+                | xargs docker rm
             ;;
         'setDotfiles' )
             local dotfilesPath=~/docker-dotfiles
