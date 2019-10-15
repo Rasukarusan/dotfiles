@@ -1048,6 +1048,10 @@ alias printColors='for fore in `seq 30 37`; do printf "\e[${fore}m \\\e[${fore}m
 alias sshadd='ssh-add ~/.ssh/id_rsa'
 # FortClientはMacの上部バーから終了する際、一々パスワードを求めてくるのでkillが楽
 alias fortKill="ps aux | grep 'Fort' | awk '{print \$2}' | xargs kill"
+# metabase起動。起動後しばらくしたらhttp://localhost:3300でアクセスできる
+alias metabase-run='docker run -d -p 3300:3000 -v /tmp:/tmp -e "MB_DB_FILE=/tmp/metabase.db" --name metabase metabase/metabase'
+# Redemineのテンプレート文言をvimで開く
+alias redmine_template='vim $(mktemp XXXXXXXXXX) -c ":read! cat ~/redmine_template.txt"'
 
 # ================================================== #
 #
