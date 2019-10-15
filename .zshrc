@@ -715,7 +715,6 @@ function _showBadge() {
 
 # Dockerコマンドをfzfで選択
 function _dockerCommands() {
-    local containers=( $(docker ps --format "{{.Names}}") )
     local select_command=`cat << EOF | fzf
 docker exec
 docker logs
@@ -735,19 +734,19 @@ EOF`
     echo $select_command
     case "${arg}" in
         'exec' )
-            container=$(echo "${containers[@]}" | tr ' ' '\n' | fzf)
+            container=$(docker ps --format "{{.Names}}" | fzf)
             test -z "$container" && return
             echo "docker exec -it $container bash"
             docker exec -it $container bash
             ;;
         'logs' )
-            container=$(echo "${containers[@]}" | tr ' ' '\n' | fzf)
+            container=$(docker ps --format "{{.Names}}" | fzf)
             test -z "$container" && return
             echo "docker logs -ft $container"
             docker logs -ft $container
             ;;
         'stop' )
-            eval $select_command
+            docker ps --format "{{.Names}}" | fzf | xargs docker stop
             ;;
         'rm' )
             docker ps -a --format "{{.Names}}\t{{.ID}}\t{{.RunningFor}}\t{{.Status}}" \
