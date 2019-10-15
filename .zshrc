@@ -757,7 +757,8 @@ EOF`
             ;;
         'setDotfiles' )
             local dotfilesPath=~/docker-dotfiles
-            for container in ${containers[@]}; do
+            docker ps --format "{{.Names}}" | while read container
+            do
                 containerId=$(docker ps | grep $container | awk '{print $1}')
                 echo "send to ${container}(${containerId})"
                 docker cp ${dotfilesPath}/$(ls ${dotfilesPath} | grep $container) ${containerId}:/root/.bashrc
