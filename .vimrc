@@ -342,8 +342,8 @@ inoremap <C-h> <Left>
 inoremap <C-l> <Right>
 nnoremap <C-e> <Esc>$a
 inoremap <C-e> <Esc>$a
-nnoremap H 4h
-nnoremap L 4l
+nnoremap H 10h
+nnoremap L 10l
 nnoremap sa ^
 nnoremap se $
 vnoremap sa ^
