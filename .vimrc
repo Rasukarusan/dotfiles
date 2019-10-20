@@ -48,6 +48,8 @@ call dein#begin(expand($HOME.'/.vim/dein'))
     call dein#add('Quramy/tsuquyomi') " Typscript IDE
     call dein#add('leafgarland/typescript-vim') " Typscriptシンタックスハイライト
     call dein#add('jason0x43/vim-js-indent') " JS/TSインデント
+    call dein#add('cespare/vim-toml') " tomlハイライト
+
 call dein#end()
 if dein#check_install()
   call dein#install()
