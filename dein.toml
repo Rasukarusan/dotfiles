@@ -1,0 +1,17 @@
+[[plugins]]
+repo = 'Shougo/dein.vim'
+
+[[plugins]]
+repo = 'scrooloose/nerdtree'
+
+[[plugins]]
+repo = 'jistr/vim-nerdtree-tabs'
+
+
+
+[[plugins]]
+repo = 'junegunn/fzf.vim'
+hook_add = '''
+    set rtp+=/usr/local/opt/fzf
+    nmap <C-p> :Files<CR>
+'''
