@@ -1,3 +1,4 @@
+alias vim='nvim'
 bindkey -e # ctrl-aやctrl-eでカーソル移動
 # zshのTab補完
 autoload -U compinit && compinit
