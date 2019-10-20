@@ -55,6 +55,8 @@ export PATH="$HOME/.phpenv/bin:$PATH"
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 export LDFLAGS="-L/usr/local/opt/mysql@5.6/lib"
 export CPPFLAGS="-I/usr/local/opt/mysql@5.6/include"
+# neovim
+export XDG_CONFIG_HOME="$HOME/.config"
 # batのpager設定(brew install bat)
 export BAT_PAGER="less -R"
 # go getのインストール先
