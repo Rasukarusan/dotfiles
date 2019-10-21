@@ -69,6 +69,9 @@ filetype plugin indent on
 syntax enable
 set t_Co=256
 colorscheme jellybeans
+" floating windowで色を適用
+set termguicolors
+set winblend=50
 " 起動時の画面をスキップ(:introで表示可能)
 set shortmess+=I
 " 自動でインデントを挿入
@@ -464,3 +467,4 @@ function! s:open_test_shell()
     execute ':tabnew ~/test.sh'
 endfunction
 command! Testshell call s:open_test_shell()
+
