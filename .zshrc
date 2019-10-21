@@ -913,6 +913,16 @@ function _changeConfigLocal() {
     esac
 }
 
+function _editVimFiles() {
+    local nvimFiles=$(find ~/dotfiles ~/dotfiles/dein_tomls -follow -maxdepth 1  -name "*.vim")
+    local deinToml=~/dotfiles/dein.toml
+    local vimrc=~/dotfiles/.vimrc
+    # 文字数でソートする
+    local editFile=$(echo "$nvimFiles\n$vimrc\n$deinToml" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf)
+    test -z "$editFile" && return
+    vim $editFile
+}
+
 # ================================================== #
 #
 # ============================== #
@@ -957,7 +967,6 @@ alias ssh='TERM=xterm ssh'
 alias tree="tree --charset=C -NC"
 alias zshrc='vim ~/.zshrc'
 alias szsh='source ~/.zshrc'
-alias vimrc='vim ~/.vimrc'
 alias stmux='tmux source-file ~/.tmux.conf'
 alias tconf='vim ~/.tmux.conf'
 alias plantuml='java -jar ~/.plantuml/plantuml.jar'
@@ -1104,6 +1113,7 @@ alias tt='_tmux_commands'
 alias agg="_agAndVim"
 alias oaa='_openLaunchedApp'
 alias dgg='_dangerGitCommands'
+alias vimrc='_editVimFiles'
 
 # zshrc.localを読み込む(行末に書くことで設定を上書きする)
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
