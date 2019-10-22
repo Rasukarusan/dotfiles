@@ -218,7 +218,7 @@ nnoremap ,i :<C-u>set paste<Return>i
 " ESCを二回押すことでハイライトを消す
 nmap <silent> <Esc><Esc> :nohlsearch<CR>
 " Yで末尾までコピー
-nnoremap <S-y> <C-v>$y
+nnoremap <S-y> v$hy
 " syで単語コピー
 nnoremap sy byw
 " インデントショートカット
