@@ -469,3 +469,26 @@ function! s:open_test_shell()
 endfunction
 command! Testshell call s:open_test_shell()
 
+
+function! s:open_terminal_by_floating_window() 
+    " 空のバッファを作る
+    let buf = nvim_create_buf(v:false, v:true)
+    " そのバッファを使って floating windows を開く
+    let height = float2nr(&lines * 0.5)
+    let width = float2nr(&columns * 1.0)
+    let horizontal = float2nr((&columns - width) / 2)
+    let vertical = float2nr((&columns - height) / 2)
+    let opts = {
+        \ 'relative': 'editor',
+        \ 'row': vertical,
+        \ 'col': horizontal,
+        \ 'width': width,
+        \ 'height': height,
+        \ 'anchor': 'NE',
+    \}
+    let win_id = nvim_open_win(buf, v:true, opts) 
+    echo win_id
+    terminal
+endfunction
+nnoremap T :call <SID>open_terminal_by_floating_window()<CR>
+hi NormalFloat guifg=#ffffff guibg=#383838
