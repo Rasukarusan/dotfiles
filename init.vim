@@ -492,3 +492,7 @@ function! s:open_terminal_by_floating_window()
 endfunction
 nnoremap T :call <SID>open_terminal_by_floating_window()<CR>
 hi NormalFloat guifg=#ffffff guibg=#383838
+
+" :terminalの設定
+" ESCでターミナルから離れる
+tnoremap <Esc> <C-\><C-n>
