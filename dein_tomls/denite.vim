@@ -21,7 +21,7 @@ let s:denite_win_height_percent = 0.5
 call denite#custom#option('default', {
     \ 'split': 'floating',
     \ 'winwidth': float2nr(&columns * s:denite_win_width_percent),
-    \ 'wincol': float2nr((&columns - (&columns * s:denite_win_width_percent)) / 2),
+    \ 'wincol': float2nr((&columns - (&columns * s:denite_win_width_percent))),
     \ 'winheight': float2nr(&lines * s:denite_win_height_percent),
     \ 'winrow': float2nr((&lines - (&lines * s:denite_win_height_percent)) * 2),
     \ })
