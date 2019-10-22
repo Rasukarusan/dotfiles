@@ -486,13 +486,13 @@ function! s:open_terminal_by_floating_window()
         \ 'height': height,
         \ 'anchor': 'NE',
     \}
-    let win_id = nvim_open_win(buf, v:true, opts) 
-    echo win_id
+    let g:win_id = nvim_open_win(buf, v:true, opts) 
     terminal
+    startinsert 
 endfunction
 nnoremap T :call <SID>open_terminal_by_floating_window()<CR>
 hi NormalFloat guifg=#ffffff guibg=#383838
 
 " :terminalの設定
 " ESCでターミナルから離れる
-tnoremap <Esc> <C-\><C-n>
+tnoremap <silent>:q <C-\><C-n>:call nvim_win_close(win_id, v:true)<CR>
