@@ -172,3 +172,11 @@ repo = 'Shougo/neosnippet.vim'
 [[plugins]]
 repo = 'Shougo/neosnippet-snippets'
 hook_add = 'source ~/.config/nvim/dein_tomls/neosnippet-snippets.vim'
+
+
+# --------------------------------------------
+# GitBlamer
+# --------------------------------------------
+[[plugins]]
+repo = 'rhysd/git-messenger.vim'
+
