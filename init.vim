@@ -71,7 +71,9 @@ set t_Co=256
 colorscheme jellybeans
 " floating windowで色を適用
 set termguicolors
-set winblend=50
+set winblend=40
+" floating windowの色
+hi NormalFloat guifg=#ffffff guibg=#151515
 " 起動時の画面をスキップ(:introで表示可能)
 set shortmess+=I
 " 自動でインデントを挿入
@@ -89,8 +91,6 @@ set history=1000
 set conceallevel=0
 " 検索語句のハイライト
 set hlsearch
-" カーソル行をハイライト。これをONにするとvimが重くなるのでコメントアウトした。
-" set cursorline
 set number
 " 括弧の後に自動でインデントを挿入
 set cindent
@@ -227,6 +227,7 @@ nnoremap tl >>
 
 " source ~/.vimrcを簡略化(zshのコマンドと同じに)
 command! Svim :source ~/.config/nvim/init.vim
+nnoremap rr :Svim<CR>
 
 " =============================================
 " clog($param)とclog("param")の相互変換関数(範囲指定も可)

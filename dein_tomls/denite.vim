@@ -16,12 +16,12 @@ endfunction
 noremap <Space>h :Denite command_history<CR>
 
 " 候補表示の設定。Floating Window
-let s:denite_win_width_percent = 0.85
-let s:denite_win_height_percent = 0.7
+let s:denite_win_width_percent = 1.0
+let s:denite_win_height_percent = 0.5
 call denite#custom#option('default', {
     \ 'split': 'floating',
     \ 'winwidth': float2nr(&columns * s:denite_win_width_percent),
     \ 'wincol': float2nr((&columns - (&columns * s:denite_win_width_percent)) / 2),
     \ 'winheight': float2nr(&lines * s:denite_win_height_percent),
-    \ 'winrow': float2nr((&lines - (&lines * s:denite_win_height_percent)) / 2),
+    \ 'winrow': float2nr((&lines - (&lines * s:denite_win_height_percent)) * 2),
     \ })
