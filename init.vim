@@ -73,7 +73,7 @@ colorscheme jellybeans
 set termguicolors
 set winblend=40
 " floating windowの色
-hi NormalFloat guifg=#ffffff guibg=#151515
+hi NormalFloat guifg=#ffffff guibg=#383838
 " 起動時の画面をスキップ(:introで表示可能)
 set shortmess+=I
 " 自動でインデントを挿入
