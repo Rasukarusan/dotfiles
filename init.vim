@@ -69,6 +69,11 @@ filetype plugin indent on
 syntax enable
 set t_Co=256
 colorscheme jellybeans
+" floating windowで色を適用
+set termguicolors
+set winblend=40
+" floating windowの色
+hi NormalFloat guifg=#ffffff guibg=#383838
 " 起動時の画面をスキップ(:introで表示可能)
 set shortmess+=I
 " 自動でインデントを挿入
@@ -86,8 +91,6 @@ set history=1000
 set conceallevel=0
 " 検索語句のハイライト
 set hlsearch
-" カーソル行をハイライト。これをONにするとvimが重くなるのでコメントアウトした。
-" set cursorline
 set number
 " 括弧の後に自動でインデントを挿入
 set cindent
@@ -215,7 +218,7 @@ nnoremap ,i :<C-u>set paste<Return>i
 " ESCを二回押すことでハイライトを消す
 nmap <silent> <Esc><Esc> :nohlsearch<CR>
 " Yで末尾までコピー
-nnoremap <S-y> <C-v>$y
+nnoremap <S-y> v$hy
 " syで単語コピー
 nnoremap sy byw
 " インデントショートカット
@@ -224,6 +227,7 @@ nnoremap tl >>
 
 " source ~/.vimrcを簡略化(zshのコマンドと同じに)
 command! Svim :source ~/.config/nvim/init.vim
+nnoremap rr :Svim<CR>
 
 " =============================================
 " clog($param)とclog("param")の相互変換関数(範囲指定も可)
@@ -464,3 +468,31 @@ function! s:open_test_shell()
     execute ':tabnew ~/test.sh'
 endfunction
 command! Testshell call s:open_test_shell()
+
+
+function! s:open_terminal_by_floating_window() 
+    " 空のバッファを作る
+    let buf = nvim_create_buf(v:false, v:true)
+    " そのバッファを使って floating windows を開く
+    let height = float2nr(&lines * 0.5)
+    let width = float2nr(&columns * 1.0)
+    let horizontal = float2nr((&columns - width) / 2)
+    let vertical = float2nr((&columns - height) / 2)
+    let opts = {
+        \ 'relative': 'editor',
+        \ 'row': vertical,
+        \ 'col': horizontal,
+        \ 'width': width,
+        \ 'height': height,
+        \ 'anchor': 'NE',
+    \}
+    let g:win_id = nvim_open_win(buf, v:true, opts) 
+    terminal
+    startinsert 
+endfunction
+nnoremap T :call <SID>open_terminal_by_floating_window()<CR>
+hi NormalFloat guifg=#ffffff guibg=#383838
+
+" :terminalの設定
+" ESCでターミナルから離れる
+tnoremap <silent>:q <C-\><C-n>:call nvim_win_close(win_id, v:true)<CR>

@@ -11,24 +11,14 @@ repo = 'Shougo/dein.vim'
 repo = 'scrooloose/nerdtree'
 [[plugins]]
 repo = 'jistr/vim-nerdtree-tabs'
-hook_add = '''
-    nnoremap <silent><C-n> :NERDTreeTabsToggle<CR>
-'''
+hook_add = 'source ~/.config/nvim/dein_tomls/nerdtree-tabs.vim'
 
 # --------------------------------------------
 # fzf-vim
 # --------------------------------------------
 [[plugins]]
 repo = 'junegunn/fzf.vim'
-hook_add = '''
-    set rtp+=/usr/local/opt/fzf
-    " ファイル検索
-    nmap <C-p> :Files<CR>
-    " コマンド履歴
-    " nmap <C-h> :History:<CR>
-    " 検索単語履歴
-    " nmap <C-h>w :History/<CR>
-'''
+hook_add = 'source ~/.config/nvim/dein_tomls/fzf.vim'
 
 # --------------------------------------------
 # tomlファイルをハイライト
@@ -53,24 +43,14 @@ repo = 'tpope/vim-fugitive'
 # --------------------------------------------
 [[plugins]]
 repo = 'vim-airline/vim-airline'
-hook_add = '''
-    let g:airline#extensions#default#layout = [
-        \ [ 'a', 'b', 'c'],
-        \ [ 'x', 'y']
-        \ ]
-'''
+hook_add = 'source ~/.config/nvim/dein_tomls/vim-airline.vim'
+
 # --------------------------------------------
 # Scriptをその場で実行
 # --------------------------------------------
 [[plugins]]
 repo = 'thinca/vim-quickrun'
-hook_add = '''
-    " \rで保存して実行、画面分割を下に出す
-    nnoremap \r :cclose<CR>:write<CR>:QuickRun -mode n<CR>
-    xnoremap \r :<C-U>cclose<CR>:write<CR>gv:QuickRun -mode v<CR>
-    let g:quickrun_config={'*': {'split': ''}}
-    set splitbelow
-'''
+hook_add = 'source ~/.config/nvim/dein_tomls/vim-quickrun.vim'
 
 # --------------------------------------------
 # 囲い文字を入れ替える
@@ -83,130 +63,56 @@ repo = 'tpope/vim-surround'
 # --------------------------------------------
 [[plugins]]
 repo = 'mattn/emmet-vim'
-hook_add = '''
-    " let g:user_emmet_leader_key = ','
-'''
+hook_add = 'source ~/.config/nvim/dein_tomls/emmet-vim.vim'
 
 # --------------------------------------------
 # Denite
 # --------------------------------------------
 [[plugins]]
 repo = 'Shougo/denite.nvim'
-hook_add = '''
-    autocmd FileType denite call s:denite_my_settings()
-    function! s:denite_my_settings() abort
-        nnoremap <silent><buffer><expr> <CR>
-        \ denite#do_map('do_action')
-        nnoremap <silent><buffer><expr> p
-        \ denite#do_map('do_action', 'preview')
-        nnoremap <silent><buffer><expr> <C-t>
-        \ denite#do_map('do_action','tabopen')
-        nnoremap <silent><buffer><expr> q
-        \ denite#do_map('quit')
-        nnoremap <silent><buffer><expr> i
-        \ denite#do_map('open_filter_buffer')
-    endfunction
-
-    " キーマップ
-    noremap <Space>h :Denite command_history<CR>
-
-    " 候補表示の設定。Floating Window
-    let s:denite_win_width_percent = 0.85
-    let s:denite_win_height_percent = 0.7
-    call denite#custom#option('default', {
-        \ 'split': 'floating',
-        \ 'winwidth': float2nr(&columns * s:denite_win_width_percent),
-        \ 'wincol': float2nr((&columns - (&columns * s:denite_win_width_percent)) / 2),
-        \ 'winheight': float2nr(&lines * s:denite_win_height_percent),
-        \ 'winrow': float2nr((&lines - (&lines * s:denite_win_height_percent)) / 2),
-        \ })
-'''
+hook_add = 'source ~/.config/nvim/dein_tomls/denite.vim'
 
 # --------------------------------------------
 # Denite-Gtags
 # --------------------------------------------
 [[plugins]]
 repo = 'ozelentok/denite-gtags'
-hook_add = '''
-    noremap [denite-gtags]  <Nop>
-    nmap <Space> [denite-gtags]
-    " 今のファイルの関数などの一覧
-    nnoremap [denite-gtags]f :Denite -buffer-name=gtags_file -prompt=> gtags_file<CR>
-    " カーソル下の単語の定義元を表示
-    nnorema [denite-gtags]d :<C-u>DeniteCursorWord -buffer-name=gtags_def -prompt=> gtags_def<CR>
-    " カーソル下の単語の参照先を表示
-    nnoremap [denite-gtags]r :<C-u>DeniteCursorWord -buffer-name=gtags_ref -prompt=> gtags_ref<CR>
-'''
+hook_add = 'source ~/.config/nvim/dein_tomls/denite-gtags.vim'
 
 # --------------------------------------------
 # gtags,ctagsを自動生成
 # --------------------------------------------
 [[plugins]]
 repo = 'jsfaint/gen_tags.vim'
-hook_add = '''
-    let g:gen_tags#ctags_auto_gen = 1
-    let g:gen_tags#gtags_auto_gen = 1
-'''
+hook_add = 'source ~/.config/nvim/dein_tomls/gen_tags.vim'
 
 # --------------------------------------------
 # リアルタイムLinter
 # --------------------------------------------
 [[plugins]]
 repo = 'w0rp/ale'
-hook_add = '''
-    let g:ale_set_highlights = 0
-'''
+hook_add = 'source ~/.config/nvim/dein_tomls/ale.vim'
 
 # --------------------------------------------
 # 画面分割時の画面大きさ変更キーなど連続で打つコマンドを楽にする
 # --------------------------------------------
 [[plugins]]
 repo = 'kana/vim-submode'
-hook_add = '''
-    call submode#enter_with('bufmove', 'n', '', 's>', '<C-w>>')
-    call submode#enter_with('bufmove', 'n', '', 's<', '<C-w><')
-    call submode#enter_with('bufmove', 'n', '', 's+', '<C-w>+')
-    call submode#enter_with('bufmove', 'n', '', 's-', '<C-w>-')
-    call submode#map('bufmove', 'n', '', '>', '<C-w>>')
-    call submode#map('bufmove', 'n', '', '<', '<C-w><')
-    call submode#map('bufmove', 'n', '', '+', '<C-w>+')
-    call submode#map('bufmove', 'n', '', '-', '<C-w>-')
-'''
+hook_add = 'source ~/.config/nvim/dein_tomls/vim-submode.vim'
 
 # --------------------------------------------
 # Golang開発環境
 # --------------------------------------------
 [[plugins]]
 repo = 'fatih/vim-go'
-hook_add = '''
-    filetype plugin indent on " これがないと「エディタのコマンドではありません」と出る
-    let g:go_highlight_functions = 1
-    let g:go_highlight_methods = 1
-    let g:go_highlight_structs = 1
-    let g:go_gocode_unimported_packages = 1
-    let g:go_metalinter_autosave_enabled = ['vet']
-    let g:go_fmt_command = "goimports" " 保存時にimport
-    let g:go_list_type = "quickfix"
-    augroup GolangSettings
-        autocmd!
-        autocmd FileType go nmap \r <Plug>(go-run)
-        autocmd FileType go nmap <Space>d <Plug>(go-def-tab)
-        autocmd FileType go nmap <Space>r <Plug>(go-referrers)
-        autocmd FileType go nmap <C-t> <Plug>(go-def-pop)
-        autocmd FileType go nmap <Space>f :GoDecls<CR>
-        autocmd FileType go nmap <Space>i <Plug>(go-info)
-    augroup END
-'''
+hook_add = 'source ~/.config/nvim/dein_tomls/vim-go.vim'
 
 # --------------------------------------------
 # 好きな文字でインデントを揃える
 # --------------------------------------------
 [[plugins]]
 repo = 'junegunn/vim-easy-align'
-hook_add = '''
-    xmap ga <Plug>(EasyAlign)
-    nmap ga <Plug>(EasyAlign)
-'''
+hook_add = 'source ~/.config/nvim/dein_tomls/vim-easy-align.vim'
 
 # --------------------------------------------
 # plantuml
@@ -227,10 +133,7 @@ build =  'cd app & yarn install'
 # --------------------------------------------
 [[plugins]]
 repo = 'flyinshadow/php_localvarcheck.vim'
-hook_add = '''
-    let g:php_localvarcheck_enable = 1
-    let g:php_localvarcheck_global = 0
-'''
+hook_add = 'source ~/.config/nvim/dein_tomls/php_localvarcheck.vim'
 
 # --------------------------------------------
 # Typscript IDE
@@ -255,26 +158,25 @@ repo = 'jason0x43/vim-js-indent'
 # --------------------------------------------
 [[plugins]]
 repo = 'vim-scripts/PDV--phpdocumentor-for-vim'
-hook_add = '''
-    inoremap <C-P> <Esc>:call PhpDocSingle()<CR>
-'''
+hook_add = 'source ~/.config/nvim/dein_tomls/PDV--phpdocumentor-for-vim.vim'
 
 # --------------------------------------------
 # dein
 # --------------------------------------------
 [[plugins]]
 repo = 'Shougo/deoplete.nvim'
-hook_add = '''
-    let g:deoplete#enable_at_startup   = 1
-    let g:deoplete#auto_complete_delay = 0
-'''
+hook_add = 'source ~/.config/nvim/dein_tomls/deoplete.vim'
 
 [[plugins]]
 repo = 'Shougo/neosnippet.vim'
 [[plugins]]
 repo = 'Shougo/neosnippet-snippets'
-hook_add = '''
-    let g:neosnippet#snippets_directory=$HOME.'/.vim/dein/repos/github.com/Shougo/neosnippet-snippets/neosnippets,'.$HOME.'/.vim/mySnippets/'
-    imap <TAB>     <Plug>(neosnippet_expand_or_jump)
-    smap <TAB>     <Plug>(neosnippet_expand_or_jump)
-'''
+hook_add = 'source ~/.config/nvim/dein_tomls/neosnippet-snippets.vim'
+
+
+# --------------------------------------------
+# GitBlamer
+# --------------------------------------------
+[[plugins]]
+repo = 'rhysd/git-messenger.vim'
+
