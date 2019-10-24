@@ -179,4 +179,4 @@ hook_add = 'source ~/.config/nvim/dein_tomls/neosnippet-snippets.vim'
 # --------------------------------------------
 [[plugins]]
 repo = 'rhysd/git-messenger.vim'
-
+hook_add = 'source ~/.config/nvim/dein_tomls/git-messenger.vim'
