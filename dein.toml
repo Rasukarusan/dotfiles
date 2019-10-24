@@ -163,16 +163,16 @@ hook_add = 'source ~/.config/nvim/dein_tomls/PDV--phpdocumentor-for-vim.vim'
 # --------------------------------------------
 # dein
 # --------------------------------------------
-[[plugins]]
-repo = 'Shougo/deoplete.nvim'
-hook_add = 'source ~/.config/nvim/dein_tomls/deoplete.vim'
+# [[plugins]]
+# repo = 'Shougo/deoplete.nvim'
+# hook_add = 'source ~/.config/nvim/dein_tomls/deoplete.vim'
 
-[[plugins]]
-repo = 'Shougo/neosnippet.vim'
-[[plugins]]
-repo = 'Shougo/neosnippet-snippets'
-hook_add = 'source ~/.config/nvim/dein_tomls/neosnippet-snippets.vim'
-
+# [[plugins]]
+# repo = 'Shougo/neosnippet.vim'
+# [[plugins]]
+# repo = 'Shougo/neosnippet-snippets'
+# hook_add = 'source ~/.config/nvim/dein_tomls/neosnippet-snippets.vim'
+#
 
 # --------------------------------------------
 # GitBlamer
@@ -180,3 +180,8 @@ hook_add = 'source ~/.config/nvim/dein_tomls/neosnippet-snippets.vim'
 [[plugins]]
 repo = 'rhysd/git-messenger.vim'
 hook_add = 'source ~/.config/nvim/dein_tomls/git-messenger.vim'
+
+[[plugins]]
+repo = 'neoclide/coc.nvim'
+rev = 'release'
+hook_add = 'source ~/.config/nvim/dein_tomls/coc.vim'
