@@ -372,7 +372,7 @@ augroup vimrc
     autocmd!
     autocmd BufRead,BufNewFile *.sh :call s:insert_shebang() " shファイルを開いたときに自動でシェバン挿入
     autocmd InsertLeave * set nopaste
-    autocmd FileType markdown colorscheme molokai " markdownを開くときはmolokaiテーマ
+    autocmd FileType markdown colorscheme jellybeans " markdownを開くときはmolokaiテーマ
 augroup END
 
 " =============================================
@@ -469,7 +469,9 @@ function! s:open_test_shell()
 endfunction
 command! Testshell call s:open_test_shell()
 
-
+" =============================================
+" Terminalを開く
+" =============================================
 function! s:open_terminal_by_floating_window() 
     " 空のバッファを作る
     let buf = nvim_create_buf(v:false, v:true)
