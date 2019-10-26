@@ -92,6 +92,8 @@ set conceallevel=0
 " 検索語句のハイライト
 set hlsearch
 set number
+" 自動で検索を開始しない
+set noincsearch
 " 括弧の後に自動でインデントを挿入
 set cindent
 " 検索時に大文字小文字無視
