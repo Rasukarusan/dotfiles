@@ -280,7 +280,7 @@ function! s:open_php_manual(cursor_word)
   execute 'r! open ' . url
 endfunction
 command! PhpManual call s:open_php_manual(expand('<cword>'))
-nmap <S-k> :PhpManual<CR>
+" nmap <S-k> :PhpManual<CR>
 
 
 " =============================================
