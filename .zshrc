@@ -42,7 +42,7 @@ export EDITOR=vim
 export PATH="/usr/local/opt/grep/libexec/gnubin:$PATH"
 export PATH="/usr/local/opt/python@2/bin:$PATH"
 # fzfのリストを上から並べ、全画面ではなくvimのquickfixライクにする
-export FZF_DEFAULT_OPTS='--color=fg+:11 --height 70% --hidden --follow --reverse --select-1 --exit-0 --multi'
+export FZF_DEFAULT_OPTS='--color=fg+:11 --height 70% --reverse --select-1 --exit-0 --multi'
 # pyenvにPATHを通す(これをしないとpyenv globalでバージョンが切り替えられない)
 export PATH="$HOME/.pyenv/shims:$PATH"
 # mysql8.0が入っていて、古いmysqlを使いたい場合必要
@@ -946,6 +946,7 @@ alias 00='osascript ~/up_or_down_brightness.sh 1'
 alias 11='osascript ~/up_or_down_brightness.sh 0'
 alias gg='sh ~/githubAPI.sh'
 alias cw='sh ~/chatwork.sh'
+alias ctt='sh ~/chromeSelectTab.sh'
 
 # ================================================== #
 #
