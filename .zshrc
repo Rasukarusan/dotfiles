@@ -331,7 +331,6 @@ function clean_cdr_cache_history() {
     done
 }
 
-
 # ================================================== #
 #
 # ============================== #
@@ -913,6 +912,7 @@ function _changeConfigLocal() {
     esac
 }
 
+# vim関連ファイルをfzfで選択しvimで開く
 function _editVimFiles() {
     local nvimFiles=$(find ~/dotfiles ~/dotfiles/dein_tomls -follow -maxdepth 1  -name "*.vim")
     local deinToml=~/dotfiles/dein.toml
@@ -921,6 +921,42 @@ function _editVimFiles() {
     local editFile=$(echo "$nvimFiles\n$vimrc\n$deinToml" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf)
     test -z "$editFile" && return
     vim $editFile
+}
+
+# git stashでよく使うコマンド集
+function _gitStashCommands() {
+    local actions=(
+        'stash一覧表示(list):_git_stash_list'
+        'stash適用(apply):_fzf_git_stash_apply'
+        'stashを名前を付けて保存(save):_git_stash_with_name'
+        'stashを削除(drop):_fzf_git_stash_drop'
+    )
+    local action=$(echo "${actions[@]}" | tr ' ' '\n' | awk -F ':' '{print $1}' | fzf)
+    test -z "$action" && return
+    eval $(echo "${actions[@]}" | tr ' ' '\n' | grep $action | awk -F ':' '{print $2}')
+}
+
+function _git_stash_list() {
+    git stash list
+}
+
+function _git_stash_with_name() {
+    echo "保存名を入力してくだい"
+    read name
+    test -z "${name}" && return
+    git stash save "${name}"
+}
+
+function _fzf_git_stash_apply() {
+    local stashNo=$(git stash list | fzf --preview 'echo {} | awk "{print \$1}" | tr -d ":" | xargs git stash show --color=always -p' | awk '{print $1}' | tr -d ':' )
+    test -z "${stashNo}" && return
+    git stash apply "${stashNo}"
+}
+
+function _fzf_git_stash_drop() {
+    local stashNo=$(git stash list | fzf --preview 'echo {} | awk "{print \$1}" | tr -d ":" | xargs git stash show --color=always -p' | awk '{print $1}' | tr -d ':' )
+    test -z "${stashNo}" && return
+    git stash drop "${stashNo}"
 }
 
 # ================================================== #
@@ -1115,6 +1151,8 @@ alias agg="_agAndVim"
 alias oaa='_openLaunchedApp'
 alias dgg='_dangerGitCommands'
 alias vimrc='_editVimFiles'
+alias gss='_gitStashCommands'
 
 # zshrc.localを読み込む(行末に書くことで設定を上書きする)
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
+
