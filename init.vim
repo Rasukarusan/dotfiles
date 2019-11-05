@@ -497,6 +497,15 @@ endfunction
 nnoremap T :call <SID>open_terminal_by_floating_window()<CR>
 hi NormalFloat guifg=#ffffff guibg=#383838
 
+" =============================================
+" READMEテンプレートを挿入
+" =============================================
+function! s:insert_template_github_readme()
+    let template = "Name \r====\r\rOverview\r\r## Description\r\r## Demo\r\r## Requirement\r\r## Install\r\r## Usage"
+    execute ':normal i' . template
+endfunction
+command! Readme call s:insert_template_github_readme()
+
 " :terminalの設定
 " ESCでターミナルから離れる
 tnoremap <silent>:q <C-\><C-n>:call nvim_win_close(win_id, v:true)<CR>
