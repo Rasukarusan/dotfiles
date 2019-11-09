@@ -185,8 +185,6 @@ inoremap :q <ESC>:q
 inoremap {<Enter> {}<Left><CR><ESC><S-o>
 inoremap [<Enter> []<Left><CR><ESC><S-o>
 inoremap (<Enter> ()<Left><CR><ESC><S-o>
-" NerdTree表示
-nnoremap <C-n> :NERDTreeTabsToggle<CR>
 " 削除した際ヤンクしないように
 nnoremap x "_x
 nnoremap _ci "_ci

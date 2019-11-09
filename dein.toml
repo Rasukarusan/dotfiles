@@ -9,9 +9,10 @@ repo = 'Shougo/dein.vim'
 # --------------------------------------------
 [[plugins]]
 repo = 'scrooloose/nerdtree'
-[[plugins]]
-repo = 'jistr/vim-nerdtree-tabs'
-hook_add = 'source ~/.config/nvim/dein_tomls/nerdtree-tabs.vim'
+hook_add = 'source ~/.config/nvim/dein_tomls/nerdtree.vim'
+# [[plugins]]
+# repo = 'jistr/vim-nerdtree-tabs'
+# hook_add = 'source ~/.config/nvim/dein_tomls/nerdtree-tabs.vim'
 
 # --------------------------------------------
 # fzf-vim
