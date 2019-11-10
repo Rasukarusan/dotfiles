@@ -229,6 +229,9 @@ nnoremap tl >>
 command! Svim :source ~/.config/nvim/init.vim
 nnoremap rr :Svim<CR>
 
+" 現在開いているスクリプトを読み込む
+nnoremap S :source %<CR>
+
 " =============================================
 " clog($param)とclog("param")の相互変換関数(範囲指定も可)
 " =============================================
