@@ -71,7 +71,7 @@ set t_Co=256
 colorscheme jellybeans
 " floating windowで色を適用
 set termguicolors
-set winblend=40
+set winblend=5
 " floating windowの色
 hi NormalFloat guifg=#ffffff guibg=#383838
 " 起動時の画面をスキップ(:introで表示可能)
@@ -492,11 +492,11 @@ function! s:open_terminal_by_floating_window()
         \ 'anchor': 'NE',
     \}
     let g:win_id = nvim_open_win(buf, v:true, opts) 
+    set winblend=40
     terminal
     startinsert 
 endfunction
 nnoremap T :call <SID>open_terminal_by_floating_window()<CR>
-hi NormalFloat guifg=#ffffff guibg=#383838
 
 " =============================================
 " READMEテンプレートを挿入
