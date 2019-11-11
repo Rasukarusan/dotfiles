@@ -727,6 +727,7 @@ docker system df
 docker images -a
 docker-compose ps
 docker-compose up
+docker-compose up -d
 docker-compose up --force-recreate
 docker-compose stop
 docker rm
