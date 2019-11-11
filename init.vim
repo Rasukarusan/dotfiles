@@ -69,11 +69,6 @@ filetype plugin indent on
 syntax enable
 set t_Co=256
 colorscheme jellybeans
-" floating windowで色を適用
-set termguicolors
-set winblend=5
-" floating windowの色
-hi NormalFloat guifg=#ffffff guibg=#383838
 " 起動時の画面をスキップ(:introで表示可能)
 set shortmess+=I
 " 自動でインデントを挿入
@@ -137,6 +132,7 @@ function! MyTabMove(c)
 endfunction
 command! -count=1 MyTabMoveRight call MyTabMove(<count>)
 command! -count=1 MyTabMoveLeft  call MyTabMove(-<count>)
+
 " crontab: temp file must be edited in placeのエラー文が出るのでtmpではバックアップをしないよう設定
 set backupskip=/tmp/*,/private/tmp/*
 
@@ -507,6 +503,11 @@ function! s:insert_template_github_readme()
 endfunction
 command! Readme call s:insert_template_github_readme()
 
-" :terminalの設定
-" ESCでターミナルから離れる
+" ===============Floating Windows===================== "
+set termguicolors
+set winblend=5
+hi NormalFloat guifg=#ffffff guibg=#383838
+tnoremap <Esc> <C-\><C-n>
+tnoremap jj <C-\><C-n>
 tnoremap <silent>:q <C-\><C-n>:call nvim_win_close(win_id, v:true)<CR>
+
