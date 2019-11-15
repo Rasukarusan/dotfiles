@@ -380,7 +380,7 @@ augroup END
 function! s:insert_shebang()
     let head = getline(1)
     if head !~ "bin"
-        :execute ':s/^/#!\/bin\/sh\r/g'
+        :execute ':s/^/#!\/usr\/bin\/env bash\r/g'
     endif
 endfunction
 
