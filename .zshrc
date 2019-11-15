@@ -984,7 +984,7 @@ alias 11='osascript ~/up_or_down_brightness.sh 0'
 alias gg='sh ~/githubAPI.sh'
 alias cw='sh ~/chatwork.sh'
 alias ctt='sh ~/chromeSelectTab.sh'
-alias stt='sh ~/fzf_sequel_pro.sh'
+alias sqq='sh ~/fzf_sequel_pro.sh'
 
 # ================================================== #
 #
