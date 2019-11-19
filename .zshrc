@@ -731,6 +731,7 @@ docker-compose up -d
 docker-compose up --force-recreate
 docker-compose stop
 docker rm
+docker rmi
 setDotfiles
 EOF`
     local arg=`echo $select_command | sed "s/docker //g"`
@@ -757,6 +758,12 @@ EOF`
                 | fzf --header "$(echo 'NAME\tCONTAINER_ID\tCREATED\tSTATUS' | column -t)" \
                 | awk '{print $2}' \
                 | xargs docker rm
+            ;;
+        'rmi' )
+            docker images \
+                | fzf \
+                | awk '{print $3}' \
+                | xargs docker rmi
             ;;
         'setDotfiles' )
             local dotfilesPath=~/docker-dotfiles
