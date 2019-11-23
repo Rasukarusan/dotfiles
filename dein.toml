@@ -187,6 +187,7 @@ hook_add = 'source ~/.config/nvim/dein_tomls/git-messenger.vim'
 # --------------------------------------------
 [[plugins]]
 repo = 'neoclide/coc.nvim'
+merged = 0
 rev = 'release'
 hook_add = 'source ~/.config/nvim/dein_tomls/coc.vim'
 
