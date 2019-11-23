@@ -69,6 +69,7 @@ filetype plugin indent on
 syntax enable
 set t_Co=256
 colorscheme jellybeans
+set mouse=a
 " 起動時の画面をスキップ(:introで表示可能)
 set shortmess+=I
 " 自動でインデントを挿入
