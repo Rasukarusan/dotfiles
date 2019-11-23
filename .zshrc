@@ -945,7 +945,9 @@ function _gitStashCommands() {
 }
 
 function _git_stash_list() {
-    git stash list
+    local stashNo=$(git stash list | fzf --preview 'echo {} | awk "{print \$1}" | tr -d ":" | xargs git stash show --color=always -p' | awk '{print $1}' | tr -d ':' )
+    [ -z "$stashNo" ] && return 130
+    git stash show --color=always -p $stashNo
 }
 
 function _git_stash_with_name() {
