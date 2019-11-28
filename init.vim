@@ -504,6 +504,27 @@ function! s:insert_template_github_readme()
 endfunction
 command! Readme call s:insert_template_github_readme()
 
+" =============================================
+" 英語のcommitメッセージ例文集を表示
+" =============================================
+function! s:show_commit_messages(str)
+    call setline('.', a:str)
+    " let command = 'cat ~/commit_messages_en.txt | grep ' . a:str
+    " call fzf#run({
+    " \ 'source': command, 
+    " \ 'sink'  : function('<SID>categorize_commit_messages'),
+    " \ 'down'  : '40%'
+    " \ })
+endfunction
+function! s:categorize_commit_messages(category)
+    call setline('.', a:category)
+endfunction
+command! CommitMessages call fzf#run({
+    \ 'source': 'cat ~/commit_messages_en.txt',
+    \ 'sink'  : function('<SID>show_commit_messages'),
+    \ 'down'  : '40%'
+    \ })
+
 " ===============Floating Windows===================== "
 set termguicolors
 set winblend=5
