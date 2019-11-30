@@ -1,5 +1,8 @@
 #!/bin/sh
-# フルスクリーンモードを有効にする
+#==================================================#
+# Xcode                                            #
+#==================================================#
+# Full screen mode enable
 defaults write com.apple.iphonesimulator AllowFullscreenMode -bool YES
-# タップした箇所を表示する
+# Show tap place
 defaults write com.apple.iphonesimulator ShowSingleTouches -bool YES
