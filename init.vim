@@ -198,6 +198,7 @@ nnoremap rit dit"0P
 " Exモードの際単語移動をVimライクにする
 cnoremap <C-h> <Left>
 cnoremap <C-l> <Right>
+cnoremap <C-a> <Home>
 " タブ移動のショートカット
 nnoremap <C-l> <ESC>gt
 nnoremap <C-h> <ESC>g<S-t>
