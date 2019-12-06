@@ -924,9 +924,8 @@ function _changeConfigLocal() {
 function _editVimFiles() {
     local nvimFiles=$(find ~/dotfiles ~/dotfiles/dein_tomls -follow -maxdepth 1  -name "*.vim")
     local deinToml=~/dotfiles/dein.toml
-    local vimrc=~/dotfiles/.vimrc
     # 文字数でソートする
-    local editFile=$(echo "$nvimFiles\n$vimrc\n$deinToml" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf)
+    local editFile=$(echo "$nvimFiles\n$deinToml" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf)
     test -z "$editFile" && return
     vim $editFile
 }
