@@ -64,6 +64,18 @@ let g:markdown_fenced_languages = [
     \ 'html'
     \]
 
+" ==============================
+"       Floating Windows
+" ==============================
+if has('nvim')
+    set termguicolors
+    set winblend=5
+    hi NormalFloat guifg=#ffffff guibg=#383838
+    tnoremap <Esc> <C-\><C-n>
+    tnoremap jj <C-\><C-n>
+    tnoremap <silent>:q <C-\><C-n>:call nvim_win_close(win_id, v:true)<CR>
+endif
+
 
 filetype plugin indent on
 syntax enable
@@ -525,12 +537,3 @@ command! CommitMessages call fzf#run({
     \ 'sink'  : function('<SID>show_commit_messages'),
     \ 'down'  : '40%'
     \ })
-
-" ===============Floating Windows===================== "
-set termguicolors
-set winblend=5
-hi NormalFloat guifg=#ffffff guibg=#383838
-tnoremap <Esc> <C-\><C-n>
-tnoremap jj <C-\><C-n>
-tnoremap <silent>:q <C-\><C-n>:call nvim_win_close(win_id, v:true)<CR>
-

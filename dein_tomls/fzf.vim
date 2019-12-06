@@ -1,7 +1,9 @@
 set rtp+=/usr/local/opt/fzf
 
 " 候補表示のwindow設定
-let g:fzf_layout = { 'window': 'call FloatingFZF()' }
+if has('nvim')
+    let g:fzf_layout = { 'window': 'call FloatingFZF()' }
+endif
 function! FloatingFZF()
     let buf = nvim_create_buf(v:false, v:true)
     let height = float2nr(&lines * 0.5)
