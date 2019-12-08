@@ -234,10 +234,11 @@ nnoremap sy byw
 " インデントショートカット
 nnoremap th <<
 nnoremap tl >>
+vnoremap th <<
+vnoremap tl >>
 
-" source ~/.vimrcを簡略化(zshのコマンドと同じに)
-command! Svim :source ~/.config/nvim/init.vim
-nnoremap rr :Svim<CR>
+" source ~/.vimrcを簡略化
+nnoremap rr :source ~/.config/nvim/init.vim<CR>
 
 " 現在開いているスクリプトを読み込む
 nnoremap S :source %<CR>
@@ -310,8 +311,7 @@ function! s:jump_to_line(value)
     let line  = substitute(lines[0], ' ','','g')
     execute ':' . line
 endfunction
-command! BLines call s:fzf_BLines(expand('%:p'))
-nmap <C-f> :BLines<CR>
+nmap <C-f> :call <SID>fzf_BLines(expand('%:p'))<CR>
 
 " =============================================
 " ファイル内関数検索
