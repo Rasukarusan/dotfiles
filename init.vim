@@ -48,6 +48,7 @@ set completeopt=menu,preview
 "    markdown内のコードシンタックスハイライト
 " ==============================
 let g:markdown_fenced_languages = [
+    \ 'sh',
     \ 'zsh',
     \ 'go',
     \ 'vim',
