@@ -709,7 +709,7 @@ function _generateRandomNumber() {
 }
 
 # 第一引数の文字列をバッジにする。tmux未対応。
-function _showBadge() {
+function _set_badge() {
     printf "\e]1337;SetBadgeFormat=%s\a"\
     $(echo -n "$1" | base64)
 }
@@ -1153,7 +1153,7 @@ alias fun='_showFunction'
 alias randomStr='_generateRandomString'
 alias randomStrNum='_generateRandomNumberStr'
 alias randomNum='_generateRandomNumber'
-alias ba='_showBadge'
+alias ba='_set_badge'
 alias dcc='_dockerCommands'
 alias scc='_editMyScript'
 alias tt='_tmux_commands'
