@@ -781,10 +781,10 @@ EOF`
 
 # 自作スクリプト編集時、fzfで選択できるようにする
 function _editMyScript() {
-    local targetFile=`(ls ~/*.sh; ls ~/.zshrc.local ~/.xvimrc) | xargs basename | fzf --height=100% --preview 'cd ~; bat --color always {}'`
-    if [ -n "$targetFile" ];then 
-        vim ~/$targetFile
-    fi
+    local targetFiles=$(find ~/scripts -follow -maxdepth 1 -name "*.sh";ls -1 ~/.zshrc.local ~/.xvimrc)
+    local selected=$(echo "$targetFiles" | fzf --preview '{bat --color always {}}')
+    [ -z "$selected" ] && return
+    vim $selected
 }
 
 # tmuxコマンド集
@@ -974,25 +974,25 @@ function _fzf_git_stash_drop() {
 #       alias-ShellScript        #
 # ============================== #
 # phpでprint_rしたものを変数定義できるようにコピー
-alias phparr='pbpaste | xargs sh ~/phparr.sh | pbcopy'
-alias rr='sh ~/redmine.sh'
-alias findColumn='sh ~/findColumn.sh'
-alias allExecute='sh ~/allDbExecute.sh'
-alias execBatch='sh ~/execBatch.sh'
-alias cl='sh ~/clipboard.sh'
-alias ch='sh ~/chromeHistory.sh'
-alias pullReqCaption='sh ~/pullReqCaption.sh'
+alias phparr='pbpaste | xargs sh ~/scripts/phparr.sh | pbcopy'
+alias rr='sh ~/scripts/redmine.sh'
+alias findColumn='sh ~/scripts/findColumn.sh'
+alias allExecute='sh ~/scripts/allDbExecute.sh'
+alias execBatch='sh ~/scripts/execBatch.sh'
+alias cl='sh ~/scripts/clipboard.sh'
+alias ch='sh ~/scripts/chromeHistory.sh'
+alias pullReqCaption='sh ~/scripts/pullReqCaption.sh'
 alias showColors='~/getColorPrintf.sh'
-alias itt='sh ~/iterm.sh'
-alias bb='sh ~/bitbucket.sh'
+alias itt='sh ~/scripts/iterm.sh'
+alias bb='sh ~/scripts/bitbucket.sh'
 alias cdf='cd $(osascript ~/finder.sh)'
 # ディスプレイ明るさを0に
 alias 00='osascript ~/up_or_down_brightness.sh 1'
 alias 11='osascript ~/up_or_down_brightness.sh 0'
-alias gg='sh ~/githubAPI.sh'
-alias cw='sh ~/chatwork.sh'
-alias ctt='sh ~/chromeSelectTab.sh'
-alias sqq='sh ~/fzf_sequel_pro.sh'
+alias gg='sh ~/scripts/githubAPI.sh'
+alias cw='sh ~/scripts/chatwork.sh'
+alias ctt='sh ~/scripts/chromeSelectTab.sh'
+alias sqq='sh ~/scripts/fzf_sequel_pro.sh'
 
 # ================================================== #
 #
