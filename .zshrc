@@ -922,7 +922,7 @@ function _changeConfigLocal() {
 
 # vim関連ファイルをfzfで選択しvimで開く
 function _editVimFiles() {
-    local nvimFiles=$(find ~/dotfiles ~/dotfiles/dein_tomls -follow -maxdepth 1  -name "*.vim")
+    local nvimFiles=$(find ~/dotfiles ~/dotfiles/dein_tomls ~/.vim/myautoload -follow -maxdepth 1  -name "*.vim")
     local deinToml=~/dotfiles/dein.toml
     # 文字数でソートする
     local editFile=$(echo "$nvimFiles\n$deinToml" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf)
