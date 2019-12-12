@@ -976,6 +976,19 @@ function _fzf_git_stash_drop() {
     git stash drop "${stashNo}"
 }
 
+function _clipboardDiff() {
+    local PATH_CLIP_LOG_DIR=~/.cliplog
+    local clipLogs=($(ls -t $PATH_CLIP_LOG_DIR | fzf --prompt "CHOOSE" --preview "cat $PATH_CLIP_LOG_DIR/{}" --preview-window=right:80%))
+    [ ${#clipLogs[@]} -ne 2 ] && return
+    local selectFiles=''
+    for clipLog in ${clipLogs[@]}; do
+        selectFiles="${selectFiles} ${PATH_CLIP_LOG_DIR}/${clipLog}"
+    done
+    echo "$selectFiles"
+    [ -z "$selectFiles" ] && return
+    vimdiff $(echo "$selectFiles")
+}
+
 # ================================================== #
 #
 # ============================== #
@@ -1171,6 +1184,7 @@ alias oaa='_openLaunchedApp'
 alias dgg='_dangerGitCommands'
 alias vimrc='_editVimFiles'
 alias gss='_gitStashCommands'
+alias cld='_clipboardDiff'
 
 # zshrc.localを読み込む(行末に書くことで設定を上書きする)
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
