@@ -787,6 +787,14 @@ function _editMyScript() {
     vim $selected
 }
 
+# 自作スクリプトをfzfで選んで実行
+function _sourceMyScript() {
+    local targetFiles=$(find ~/scripts -follow -maxdepth 1 -name "*.sh")
+    local selected=$(echo "$targetFiles" | fzf --preview '{bat --color always {}}')
+    [ -z "$selected" ] && return
+    sh $selected
+}
+
 # tmuxコマンド集
 function _tmux_commands() {
     local commands=(
@@ -1156,6 +1164,7 @@ alias randomNum='_generateRandomNumber'
 alias ba='_set_badge'
 alias dcc='_dockerCommands'
 alias scc='_editMyScript'
+alias ss='_sourceMyScript'
 alias tt='_tmux_commands'
 alias agg="_agAndVim"
 alias oaa='_openLaunchedApp'
