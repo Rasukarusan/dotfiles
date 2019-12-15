@@ -420,59 +420,59 @@ function _process_kill(){
     done
 }
 
-function _checkout_and_pull() {
-    local branches=(`git branch -a | tr -d " " | fzf --prompt "CHECKOUT BRANCH>" --preview "git log {}" | sed -e "s/^\*\s*//g" | perl -pe "s/remotes\/origin\///g"`)
-    for branch in ${branches[@]}
-    do
-        git checkout $branch
-        git pull origin $branch
-    done
-}
-# git checkout fileをfzfで選択
-function _git_checkout(){
-    local files=$(git ls-files --modified | fzf --prompt "CHECKOUT FILES>" --preview "git diff --color=always {}")
-    if [ -n "$files" ]; then
-        git checkout ${=files}
-    fi
-}
-
 # git add をfzfでdiffを見ながら選択
 function _git_add(){
-    local files=$(git ls-files --modified | fzf --prompt "ADD FILES>" --preview "git diff --color=always {}")
+    local path_working_tree_root=$(git rev-parse --show-cdup)
+    [ "$path_working_tree_root" = '' ] && path_working_tree_root=.
+    local files=$(git -C $path_working_tree_root ls-files --modified --others \
+        | fzf --prompt "ADD FILES>" --preview "git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy")
     if [ -n "$files" ]; then
-        git add ${=files}
-    fi
-}
-
-# Untrackedファイルをfzfで見ながらgit add
-function _git_add_untracked_files() {
-    local files=$(git ls-files --others --exclude-standard | fzf --prompt "ADD FILES>" --preview "bat --color always {}")
-    if [ -n "$files" ]; then
-        git add ${=files}
+        git add $(git rev-parse --show-cdup)${=files}
     fi
 }
 
 # git add -pをfzfでdiffを見ながら選択
 function _git_add-p(){
-    local files=$(git ls-files --modified | fzf --prompt "ADD FILES>" --preview "git diff --color=always {} | diff-so-fancy")
+    local path_working_tree_root=$(git rev-parse --show-cdup)
+    [ "$path_working_tree_root" = '' ] && path_working_tree_root=.
+    local files=$(git -C $path_working_tree_root ls-files --modified \
+        | fzf --prompt "ADD FILES>" --preview "git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy")
     if [ -n "$files" ]; then
-        git add -p ${=files}
+        git add -p $(git rev-parse --show-cdup)${=files}
     fi
 }
 
 # git diff をfzfで選択
 function _git_diff(){
-    local files=$(git ls-files --modified | fzf --prompt "SELECT FILES>" --preview 'git diff --color=always {} | diff-so-fancy')
+    local path_working_tree_root=$(git rev-parse --show-cdup)
+    [ "$path_working_tree_root" = '' ] && path_working_tree_root=.
+    local files=$(git -C $path_working_tree_root ls-files --modified \
+        | fzf --prompt "SELECT FILES>" --preview 'git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy')
     if [ -n "$files" ]; then
         echo "$files" | tr -d "\n" | pbcopy
-        git diff -b $files
+        git diff -b $(git rev-parse --show-cdup)$files
     fi
 }
+
+# git checkout fileをfzfで選択
+function _git_checkout(){
+    local path_working_tree_root=$(git rev-parse --show-cdup)
+    [ "$path_working_tree_root" = '' ] && path_working_tree_root=.
+    local files=$(git -C $path_working_tree_root ls-files --modified \
+        | fzf --prompt "CHECKOUT FILES>" --preview "git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy")
+    if [ -n "$files" ]; then
+        git checkout $(git rev-parse --show-cdup)${=files}
+    fi
+}
+
 # git resetをfzfでdiffを見ながら選択
 function _git_reset() {
-    local files=$(git ls-files --modified | fzf --prompt "RESET FILES>" --preview "git diff --color=always {}")
+    local path_working_tree_root=$(git rev-parse --show-cdup)
+    [ "$path_working_tree_root" = '' ] && path_working_tree_root=.
+    local files=$(git -C $path_working_tree_root ls-files --modified \
+        | fzf --prompt "RESET FILES>" --preview "git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy")
     if [ -n "$files" ]; then
-        git reset ${=files}
+        git reset $(git rev-parse --show-cdup)${=files}
     fi
 }
 
@@ -1130,10 +1130,9 @@ alias selenium-up='_run_selenium_server'
 alias jump='_jump'
 alias lk='_look'
 alias gro='_git_remote_open'
-alias -g tigg='_git_log_preview_open'
-alias -g tigd='_git_diff_preview_copy'
+alias tigg='_git_log_preview_open'
+alias tigd='_git_diff_preview_copy'
 alias pspk='_process_kill'
-alias cop='_checkout_and_pull'
 alias gcpp='_git_checkout'
 alias gadd='_git_add'
 alias gapp='_git_add-p'
