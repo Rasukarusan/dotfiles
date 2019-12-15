@@ -989,6 +989,16 @@ function _clipboardDiff() {
     vimdiff $(echo "$selectFiles")
 }
 
+# デスクトップ上アイコンの表示/非表示を切り替える
+function _toggle_desktop_icon_display() {
+    local isDisplay=$(defaults read com.apple.finder CreateDesktop)
+    if [ $isDisplay -eq 1 ]; then
+        defaults write com.apple.finder CreateDesktop -boolean false && killall Finder
+    else
+        defaults write com.apple.finder CreateDesktop -boolean true && killall Finder
+    fi
+}
+
 # ================================================== #
 #
 # ============================== #
@@ -1185,6 +1195,7 @@ alias dgg='_dangerGitCommands'
 alias vimrc='_editVimFiles'
 alias gss='_gitStashCommands'
 alias cld='_clipboardDiff'
+alias dt='_toggle_desktop_icon_display'
 
 # zshrc.localを読み込む(行末に書くことで設定を上書きする)
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
