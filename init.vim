@@ -21,8 +21,6 @@ endif
 " ===============グローバル設定関連===================== "
 " 別ファイルのvimの設定を読み込む
 runtime! myautoload/*.vim
-" runtimeだと読み込めなかったためsourceで対応
-source ~/.vim/myautoload/function.vim
 
 " cmd+vでペーストしても勝手にインデントしない
 if &term =~ "xterm"
