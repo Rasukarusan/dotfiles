@@ -368,15 +368,17 @@ function _jump(){
 # カレントディレクトリ以下をプレビューし選択して開く
 function _look() {
     if [ "$1" = "-a" ]; then
-        local find_result=`find . -type f -o -type l`
+        local find_result=$(find . -type f -o -type l)
     else
-        local find_result=`find . -maxdepth 1 -type f -o -type l`
+        local find_result=$(find . -maxdepth 1 -type f -o -type l)
     fi
-    local target_file=`echo "$find_result" | sed 's/\.\///g' | grep -v -e ".jpg" -e ".gif" -e ".png" -e ".jpeg" | fzf --prompt "vim " --preview 'bat --color always {}'`
-
-    if [ "$target_file" = "" ]; then
-        return
-    fi
+    local target_file=$(echo "$find_result" \
+        | sed 's/\.\///g' \
+        | grep -v -e '.jpg' -e '.gif' -e '.png' -e '.jpeg' \
+        | sort -r \
+        | fzf --prompt 'vim ' --preview 'bat --color always {}'
+    )
+    [ "$target_file" = "" ] && return
     vim $target_file
 }
 # remoteに設定されているURLを開く
