@@ -188,21 +188,6 @@ function tenki() {
     esac
 }
 
-# 1~100の中でXの倍数のみを出力
-function getMultiple() {
-    if [ "$1" = "" ]; then 
-        echo "Usage: getMultiple [integer]"
-        return 
-    fi
-    for i in `seq 1 100`
-    do
-        local num=`echo "$i%$1" | bc`
-        if [ $num -eq 0 ]; then
-            echo $i
-        fi
-    done
-}
-
 # vagrantのコマンドをfzfで選択
 function vgg() {
 local select_command=`cat << EOF | fzf
@@ -243,7 +228,7 @@ EOF`
 }
 
 # コマンド実行配下にパスワードなど漏れると危険な単語が入力されていないかをチェック
-function checkDangerInput() {
+function check_danger_input() {
     for danger_word in `cat ~/danger_words.txt`; do
     echo $danger_word
         ag --ignore-dir=vendor $danger_word ./*
@@ -405,7 +390,7 @@ function _git_remote_open() {
     open $url
 }
 # 現在のブランチをoriginにpushする
-function _gitPushFzf() {
+function _git_push_fzf() {
     local remote=`git remote | fzf`
     git push ${remote} $(git branch | grep "*" | sed -e "s/^\*\s*//g")
 }
@@ -632,7 +617,7 @@ function _move_posted_articles() {
         tail -n 1 ${ARTICLE_DIR}/${file} | grep $POSTED_MARK > /dev/null
         # 投稿が完了したファイルを別ディレクトリに移す
         if [ $? -eq 0 ]; then 
-            mv ${ARTICLE_DIR}/${file} $POSTED_DIR/
+            git mv ${ARTICLE_DIR}/${file} $POSTED_DIR/
             printf "\e[33m${file} is moved!\e[m\n"
         fi
     done
@@ -839,10 +824,10 @@ function _open_launched_app() {
 # git危険コマンド集
 function _danger_git_commands() {
     local actions=(
-        '特定ファイルと関連する履歴を全て削除:_deleteAllHistoriesByFile'
-        'masterのコミットを全て削除:_deleteAllGitLog'
-        'コミットのAuthorを全て書き換える:_changeAuthor'
-        'ローカル(特定リポジトリ)のConfigを変更:_changeConfigLocal'
+        '特定ファイルと関連する履歴を全て削除:_delete_all_histories_by_file'
+        'masterのコミットを全て削除:_delete_all_git_log'
+        'コミットのAuthorを全て書き換える:_change_author'
+        'ローカル(特定リポジトリ)のConfigを変更:_change_config_local'
     )
     local action=$(echo "${actions[@]}" | tr ' ' '\n' | awk -F ':' '{print $1}' | fzf)
     test -z "$action" && return
@@ -851,7 +836,7 @@ function _danger_git_commands() {
 }
 
 # 特定ファイルの履歴を全て削除(ファイルも削除されるので注意)
-function _deleteAllHistoriesByFile() {
+function _delete_all_histories_by_file() {
     local targetFile=$(find . -type f -not -path "./.git/*" -not -path "./Carthage/*" -not -path "./*vendor/*" | fzf)
     test -z "$targetFile" && return
     git filter-branch -f --tree-filter "rm -f $targetFile" HEAD
@@ -859,7 +844,7 @@ function _deleteAllHistoriesByFile() {
 }
 
 # masterのコミットを全て削除する(自分のPublicリポジトリにpushする際使用)
-function _deleteAllGitLog() {
+function _delete_all_git_log() {
     local PC_ENV=`cat ~/account.json | jq -r '.pc_env["'$USER'"]'` 
     echo $PC_ENV
     # プライベートPCでのみ実行する
@@ -882,7 +867,7 @@ function _deleteAllGitLog() {
 }
 
 # コミットのAuthor、Committerを全て変更
-function _changeAuthor() {
+function _change_author() {
     local USER_NAME=`cat ~/account.json | jq -r '.github["user_name"]'` 
     local MAIL_ADDR=`cat ~/account.json | jq -r '.github["mail_addr"]'` 
     test "$USER_NAME" = "null" || test "$MAIL_ADDR" = "null" && return
@@ -903,7 +888,7 @@ function _changeAuthor() {
 }
 
 # ローカル(特定リポジトリ)のユーザー名,メールアドレスを変更
-function _changeConfigLocal() {
+function _change_config_local() {
     local USER_NAME=`cat ~/account.json | jq -r '.github["user_name"]'` 
     local MAIL_ADDR=`cat ~/account.json | jq -r '.github["mail_addr"]'` 
     test "$USER_NAME" = "null" || test "$MAIL_ADDR" = "null" && return
@@ -1050,7 +1035,6 @@ alias js='osascript -l JavaScript'
 alias clear='stty sane;clear'
 alias gd='git diff -b'
 alias gdc='git diff -b --cached'
-alias -g po='_gitPushFzf'
 # 現在のブランチをpullする
 alias -g gpl='git pull --rebase origin $(git branch | grep "*" | sed -e "s/^\*\s*//g")'
 alias chromium='/Applications/Chromium.app/Contents/MacOS/Chromium --headless --disable-gpu'
@@ -1152,10 +1136,10 @@ alias pspk='_process_kill'
 alias cop='_checkout_and_pull'
 alias gcpp='_git_checkout'
 alias gadd='_git_add'
-alias gaut='_git_add_untracked_files'
 alias gapp='_git_add-p'
 alias gdd='_git_diff'
 alias grpp='_git_reset'
+alias po='_git_push_fzf'
 alias fgg='_fgg'
 alias noti='_noti'
 alias upd='_update_dotfile'
@@ -1189,4 +1173,3 @@ alias dt='_toggle_desktop_icon_display'
 
 # zshrc.localを読み込む(行末に書くことで設定を上書きする)
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
-
