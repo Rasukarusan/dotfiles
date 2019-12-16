@@ -424,7 +424,7 @@ function _process_kill(){
 function _git_add(){
     local path_working_tree_root=$(git rev-parse --show-cdup)
     [ "$path_working_tree_root" = '' ] && path_working_tree_root=.
-    local files=$(git -C $path_working_tree_root ls-files --modified --others \
+    local files=$(git -C $path_working_tree_root ls-files --modified --exclude-standard --others \
         | fzf --prompt "ADD FILES>" --preview "git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy")
     if [ -n "$files" ]; then
         git add $(git rev-parse --show-cdup)${=files}
