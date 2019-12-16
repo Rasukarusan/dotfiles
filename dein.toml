@@ -204,7 +204,7 @@ repo = 'SirVer/ultisnips'
 repo = 'honza/vim-snippets'
 
 # --------------------------------------------
-# glacambre/firenvim - ブラウザでNeoVim
+# firenvim - ブラウザでNeoVim
 # --------------------------------------------
 [[plugins]]
 repo = 'glacambre/firenvim'
@@ -212,3 +212,11 @@ hook_add = 'source ~/.config/nvim/dein_tomls/firenvim.vim'
 hook_post_update = '''
   call firenvim#install(0)
 '''
+
+# --------------------------------------------
+# gitの差分を+ - で表示
+# --------------------------------------------
+[[plugins]]
+repo = 'airblade/vim-gitgutter'
+hook_add = 'source ~/.config/nvim/dein_tomls/vim-gitgutter.vim'
+
