@@ -73,7 +73,7 @@ if has('nvim')
     set winblend=5
     hi NormalFloat guifg=#ffffff guibg=#383838
     tnoremap <Esc> <C-\><C-n>
-    tnoremap jj <C-\><C-n>
+    " tnoremap jj <C-\><C-n>
     tnoremap <silent>:q <C-\><C-n>:call nvim_win_close(win_id, v:true)<CR>
 endif
 
