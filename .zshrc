@@ -910,8 +910,9 @@ function _change_config_local() {
 function _edit_vim_files() {
     local nvimFiles=$(find ~/dotfiles ~/dotfiles/dein_tomls ~/.config/nvim/myautoload -follow -maxdepth 1  -name "*.vim")
     local deinToml=~/dotfiles/dein.toml
+    local xvimrc=~/dotfiles/.xvimrc
     # 文字数でソートする
-    local editFile=$(echo "$nvimFiles\n$deinToml" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf)
+    local editFile=$(echo "$nvimFiles\n$deinToml\n$xvimrc" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf)
     test -z "$editFile" && return
     vim $editFile
 }
