@@ -73,7 +73,7 @@ nnoremap Y v$y
 " yyで行コピーができないので代替
 nnoremap yy ^v$y
 " pでpasteすると改行されないので改行してからペーストするようにする
-nnoremap p o<Esc>p
+" nnoremap p o<Esc>p
 " syで単語コピー
 nnoremap sy byw
 " コメントアウト
