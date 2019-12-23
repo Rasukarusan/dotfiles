@@ -2,12 +2,12 @@ if &compatible
   set nocompatible
 endif
 
-set runtimepath+=$HOME/.config/nvim/dein/repos/github.com/Shougo/dein.vim
-let s:rc_dir    = expand('~/.config/nvim')
+set runtimepath+=$XDG_CONFIG_HOME/nvim/dein/repos/github.com/Shougo/dein.vim
+let s:rc_dir    = expand($XDG_CONFIG_HOME.'/nvim')
 let s:toml      = s:rc_dir . '/dein.toml'
 
-if dein#load_state(expand($HOME.'/.config/nvim/dein'))
-    call dein#begin(expand($HOME.'/.config/nvim/dein'))
+if dein#load_state(expand($XDG_CONFIG_HOME.'/nvim/dein'))
+    call dein#begin(expand($XDG_CONFIG_HOME.'/nvim/dein'))
     call dein#load_toml(s:toml)
     call dein#end()
     call dein#save_state()
