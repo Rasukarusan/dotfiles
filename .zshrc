@@ -908,7 +908,7 @@ function _change_config_local() {
 
 # vim関連ファイルをfzfで選択しvimで開く
 function _edit_vim_files() {
-    local nvimFiles=$(find ~/dotfiles ~/dotfiles/dein_tomls ~/.config/nvim/myautoload -follow -maxdepth 1  -name "*.vim")
+    local nvimFiles=$(find ~/dotfiles ~/dotfiles/dein_tomls $XDG_CONFIG_HOME/nvim/myautoload -follow -maxdepth 1  -name "*.vim")
     local deinToml=~/dotfiles/dein.toml
     local xvimrc=~/dotfiles/.xvimrc
     # 文字数でソートする
