@@ -127,10 +127,10 @@ source /Users/$(whoami)/.phpbrew/bashrc
 # ================================================== #
 #
 # ============================== #
-#            Function            #
+#                       #
 # ============================== #
 # 囲まれた文字のみを抽出
-function tgrep() {
+tgrep() {
     # 正規表現の特殊文字をエスケープ
     local escape='
         s/*/\\\*/g;
@@ -152,7 +152,7 @@ function tgrep() {
 }
 
 # seleniumの操作リスト
-function sell() {
+sell() {
 local select_command=`cat << EOF | fzf
 selenium-status
 selenium-log
@@ -163,7 +163,7 @@ EOF`
 }
 
 # herokuへデプロイするのを楽に。第一引数にcommitメッセージを付与できる。指定しない場合は"更新"と入る
-function ghero() {
+ghero() {
     if [ "$1" = "" ]; then
         1="更新"
     fi
@@ -173,14 +173,14 @@ function ghero() {
 }
 
 # masterブランチを最新にする
-function update_master() {
+update_master() {
     git checkout master
     git fetch --all
     git pull --rebase origin master
 }
 
 # お天気情報を出力する
-function tenki() {
+tenki() {
     case "$1" in
         "-c") curl -4 http://wttr.in/$2 ;;
           "") finger Kanagawa@graph.no ;;
@@ -189,7 +189,7 @@ function tenki() {
 }
 
 # vagrantのコマンドをfzfで選択
-function vgg() {
+vgg() {
 local select_command=`cat << EOF | fzf
 vagrant ssh
 vagrant up
@@ -228,7 +228,7 @@ EOF`
 }
 
 # コマンド実行配下にパスワードなど漏れると危険な単語が入力されていないかをチェック
-function check_danger_input() {
+check_danger_input() {
     for danger_word in `cat ~/danger_words.txt`; do
     echo $danger_word
         ag --ignore-dir=vendor $danger_word ./*
@@ -236,7 +236,7 @@ function check_danger_input() {
 }
 
 # 文字画像を生成。第一引数に生成したい文字を指定。
-function create_bg_img() {
+create_bg_img() {
     local sizeList=(75x75 100x100 320x240 360x480 500x500 600x390 640x480 720x480 1000x1000 1024x768 1280x960)
     local sizes=($(echo ${sizeList} | tr ' ' '\n' | fzf))
     local backgroundColor="#000000"
@@ -259,7 +259,7 @@ function create_bg_img() {
 }
 
 # gmailを既読を付けずにタイトルだけ表示
-function gmail() {
+gmail() {
     local USER_ID=`cat ~/account.json | jq -r '.gmail.user_id'` 
     local PASS=`cat ~/account.json | jq -r '.gmail.pass'` 
     curl -u ${USER_ID}:${PASS} --silent "https://mail.google.com/mail/feed/atom" \
@@ -269,7 +269,7 @@ function gmail() {
 }
 
 # 定義済み関数をfzfで中身を見ながら出力する
-function func() {
+func() {
     local func=$(
        typeset -f \
        | grep ".*() {$" \
@@ -284,16 +284,16 @@ function func() {
 }
 
 # awkの省略形。command | wk 2 のような形で指定した列を出力する
-function wk() {
+wk() {
     local column=${1:-1} 
     awk -v column="${column}" '{print $column}'
 }
 
 # cddの履歴クリーン。存在しないPATHを履歴から削除
-function clean_cdr_cache_history() {
+clean_cdr_cache_history() {
     # while文はforkされて別プロセスで実行されるため、while文中の変数が使えない
     # そのため別関数として切り出す
-    local function getDeleteNumbers() {
+    local getDeleteNumbers() {
         local delete_line_number=1
         local delete_line_numbers=()
         while read line; do
@@ -322,7 +322,7 @@ function clean_cdr_cache_history() {
 #         Function-alias         #
 # ============================== #
 # fzf版cdd
-function _fzf-cdr() {
+_fzf-cdr() {
     local target_dir=$(cdr -l  \
         | sed 's/^[^ ][^ ]*  *//' \
         | fzf --bind 'ctrl-t:execute-silent(echo {} | sed "s/~/\/Users\/$(whoami)/g" | xargs -I{} tmux split-window -h -c {})+abort' \
@@ -336,7 +336,7 @@ function _fzf-cdr() {
 }
 # 英語のmanを表示する
 #alias man='env LANG=C man'
-function _run_selenium_server() {
+_run_selenium_server() {
     local LOG_DIR=~/.selenium-log
     if [ ! -e $LOG_DIR ]; then 
         mkdir $LOG_DIR
@@ -347,14 +347,14 @@ function _run_selenium_server() {
         java -jar /Library/java/Extensions/selenium-server-standalone-3.4.0.jar > $LOG_DIR/$today.log 2>&1 &
     fi
 }
-function _tail_latest_selenium_log() {
+_tail_latest_selenium_log() {
     local LOG_DIR=~/.selenium-log
     local latest_selenium_log=`echo $(ls -t $LOG_DIR | head -n 1)`
     tail -f $LOG_DIR/$latest_selenium_log
 }
 
 # ag & view
-function _jump(){
+_jump(){
     if [ -n "$1" ]; then
         #pathと書くと$PATHと被ってエラーが出るので注意
         local file=$(ag $1 | fzf | awk -F ':' '{printf  $1 " +" $2}'| sed -e 's/\+$//')
@@ -366,7 +366,7 @@ function _jump(){
 }
 
 # カレントディレクトリ以下をプレビューし選択して開く
-function _look() {
+_look() {
     if [ "$1" = "-a" ]; then
         local find_result=$(find . -type f -o -type l)
     else
@@ -382,7 +382,7 @@ function _look() {
     vim $target_file
 }
 # remoteに設定されているURLを開く
-function _git_remote_open() {
+_git_remote_open() {
     local remote=$(git remote show | fzf)
     local url=$(git remote get-url $remote)
     if [ "$url" = '' ]; then; return; fi
@@ -392,12 +392,12 @@ function _git_remote_open() {
     open $url
 }
 # 現在のブランチをoriginにpushする
-function _git_push_fzf() {
+_git_push_fzf() {
     local remote=`git remote | fzf`
     git push ${remote} $(git branch | grep "*" | sed -e "s/^\*\s*//g")
 }
 # git logをpreviewで差分を表示する
-function _git_log_preview_open() {
+_git_log_preview_open() {
     local option=''
     if [ "$1" = "-S" ];then
         option="-S"
@@ -408,12 +408,12 @@ function _git_log_preview_open() {
     fi
 }
 # 差分のあるファイルをfzfでプレビューしながら一覧に表示し、ENTERでlessモード&ファイルパスをクリップボードに
-function _git_diff_preview_copy() {
+_git_diff_preview_copy() {
     local target_diff=`git diff $(git diff --name-only | fzf --prompt "CHECKOUT BRANCH>" --preview "git diff --color=always {}")`
     echo $target_diff | grep "\-\-\- a" | sed "s/--- a\///g" | tr -d "\n" | pbcopy
 }
 # fzfを使ってプロセスKILL
-function _process_kill(){
+_process_kill(){
     local process=(`ps aux | awk '{print $2,$9,$11,$12}' | fzf | awk '{print $1}'`)
     echo $process | pbcopy
     for item in ${process[@]}
@@ -423,7 +423,7 @@ function _process_kill(){
 }
 
 # git add をfzfでdiffを見ながら選択
-function _git_add(){
+_git_add(){
     local path_working_tree_root=$(git rev-parse --show-cdup)
     [ "$path_working_tree_root" = '' ] && path_working_tree_root=.
     local files=$(git -C $path_working_tree_root ls-files --modified --exclude-standard --others \
@@ -434,7 +434,7 @@ function _git_add(){
 }
 
 # git add -pをfzfでdiffを見ながら選択
-function _git_add-p(){
+_git_add-p(){
     local path_working_tree_root=$(git rev-parse --show-cdup)
     [ "$path_working_tree_root" = '' ] && path_working_tree_root=.
     local files=$(git -C $path_working_tree_root ls-files --modified \
@@ -445,7 +445,7 @@ function _git_add-p(){
 }
 
 # git diff をfzfで選択
-function _git_diff(){
+_git_diff(){
     local path_working_tree_root=$(git rev-parse --show-cdup)
     [ "$path_working_tree_root" = '' ] && path_working_tree_root=.
     local files=$(git -C $path_working_tree_root ls-files --modified \
@@ -457,7 +457,7 @@ function _git_diff(){
 }
 
 # git checkout fileをfzfで選択
-function _git_checkout(){
+_git_checkout(){
     local path_working_tree_root=$(git rev-parse --show-cdup)
     [ "$path_working_tree_root" = '' ] && path_working_tree_root=.
     local files=$(git -C $path_working_tree_root ls-files --modified \
@@ -468,7 +468,7 @@ function _git_checkout(){
 }
 
 # git resetをfzfでdiffを見ながら選択
-function _git_reset() {
+_git_reset() {
     local path_working_tree_root=$(git rev-parse --show-cdup)
     [ "$path_working_tree_root" = '' ] && path_working_tree_root=.
     local files=$(git -C $path_working_tree_root ls-files --modified \
@@ -479,7 +479,7 @@ function _git_reset() {
 }
 
 # fgをfzfで
-function _fgg() {
+_fgg() {
     local wc=$(jobs | grep -c ^)
     if [ $wc -ne 0 ]; then
         local job=$(jobs | awk -F "suspended" "{print $1 $2}"|sed -e "s/\-//g" -e "s/\+//g" -e "s/\[//g" -e "s/\]//g" | grep -v pwd | fzf | awk "{print $1}")
@@ -491,7 +491,7 @@ function _fgg() {
 }
 
 # コマンド完了時に通知を受け取る
-function _noti() {
+_noti() {
     local msg=$1
     if [ -z "$msg" ]; then
         msg='コマンド完了'
@@ -499,7 +499,7 @@ function _noti() {
     terminal-notifier -message "$msg"
 }
 # あらかじめ指定したGitディレクトリを全て最新にする
-function _update_dotfile() {
+_update_dotfile() {
     for targetDir in ${MY_TARGET_GIT_DIR[@]}; do 
         printf "\e[33m`basename ${targetDir}`\e[m\n"
         git -C ${targetDir} pull origin master
@@ -507,7 +507,7 @@ function _update_dotfile() {
     done
 }
 # あらかじめ指定したGitディレクトリを全てpushする
-function _push_dotfile() {
+_push_dotfile() {
     for targetDir in ${MY_TARGET_GIT_DIR[@]}; do 
         printf "\e[33m`basename ${targetDir}`\e[m\n"
         git -C ${targetDir} add -A
@@ -517,7 +517,7 @@ function _push_dotfile() {
     done
 }
 # あらかじめ指定したGitディレクトリのgit statusを表示
-function _show_git_status_dotfile() {
+_show_git_status_dotfile() {
     for targetDir in ${MY_TARGET_GIT_DIR[@]}; do 
         printf "\e[33m`basename ${targetDir}`\e[m\n"
         git -C ${targetDir} status
@@ -525,7 +525,7 @@ function _show_git_status_dotfile() {
     done
 }
 # 選択したディレクトリのgit diffを表示
-function _preview_my_git_diff() {
+_preview_my_git_diff() {
     local target_dir=$(echo ${MY_TARGET_GIT_DIR[@]} | tr ' ' '\n' | fzf --preview 'git -C {} diff --color=always')
     if [ -z "$target_dir" ]; then 
         return
@@ -533,7 +533,7 @@ function _preview_my_git_diff() {
     git -C $target_dir add -p && git -C $target_dir commit
 }
 # 全テーブル検索
-function _findValue() {
+_findValue() {
     # 現在使用している端末のtty
     local currentTerminal=`tty`
     # 使用していないが開いている端末のtty
@@ -550,11 +550,11 @@ function _findValue() {
     getTable
 }
 # bcコマンドを簡単にかつ小数点時に.3333となるのを0.3333に直す(0を付け足す)
-function _bcc() {
+_bcc() {
     echo "scale=2;$1" | bc | sed 's/^\./0\./g'
 }
 # agの結果をfzfで絞り込み選択するとvimで開く
-function _ag_and_vim() {
+_ag_and_vim() {
     if [ -z "$1" ]; then
         echo 'Usage: agg PATTERN'
         return 0
@@ -569,25 +569,25 @@ function _ag_and_vim() {
 
 
 # ファイルパス:行番号のようなものをvimで開く
-function viml() {
+viml() {
     local file_path=`pbpaste | awk -F ':' '{print $1}'`
     local line_num=`pbpaste | awk -F ':' '{print $2}'`
     vim $file_path +$line_num
 }
 
 # terminal上からGoogle検索
-function _search_by_google() {
+_search_by_google() {
     # 第一引数がない場合はpbpasteの中身を検索単語とする
     [ -z "$1" ] && searchWord=`pbpaste` || searchWord=$1
     open https://www.google.co.jp/search\?q\=$searchWord
 }
 
-function _show_mail_log() {
+_show_mail_log() {
     log stream --predicate '(process == "smtpd") || (process == "smtp")' --info
 }
 
 # 記事メモコマンド
-function _write_article() {
+_write_article() {
     local ARTICLE_DIR=/Users/`whoami`/Desktop/ru-she-1nian-mu/articles
     local article=`ls ${ARTICLE_DIR}/*.md | xargs basename | fzf`
 
@@ -606,7 +606,7 @@ function _write_article() {
     fi
 }
 # 投稿した記事を別ディレクトリに移動
-function _move_posted_articles() {
+_move_posted_articles() {
     # 投稿完了を意味する目印
     local POSTED_MARK='完'
     # 下書き記事の保存場所
@@ -626,7 +626,7 @@ function _move_posted_articles() {
 }
 
 # Redmine記法からmarkdown形式へ変換
-function _redmine_to_markdown() {
+_redmine_to_markdown() {
     sed "s/^# /1. /g" | \
     sed "s/h2./##/g"  | \
     sed "s/h3./###/g" | \
@@ -635,7 +635,7 @@ function _redmine_to_markdown() {
 }
 
 # markdown記法からRedmine形式へ変換
-function _markdown_to_redmine() {
+_markdown_to_redmine() {
     local converted=$(pbpaste | \
     sed "s/^[0-9]\. /# /g" | \
     sed "s/###/h3./g" | \
@@ -655,7 +655,7 @@ function _markdown_to_redmine() {
 }
 
 # 定義済みの関数を表示
-function _show_function() {
+_show_function() {
     cmd=`alias | fzf` 
     if [ -z "$cmd" ]; then 
         return
@@ -668,33 +668,33 @@ function _show_function() {
 }
 
 # ランダムな文字列を生成。第一引数に桁数を指定。デフォルトは10。
-function _generate_random_string() {
+_generate_random_string() {
     local length=${1:-10}
     cat /dev/urandom | base64 | fold -w $length | head -n 1
 }
 
 # ランダムな数値文字列を生成。第一引数に桁数を指定。デフォルトは4。
 # 乱数ではなく数値文字列であることに注意。 ex.) "0134"
-function _generate_random_number_str() {
+_generate_random_number_str() {
     local length=${1:-4}
     od -vAn -to1 </dev/urandom  | tr -d " " | fold -w $length | head -n 1
 }
 
 # 指定範囲内のランダムな整数を生成。第一引数に範囲を指定。デフォルトは100。
-function _generate_random_number() {
+_generate_random_number() {
     local range=${1:-100}
     awk 'BEGIN{srand();print int(rand() * '"${range}"')}'
 }
 
 # 第一引数の文字列をバッジにする。tmux未対応。
-function _set_badge() {
+_set_badge() {
     printf "\e]1337;SetBadgeFormat=%s\a"\
     $(echo -n "$1" | base64)
 }
 
 
 # Dockerコマンドをfzfで選択
-function _docker_commands() {
+_docker_commands() {
     local select_command=`cat << EOF | fzf
 docker exec
 docker logs
@@ -758,7 +758,7 @@ EOF`
 }
 
 # 自作スクリプト編集時、fzfで選択できるようにする
-function _edit_my_script() {
+_edit_my_script() {
     local targetFiles=$(find ~/scripts -follow -maxdepth 1 -name "*.sh";ls -1 ~/.zshrc.local ~/.xvimrc)
     local selected=$(echo "$targetFiles" | fzf --preview '{bat --color always {}}')
     [ -z "$selected" ] && return
@@ -766,7 +766,7 @@ function _edit_my_script() {
 }
 
 # 自作スクリプトをfzfで選んで実行
-function _source_my_script() {
+_source_my_script() {
     local targetFiles=$(find ~/scripts -follow -maxdepth 1 -name "*.sh")
     local selected=$(echo "$targetFiles" | fzf --preview '{bat --color always {}}')
     [ -z "$selected" ] && return
@@ -774,7 +774,7 @@ function _source_my_script() {
 }
 
 # tmuxコマンド集
-function _tmux_commands() {
+_tmux_commands() {
     local commands=(
         'rename-window'
         'man'
@@ -817,14 +817,14 @@ function _tmux_commands() {
 }
 
 # 起動中のアプリを表示、選択して起動する
-function _open_launched_app() {
+_open_launched_app() {
     local app=$(ps aux | awk -F '/' '{print "/"$2"/"$3}' | grep Applications | sort -u | sed 's/\/Applications\///g' | fzf ) 
     test -z "$app" && return
     open "/Applications/$app"
 }
 
 # git危険コマンド集
-function _danger_git_commands() {
+_danger_git_commands() {
     local actions=(
         '特定ファイルと関連する履歴を全て削除:_delete_all_histories_by_file'
         'masterのコミットを全て削除:_delete_all_git_log'
@@ -838,7 +838,7 @@ function _danger_git_commands() {
 }
 
 # 特定ファイルの履歴を全て削除(ファイルも削除されるので注意)
-function _delete_all_histories_by_file() {
+_delete_all_histories_by_file() {
     local targetFile=$(find . -type f -not -path "./.git/*" -not -path "./Carthage/*" -not -path "./*vendor/*" | fzf)
     test -z "$targetFile" && return
     git filter-branch -f --tree-filter "rm -f $targetFile" HEAD
@@ -846,7 +846,7 @@ function _delete_all_histories_by_file() {
 }
 
 # masterのコミットを全て削除する(自分のPublicリポジトリにpushする際使用)
-function _delete_all_git_log() {
+_delete_all_git_log() {
     local PC_ENV=`cat ~/account.json | jq -r '.pc_env["'$USER'"]'` 
     echo $PC_ENV
     # プライベートPCでのみ実行する
@@ -869,7 +869,7 @@ function _delete_all_git_log() {
 }
 
 # コミットのAuthor、Committerを全て変更
-function _change_author() {
+_change_author() {
     local USER_NAME=`cat ~/account.json | jq -r '.github["user_name"]'` 
     local MAIL_ADDR=`cat ~/account.json | jq -r '.github["mail_addr"]'` 
     test "$USER_NAME" = "null" || test "$MAIL_ADDR" = "null" && return
@@ -890,7 +890,7 @@ function _change_author() {
 }
 
 # ローカル(特定リポジトリ)のユーザー名,メールアドレスを変更
-function _change_config_local() {
+_change_config_local() {
     local USER_NAME=`cat ~/account.json | jq -r '.github["user_name"]'` 
     local MAIL_ADDR=`cat ~/account.json | jq -r '.github["mail_addr"]'` 
     test "$USER_NAME" = "null" || test "$MAIL_ADDR" = "null" && return
@@ -907,7 +907,7 @@ function _change_config_local() {
 }
 
 # vim関連ファイルをfzfで選択しvimで開く
-function _edit_vim_files() {
+_edit_vim_files() {
     local nvimFiles=$(find ~/dotfiles ~/dotfiles/dein_tomls $XDG_CONFIG_HOME/nvim/myautoload -follow -maxdepth 1  -name "*.vim")
     local deinToml=~/dotfiles/dein.toml
     local xvimrc=~/dotfiles/.xvimrc
@@ -918,7 +918,7 @@ function _edit_vim_files() {
 }
 
 # git stashでよく使うコマンド集
-function _git_stash_commands() {
+_git_stash_commands() {
     local actions=(
         'stash一覧表示(list):_git_stash_list'
         'stash適用(apply):_fzf_git_stash_apply'
@@ -930,32 +930,32 @@ function _git_stash_commands() {
     eval $(echo "${actions[@]}" | tr ' ' '\n' | grep $action | awk -F ':' '{print $2}')
 }
 
-function _git_stash_list() {
+_git_stash_list() {
     local stashNo=$(git stash list | fzf --preview 'echo {} | awk "{print \$1}" | tr -d ":" | xargs git stash show --color=always -p' | awk '{print $1}' | tr -d ':' )
     [ -z "$stashNo" ] && return 130
     git stash show --color=always -p $stashNo
 }
 
-function _git_stash_with_name() {
+_git_stash_with_name() {
     echo "保存名を入力してくだい"
     read name
     test -z "${name}" && return
     git stash save "${name}"
 }
 
-function _fzf_git_stash_apply() {
+_fzf_git_stash_apply() {
     local stashNo=$(git stash list | fzf --preview 'echo {} | awk "{print \$1}" | tr -d ":" | xargs git stash show --color=always -p' | awk '{print $1}' | tr -d ':' )
     test -z "${stashNo}" && return
     git stash apply "${stashNo}"
 }
 
-function _fzf_git_stash_drop() {
+_fzf_git_stash_drop() {
     local stashNo=$(git stash list | fzf --preview 'echo {} | awk "{print \$1}" | tr -d ":" | xargs git stash show --color=always -p' | awk '{print $1}' | tr -d ':' )
     test -z "${stashNo}" && return
     git stash drop "${stashNo}"
 }
 
-function _clipboard_diff() {
+_clipboard_diff() {
     local PATH_CLIP_LOG_DIR=~/.cliplog
     local clipLogs=($(ls -t $PATH_CLIP_LOG_DIR | fzf --prompt "CHOOSE" --preview "cat $PATH_CLIP_LOG_DIR/{}" --preview-window=right:80%))
     [ ${#clipLogs[@]} -ne 2 ] && return
@@ -969,7 +969,7 @@ function _clipboard_diff() {
 }
 
 # デスクトップ上アイコンの表示/非表示を切り替える
-function _toggle_desktop_icon_display() {
+_toggle_desktop_icon_display() {
     local isDisplay=$(defaults read com.apple.finder CreateDesktop)
     if [ $isDisplay -eq 1 ]; then
         defaults write com.apple.finder CreateDesktop -boolean false && killall Finder
@@ -1125,7 +1125,7 @@ alias redmine_template='vim $(mktemp XXXXXXXXXX) -c ":read! cat ~/redmine_templa
 # ================================================== #
 #
 # ============================== #
-#         alias-Function         #
+#         alias-        #
 # ============================== #
 alias cdd='_fzf-cdr'
 alias selenium-log='_tail_latest_selenium_log'
