@@ -220,3 +220,6 @@ hook_post_update = '''
 repo = 'airblade/vim-gitgutter'
 hook_add = 'source ~/.config/nvim/dein_tomls/vim-gitgutter.vim'
 
+[[plugins]]
+repo = 'maksimr/vim-jsbeautify'
+
