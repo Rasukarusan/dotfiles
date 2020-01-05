@@ -320,6 +320,11 @@ viw() {
   vim "$(which "$1")"
 }
 
+# 現在開いているfinderのディレクトリに移動
+cdf() {
+    cd "$(osascript -e 'tell app "Finder" to POSIX path of (insertion location as alias)')";
+}
+
 # ================================================== #
 #
 # ============================== #
@@ -999,7 +1004,6 @@ alias pullReqCaption='sh ~/scripts/pullReqCaption.sh'
 alias showColors='~/getColorPrintf.sh'
 alias itt='sh ~/scripts/iterm.sh'
 alias bb='sh ~/scripts/bitbucket.sh'
-alias cdf='cd $(osascript ~/scripts/finder.sh)'
 # ディスプレイ明るさを0に
 alias 00='osascript ~/scripts/up_or_down_brightness.sh 1'
 alias 11='osascript ~/scripts/up_or_down_brightness.sh 0'
