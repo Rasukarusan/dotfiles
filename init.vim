@@ -150,11 +150,6 @@ command! -count=1 MyTabMoveLeft  call MyTabMove(-<count>)
 " crontab: temp file must be edited in placeのエラー文が出るのでtmpではバックアップをしないよう設定
 set backupskip=/tmp/*,/private/tmp/*
 
-" 現在行の末尾のスペースを削除
-nnoremap <silent> rs :s/\s\+$//ge <CR> :noh <CR>
-" 行末スペースを全て削除
-command! RemoveSpace :%s/\s\+$//ge
-
 " ===============キーマップ関連===================== "
 " 入力モードでのカーソル移動
 inoremap <C-j> <Down>
