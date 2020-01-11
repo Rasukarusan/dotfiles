@@ -151,5 +151,6 @@ module.exports = {
   keymaps: {
     // @See https://github.com/zeit/hyper/blob/master/app/keymaps/darwin.json
     "window:toggleFullScreen": "command+enter",
+    "pane:close": "",
   },
 };
