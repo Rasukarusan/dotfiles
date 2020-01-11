@@ -142,6 +142,8 @@ module.exports = {
 
   plugins: [
       "hyper-search",
+      "hyper-broadcast",
+      "hyperminimal",
   ],
 
   localPlugins: [],
