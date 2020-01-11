@@ -77,6 +77,14 @@ if has('nvim')
     tnoremap <silent>:q <C-\><C-n>:call nvim_win_close(win_id, v:true)<CR>
 endif
 
+" ==============================
+" vimでファイルを開いたときに、tmuxのwindow名にファイル名を表示
+" ==============================
+if exists('$TMUX') && !exists('$NORENAME')
+  au BufEnter * if empty(&buftype) | call system('tmux rename-window "[vim]"'.expand('%:t:S')) | endif
+  au VimLeave * call system('tmux set-window automatic-rename on')
+endif
+
 filetype plugin indent on
 syntax enable
 set t_Co=256
@@ -131,21 +139,6 @@ set backspace=indent,eol,start
 set nofoldenable
 " ビープ音をOFFにする
 set belloff=all
-" タブ自体の移動
-function! MyTabMove(c)
-  let current = tabpagenr()
-  let max = tabpagenr('$')
-  let target = a:c > 1       ? current + a:c - line('.') :
-             \ a:c == 1      ? current :
-             \ a:c == -1     ? current - 2 :
-             \ a:c < -1      ? current + a:c + line('.') - 2 : 0
-  let target = target >= max ? target % max :
-             \ target < 0    ? target + max :
-             \ target
-  execute ':tabmove ' . target
-endfunction
-command! -count=1 MyTabMoveRight call MyTabMove(<count>)
-command! -count=1 MyTabMoveLeft  call MyTabMove(-<count>)
 
 " crontab: temp file must be edited in placeのエラー文が出るのでtmpではバックアップをしないよう設定
 set backupskip=/tmp/*,/private/tmp/*
@@ -235,8 +228,3 @@ nnoremap rr :source ~/.config/nvim/init.vim<CR>
 " 現在開いているスクリプトを読み込む
 nnoremap S :source %<CR>
 
-" vimでファイルを開いたときに、tmuxのwindow名にファイル名を表示
-if exists('$TMUX') && !exists('$NORENAME')
-  au BufEnter * if empty(&buftype) | call system('tmux rename-window "[vim]"'.expand('%:t:S')) | endif
-  au VimLeave * call system('tmux set-window automatic-rename on')
-endif
