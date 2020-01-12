@@ -32,6 +32,7 @@ repo = 'cespare/vim-toml'
 # --------------------------------------------
 [[plugins]]
 repo = 'tomtom/tcomment_vim'
+hook_add = 'source ~/.config/nvim/dein_tomls/tcomment.vim'
 
 # --------------------------------------------
 # GitコマンドをVim上で実行
