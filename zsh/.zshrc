@@ -3,7 +3,7 @@ bindkey -e # ctrl-aやctrl-eでカーソル移動
 # zshのTab補完
 autoload -U compinit && compinit
 # テーマ読み込み
-source ~/dotfiles/zsh-my-theme.sh
+source ~/dotfiles/zsh/zsh-my-theme.sh
 # Tabで選択できるように
 zstyle ':completion:*:default' menu select=2
 # 補完で大文字にもマッチ
@@ -917,9 +917,9 @@ _change_config_local() {
 
 # vim関連ファイルをfzfで選択しvimで開く
 _edit_vim_files() {
-    local nvimFiles=$(find ~/dotfiles ~/dotfiles/dein_tomls $XDG_CONFIG_HOME/nvim/myautoload -follow -maxdepth 1  -name "*.vim")
-    local deinToml=~/dotfiles/dein.toml
-    local xvimrc=~/dotfiles/.xvimrc
+    local nvimFiles=$(find ~/dotfiles $XDG_CONFIG_HOME/nvim/myautoload -follow -name "*.vim")
+    local deinToml=~/dotfiles/vim/dein.toml
+    local xvimrc=~/dotfiles/vim/.xvimrc
     # 文字数でソートする
     local editFile=$(echo "$nvimFiles\n$deinToml\n$xvimrc" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf)
     test -z "$editFile" && return
