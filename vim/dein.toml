@@ -9,17 +9,17 @@ repo = 'Shougo/dein.vim'
 # --------------------------------------------
 [[plugins]]
 repo = 'scrooloose/nerdtree'
-hook_add = 'source ~/.config/nvim/dein_tomls/nerdtree.vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/nerdtree.vim'
 # [[plugins]]
 # repo = 'jistr/vim-nerdtree-tabs'
-# hook_add = 'source ~/.config/nvim/dein_tomls/nerdtree-tabs.vim'
+# hook_add = 'source ~/.config/nvim/plugin_settings/nerdtree-tabs.vim'
 
 # --------------------------------------------
 # fzf-vim
 # --------------------------------------------
 [[plugins]]
 repo = 'junegunn/fzf.vim'
-hook_add = 'source ~/.config/nvim/dein_tomls/fzf.vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/fzf.vim'
 
 # --------------------------------------------
 # tomlファイルをハイライト
@@ -32,7 +32,7 @@ repo = 'cespare/vim-toml'
 # --------------------------------------------
 [[plugins]]
 repo = 'tomtom/tcomment_vim'
-hook_add = 'source ~/.config/nvim/dein_tomls/tcomment.vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/tcomment.vim'
 
 # --------------------------------------------
 # GitコマンドをVim上で実行
@@ -45,14 +45,14 @@ repo = 'tpope/vim-fugitive'
 # --------------------------------------------
 [[plugins]]
 repo = 'vim-airline/vim-airline'
-hook_add = 'source ~/.config/nvim/dein_tomls/vim-airline.vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/vim-airline.vim'
 
 # --------------------------------------------
 # Scriptをその場で実行
 # --------------------------------------------
 [[plugins]]
 repo = 'thinca/vim-quickrun'
-hook_add = 'source ~/.config/nvim/dein_tomls/vim-quickrun.vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/vim-quickrun.vim'
 
 # --------------------------------------------
 # 囲い文字を入れ替える
@@ -65,56 +65,56 @@ repo = 'tpope/vim-surround'
 # --------------------------------------------
 [[plugins]]
 repo = 'mattn/emmet-vim'
-hook_add = 'source ~/.config/nvim/dein_tomls/emmet-vim.vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/emmet-vim.vim'
 
 # --------------------------------------------
 # Denite
 # --------------------------------------------
 [[plugins]]
 repo = 'Shougo/denite.nvim'
-hook_add = 'source ~/.config/nvim/dein_tomls/denite.vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/denite.vim'
 
 # --------------------------------------------
 # Denite-Gtags
 # --------------------------------------------
 [[plugins]]
 repo = 'ozelentok/denite-gtags'
-hook_add = 'source ~/.config/nvim/dein_tomls/denite-gtags.vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/denite-gtags.vim'
 
 # --------------------------------------------
 # gtags,ctagsを自動生成
 # --------------------------------------------
 [[plugins]]
 repo = 'jsfaint/gen_tags.vim'
-hook_add = 'source ~/.config/nvim/dein_tomls/gen_tags.vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/gen_tags.vim'
 
 # --------------------------------------------
 # リアルタイムLinter
 # --------------------------------------------
 [[plugins]]
 repo = 'w0rp/ale'
-hook_add = 'source ~/.config/nvim/dein_tomls/ale.vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/ale.vim'
 
 # --------------------------------------------
 # 画面分割時の画面大きさ変更キーなど連続で打つコマンドを楽にする
 # --------------------------------------------
 [[plugins]]
 repo = 'kana/vim-submode'
-hook_add = 'source ~/.config/nvim/dein_tomls/vim-submode.vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/vim-submode.vim'
 
 # --------------------------------------------
 # Golang開発環境
 # --------------------------------------------
 [[plugins]]
 repo = 'fatih/vim-go'
-hook_add = 'source ~/.config/nvim/dein_tomls/vim-go.vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/vim-go.vim'
 
 # --------------------------------------------
 # 好きな文字でインデントを揃える
 # --------------------------------------------
 [[plugins]]
 repo = 'junegunn/vim-easy-align'
-hook_add = 'source ~/.config/nvim/dein_tomls/vim-easy-align.vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/vim-easy-align.vim'
 
 # --------------------------------------------
 # plantuml
@@ -135,7 +135,7 @@ build =  'cd app & yarn install'
 # --------------------------------------------
 [[plugins]]
 repo = 'flyinshadow/php_localvarcheck.vim'
-hook_add = 'source ~/.config/nvim/dein_tomls/php_localvarcheck.vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/php_localvarcheck.vim'
 
 # --------------------------------------------
 # Typscript IDE
@@ -166,20 +166,20 @@ repo = 'jason0x43/vim-js-indent'
 # --------------------------------------------
 [[plugins]]
 repo = 'vim-scripts/PDV--phpdocumentor-for-vim'
-hook_add = 'source ~/.config/nvim/dein_tomls/PDV--phpdocumentor-for-vim.vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/PDV--phpdocumentor-for-vim.vim'
 
 # --------------------------------------------
 # dein
 # --------------------------------------------
 # [[plugins]]
 # repo = 'Shougo/deoplete.nvim'
-# hook_add = 'source ~/.config/nvim/dein_tomls/deoplete.vim'
+# hook_add = 'source ~/.config/nvim/plugin_settings/deoplete.vim'
 
 # [[plugins]]
 # repo = 'Shougo/neosnippet.vim'
 # [[plugins]]
 # repo = 'Shougo/neosnippet-snippets'
-# hook_add = 'source ~/.config/nvim/dein_tomls/neosnippet-snippets.vim'
+# hook_add = 'source ~/.config/nvim/plugin_settings/neosnippet-snippets.vim'
 #
 
 # --------------------------------------------
@@ -187,7 +187,7 @@ hook_add = 'source ~/.config/nvim/dein_tomls/PDV--phpdocumentor-for-vim.vim'
 # --------------------------------------------
 [[plugins]]
 repo = 'rhysd/git-messenger.vim'
-hook_add = 'source ~/.config/nvim/dein_tomls/git-messenger.vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/git-messenger.vim'
 
 # --------------------------------------------
 # coc - 入力補完
@@ -196,7 +196,7 @@ hook_add = 'source ~/.config/nvim/dein_tomls/git-messenger.vim'
 repo = 'neoclide/coc.nvim'
 merged = 0
 rev = 'release'
-hook_add = 'source ~/.config/nvim/dein_tomls/coc.vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/coc.vim'
 
 # --------------------------------------------
 # ultisnips - Snipets
@@ -215,7 +215,7 @@ repo = 'honza/vim-snippets'
 # --------------------------------------------
 [[plugins]]
 repo = 'glacambre/firenvim'
-hook_add = 'source ~/.config/nvim/dein_tomls/firenvim.vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/firenvim.vim'
 hook_post_update = '''
   call firenvim#install(0)
 '''
@@ -225,7 +225,7 @@ hook_post_update = '''
 # --------------------------------------------
 [[plugins]]
 repo = 'airblade/vim-gitgutter'
-hook_add = 'source ~/.config/nvim/dein_tomls/vim-gitgutter.vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/vim-gitgutter.vim'
 
 [[plugins]]
 repo = 'maksimr/vim-jsbeautify'
