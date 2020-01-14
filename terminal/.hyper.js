@@ -143,6 +143,7 @@ module.exports = {
   plugins: [
       "hyper-search",
       "hyper-broadcast",
+      // "hyperpower"
       // "hyperminimal",
   ],
 
