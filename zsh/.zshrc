@@ -987,6 +987,20 @@ _toggle_desktop_icon_display() {
     fi
 }
 
+# phpbrewによるphpバージョン切り替え
+phpp() {
+    local currentVersion=$(php -v)
+    local selected=$(phpbrew list \
+        | grep php \
+        | tr -d ' ' \
+        | tr -d '*' \
+        | currentVersion=$(php -v) fzf --preview="echo '$(php -v)'" --preview-window=down:50%
+    )
+    [ -z "$selected" ] && return
+    phpbrew use $selected
+    echo '$ php -v' && php -v
+}
+
 # ================================================== #
 #
 # ============================== #
