@@ -7,6 +7,7 @@ ln -sf ~/dotfiles/vim/init.vim ~/.vimrc
 ln -sf ~/dotfiles/vim/init.vim ~/.config/nvim/init.vim
 ln -sf ~/dotfiles/vim/dein.toml ~/.config/nvim/dein.toml
 ln -sf ~/dotfiles/vim/plugin_settings ~/.config/nvim/plugin_settings
+ln -sf ~/dotfiles/vim/coc-settings.json ~/.config/nvim/coc-settings.json
 ln -sf ~/dotfiles/vim/coc/package.json ~/.config/coc/extensions/package.json
 ln -sf ~/dotfiles/vim/.xvimrc ~/.xvimrc
 
