@@ -434,56 +434,56 @@ _process_kill(){
 # git add をfzfでdiffを見ながら選択
 _git_add(){
     local path_working_tree_root=$(git rev-parse --show-cdup)
-    [ "$path_working_tree_root" = '' ] && path_working_tree_root=.
+    [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
     local files=$(git -C $path_working_tree_root ls-files --modified --exclude-standard --others \
         | fzf --prompt "ADD FILES>" --preview "git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy")
     if [ -n "$files" ]; then
-        git add $(git rev-parse --show-cdup)${=files}
+        git add ${path_working_tree_root}${files}
     fi
 }
 
 # git add -pをfzfでdiffを見ながら選択
 _git_add-p(){
     local path_working_tree_root=$(git rev-parse --show-cdup)
-    [ "$path_working_tree_root" = '' ] && path_working_tree_root=.
+    [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
     local files=$(git -C $path_working_tree_root ls-files --modified \
         | fzf --prompt "ADD FILES>" --preview "git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy")
     if [ -n "$files" ]; then
-        git add -p $(git rev-parse --show-cdup)${=files}
+        git add -p ${path_working_tree_root}${files}
     fi
 }
 
 # git diff をfzfで選択
 _git_diff(){
     local path_working_tree_root=$(git rev-parse --show-cdup)
-    [ "$path_working_tree_root" = '' ] && path_working_tree_root=.
+    [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
     local files=$(git -C $path_working_tree_root ls-files --modified \
         | fzf --prompt "SELECT FILES>" --preview 'git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy')
     if [ -n "$files" ]; then
         echo "$files" | tr -d "\n" | pbcopy
-        git diff -b $(git rev-parse --show-cdup)$files
+        git diff -b ${path_working_tree_root}${files}
     fi
 }
 
 # git checkout fileをfzfで選択
 _git_checkout(){
     local path_working_tree_root=$(git rev-parse --show-cdup)
-    [ "$path_working_tree_root" = '' ] && path_working_tree_root=.
+    [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
     local files=$(git -C $path_working_tree_root ls-files --modified \
         | fzf --prompt "CHECKOUT FILES>" --preview "git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy")
     if [ -n "$files" ]; then
-        git checkout $(git rev-parse --show-cdup)${=files}
+        git checkout ${path_working_tree_root}${files}
     fi
 }
 
 # git resetをfzfでdiffを見ながら選択
 _git_reset() {
     local path_working_tree_root=$(git rev-parse --show-cdup)
-    [ "$path_working_tree_root" = '' ] && path_working_tree_root=.
+    [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
     local files=$(git -C $path_working_tree_root ls-files --modified \
         | fzf --prompt "RESET FILES>" --preview "git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy")
     if [ -n "$files" ]; then
-        git reset $(git rev-parse --show-cdup)${=files}
+        git reset ${path_working_tree_root}${files}
     fi
 }
 
