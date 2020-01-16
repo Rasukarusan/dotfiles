@@ -127,7 +127,7 @@ source /Users/$(whoami)/.phpbrew/bashrc
 # ================================================== #
 #
 # ============================== #
-#                       #
+#            Function            #
 # ============================== #
 # 囲まれた文字のみを抽出
 tgrep() {
@@ -1149,7 +1149,7 @@ alias redmine_template='vim $(mktemp XXXXXXXXXX) -c ":read! cat ~/redmine_templa
 # ================================================== #
 #
 # ============================== #
-#         alias-        #
+#         alias-Function         #
 # ============================== #
 alias cdd='_fzf-cdr'
 alias selenium-log='_tail_latest_selenium_log'
