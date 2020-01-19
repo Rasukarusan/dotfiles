@@ -93,6 +93,8 @@ module.exports = {
       lightWhite: '#FFFFFF',
     },
 
+    windowSize : [600, 400],
+
     // the shell to run when spawning a new session (i.e. /usr/local/bin/fish)
     // if left empty, your system's login shell will be used by default
     //
