@@ -929,6 +929,8 @@ _edit_vim_files() {
 # git stashでよく使うコマンド集
 _git_stash_commands() {
     local actions=(
+        'stash:_git_stash'
+        'pop:_git_stash_pop'
         'stash一覧表示(list):_git_stash_list'
         'stash適用(apply):_fzf_git_stash_apply'
         'stashを名前を付けて保存(save):_git_stash_with_name'
@@ -943,6 +945,14 @@ _git_stash_list() {
     local stashNo=$(git stash list | fzf --preview 'echo {} | awk "{print \$1}" | tr -d ":" | xargs git stash show --color=always -p' | awk '{print $1}' | tr -d ':' )
     [ -z "$stashNo" ] && return 130
     git stash show --color=always -p $stashNo
+}
+
+_git_stash() {
+    git stash
+}
+
+_git_stash_pop() {
+    git stash pop
 }
 
 _git_stash_with_name() {
