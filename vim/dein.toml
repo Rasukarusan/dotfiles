@@ -169,20 +169,6 @@ repo = 'vim-scripts/PDV--phpdocumentor-for-vim'
 hook_add = 'source ~/.config/nvim/plugin_settings/PDV--phpdocumentor-for-vim.vim'
 
 # --------------------------------------------
-# dein
-# --------------------------------------------
-# [[plugins]]
-# repo = 'Shougo/deoplete.nvim'
-# hook_add = 'source ~/.config/nvim/plugin_settings/deoplete.vim'
-
-# [[plugins]]
-# repo = 'Shougo/neosnippet.vim'
-# [[plugins]]
-# repo = 'Shougo/neosnippet-snippets'
-# hook_add = 'source ~/.config/nvim/plugin_settings/neosnippet-snippets.vim'
-#
-
-# --------------------------------------------
 # GitBlamer
 # --------------------------------------------
 [[plugins]]
