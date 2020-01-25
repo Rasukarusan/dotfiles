@@ -95,6 +95,8 @@ module.exports = {
 
     windowSize : [600, 400],
 
+    opacity: 0.85,
+
     // the shell to run when spawning a new session (i.e. /usr/local/bin/fish)
     // if left empty, your system's login shell will be used by default
     //
@@ -147,6 +149,7 @@ module.exports = {
   plugins: [
       "hyper-search",
       "hyper-broadcast",
+      "hyper-opacity",
       // "hyperpower"
       // "hyperminimal",
   ],
