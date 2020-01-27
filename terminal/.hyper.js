@@ -95,7 +95,7 @@ module.exports = {
 
     windowSize : [600, 400],
 
-    opacity: 0.85,
+    opacity: 1.00,
 
     // the shell to run when spawning a new session (i.e. /usr/local/bin/fish)
     // if left empty, your system's login shell will be used by default
@@ -144,8 +144,8 @@ module.exports = {
     webGLRenderer: true,
 
     // for advanced config flags please refer to https://hyper.is/#cfg
-  },
 
+  },
   plugins: [
       "hyper-search",
       "hyper-broadcast",
