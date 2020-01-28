@@ -727,6 +727,7 @@ docker system df
 docker images -a
 docker-compose ps
 docker-compose up
+docker-compose up --build
 docker-compose up -d
 docker-compose up --force-recreate
 docker-compose stop
@@ -763,7 +764,7 @@ EOF`
             docker images \
                 | fzf \
                 | awk '{print $3}' \
-                | xargs docker rmi
+                | xargs docker rmi -f
             ;;
         'setDotfiles' )
             local dotfilesPath=~/docker-dotfiles
