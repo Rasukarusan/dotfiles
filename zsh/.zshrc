@@ -325,6 +325,15 @@ cdf() {
     cd "$(osascript -e 'tell app "Finder" to POSIX path of (insertion location as alias)')";
 }
 
+# builtin-commandsのmanを参照
+manzsh() {
+    man zshbuiltins | less -p "^       $1 "
+}
+
+manbash() {
+    man bash | less -p "^       $1 "
+}
+
 # ================================================== #
 #
 # ============================== #
