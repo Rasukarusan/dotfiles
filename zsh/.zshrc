@@ -737,19 +737,18 @@ _docker_commands() {
 		docker cp
 	EOF`
     local arg=`echo $select_command | sed "s/docker //g"`
-    echo $select_command
     case "${arg}" in
         'exec' )
             container=$(docker ps --format "{{.Names}}" | fzf)
             test -z "$container" && return
-            echo "docker exec -it $container bash"
-            docker exec -it $container bash
+            execCommand="docker exec -it $container bash"
+            echo $execCommand && eval $execCommand
             ;;
         'logs' )
             container=$(docker ps --format "{{.Names}}" | fzf)
             test -z "$container" && return
-            echo "docker logs -ft $container"
-            docker logs -ft $container
+            execCommand="docker logs -ft $container"
+            echo $execCommand && eval $execCommand
             ;;
         'stop' )
             docker ps --format "{{.Names}}" | fzf | xargs docker stop
@@ -784,7 +783,7 @@ _docker_commands() {
                 done
             done
             ;;
-        *) eval $select_command ;;
+        *) echo $select_command && eval $select_command ;;
     esac
 }
 
