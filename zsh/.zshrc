@@ -733,7 +733,7 @@ _docker_commands() {
 		docker-compose stop
 		docker rm
 		docker rmi
-		setDotfiles
+		docker cp
 	EOF`
     local arg=`echo $select_command | sed "s/docker //g"`
     echo $select_command
@@ -766,14 +766,21 @@ _docker_commands() {
                 | awk '{print $3}' \
                 | xargs docker rmi -f
             ;;
-        'setDotfiles' )
-            local dotfilesPath=~/docker-dotfiles
-            docker ps --format "{{.Names}}" | while read container
-            do
-                containerId=$(docker ps | grep $container | awk '{print $1}')
-                echo "send to ${container}(${containerId})"
-                docker cp ${dotfilesPath}/$(ls ${dotfilesPath} | grep $container) ${containerId}:/root/.bashrc
-                docker cp ${dotfilesPath}/vimrc ${containerId}:/root/.vimrc
+        'cp' )
+            local targetFiles=($(find . -maxdepth 1 \
+                | sed '/^\.$/d' \
+                | fzf \
+                    --prompt='送信したいファイルを選択してください' \
+                    --preview='file {} | awk -F ":" "{print \$2}" | grep directory >/dev/null && tree --charset=C -NC {} || bat --color always {}'
+            ))
+            docker ps --format "{{.Names}}" | fzf | while read container;do
+                containerId=$(docker ps -aq --filter "name=$container")
+                test -z "$containerId" && echo "Not found $container's Container ID." && continue
+
+                for targetFile in "${targetFiles[@]}";do
+                    echo "$targetFile =====> ${container}(${containerId})"
+                    docker cp ${targetFile} ${containerId}:/root/
+                done
             done
             ;;
         *) eval $select_command ;;
