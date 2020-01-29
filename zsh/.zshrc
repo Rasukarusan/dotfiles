@@ -805,19 +805,16 @@ _source_my_script() {
 
 # tmuxコマンド集
 _tmux_commands() {
-    local commands=(
-        'rename-window'
-        'man'
-        'list-keys'
-        'list-commands'
-        'kill-window'
-        'kill-session'
-        'kill-server'
-        'tmux'
-    )
-    local command=$(
-        echo "${commands[@]}" | tr ' ' '\n' \
-            | fzf --bind 'ctrl-y:execute-silent(echo {} | pbcopy)'
+    local command=$(cat <<-EOF | fzf --bind 'ctrl-y:execute-silent(echo {} | pbcopy)'
+		rename-window
+		man
+		list-keys
+		list-commands
+		kill-window
+		kill-session
+		kill-server
+		tmux
+		EOF
     )
     test -z "$command" && return
 
