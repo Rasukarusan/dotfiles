@@ -153,12 +153,12 @@ tgrep() {
 
 # seleniumの操作リスト
 sell() {
-local select_command=`cat << EOF | fzf
-selenium-status
-selenium-log
-selenium-up
-selenium-stop
-EOF`
+    local select_command=`cat <<- EOF | fzf
+		selenium-status
+		selenium-log
+		selenium-up
+		selenium-stop
+	EOF`
     eval $select_command
 }
 
@@ -190,15 +190,15 @@ tenki() {
 
 # vagrantのコマンドをfzfで選択
 vgg() {
-local select_command=`cat << EOF | fzf
-vagrant ssh
-vagrant up
-vagrant provision
-vagrant reload
-vagrant halt
-vagrant reload&provision
-vagrant global-status
-EOF`
+    local select_command=`cat <<- EOF | fzf
+		vagrant ssh
+		vagrant up
+		vagrant provision
+		vagrant reload
+		vagrant halt
+		vagrant reload&provision
+		vagrant global-status
+	EOF`
     test -z "$select_command" && return
     local arg=`echo $select_command | sed "s/vagrant //g"`
     case "${arg}" in
@@ -717,24 +717,24 @@ _set_badge() {
 
 # Dockerコマンドをfzfで選択
 _docker_commands() {
-    local select_command=`cat << EOF | fzf
-docker exec
-docker logs
-docker ps
-docker ps -a
-docker stop
-docker system df
-docker images -a
-docker-compose ps
-docker-compose up
-docker-compose up --build
-docker-compose up -d
-docker-compose up --force-recreate
-docker-compose stop
-docker rm
-docker rmi
-setDotfiles
-EOF`
+    local select_command=`cat <<- EOF | fzf
+		docker exec
+		docker logs
+		docker ps
+		docker ps -a
+		docker stop
+		docker system df
+		docker images -a
+		docker-compose ps
+		docker-compose up
+		docker-compose up --build
+		docker-compose up -d
+		docker-compose up --force-recreate
+		docker-compose stop
+		docker rm
+		docker rmi
+		setDotfiles
+	EOF`
     local arg=`echo $select_command | sed "s/docker //g"`
     echo $select_command
     case "${arg}" in
