@@ -773,6 +773,7 @@ _docker_commands() {
                     --prompt='送信したいファイルを選択してください' \
                     --preview='file {} | awk -F ":" "{print \$2}" | grep directory >/dev/null && tree --charset=C -NC {} || bat --color always {}'
             ))
+            [ "${#targetFiles[@]}" -eq 0 ] && return
             docker ps --format "{{.Names}}" | fzf | while read container;do
                 containerId=$(docker ps -aq --filter "name=$container")
                 test -z "$containerId" && echo "Not found $container's Container ID." && continue
