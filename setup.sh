@@ -10,6 +10,7 @@ ln -sf ~/dotfiles/vim/plugin_settings ~/.config/nvim/plugin_settings
 ln -sf ~/dotfiles/vim/coc/coc-settings.json ~/.config/nvim/coc-settings.json
 ln -sf ~/dotfiles/vim/coc/package.json ~/.config/coc/extensions/package.json
 ln -sf ~/dotfiles/vim/.xvimrc ~/.xvimrc
+ln -sf ~/dotfiles/vim/UltiSnips ~/.config/nvim/UltiSnips
 
 # ================================= #
 #               Zsh                 #

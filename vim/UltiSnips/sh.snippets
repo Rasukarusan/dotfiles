@@ -1,0 +1,24 @@
+snippet awk "awk -F '' '{print $1}'"
+awk -F '${1:fs}' '{print \$1}$0'
+endsnippet
+
+snippet grep "grep -oP (?<=start).*(?=end)"
+grep -oP "(?<=${1:start}).*(?=${2:end})"$0
+endsnippet
+
+snippet fzf-preview "fzf --preview '${1:command}{}'"
+--preview "${1:command} {}"
+endsnippet
+
+snippet fzf-prompt "fzf --prompt 'Input prompt'"
+--prompt '${1:str}'
+endsnippet
+
+snippet fzf-preview-window "fzf --preview-window=up/down/right/left:50%"
+--preview-window=${1:up}:50%
+endsnippet
+
+snippet fzf-delimiter "fzf --delimiter $'\t' --widh-nth N"
+--delimiter $'\t' --with-nth ${1:N} 
+endsnippet
+
