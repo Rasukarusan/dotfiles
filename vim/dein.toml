@@ -162,11 +162,11 @@ repo = 'pangloss/vim-javascript'
 repo = 'jason0x43/vim-js-indent'
 
 # --------------------------------------------
-# phpDocコメント生成
+# JavaScript整形
 # --------------------------------------------
 [[plugins]]
-repo = 'vim-scripts/PDV--phpdocumentor-for-vim'
-hook_add = 'source ~/.config/nvim/plugin_settings/PDV--phpdocumentor-for-vim.vim'
+repo = 'maksimr/vim-jsbeautify'
+
 
 # --------------------------------------------
 # GitBlamer
@@ -189,9 +189,10 @@ hook_add = 'source ~/.config/nvim/plugin_settings/coc.vim'
 # --------------------------------------------
 [[plugins]]
 repo = 'SirVer/ultisnips'
+hook_add = 'source ~/.config/nvim/plugin_settings/ultisnips.vim'
 
 # --------------------------------------------
-# vim-snippets - Snipetsファイル
+# vim-snippets - Snipets定義ファイル
 # --------------------------------------------
 [[plugins]]
 repo = 'honza/vim-snippets'
@@ -212,7 +213,4 @@ hook_post_update = '''
 [[plugins]]
 repo = 'airblade/vim-gitgutter'
 hook_add = 'source ~/.config/nvim/plugin_settings/vim-gitgutter.vim'
-
-[[plugins]]
-repo = 'maksimr/vim-jsbeautify'
 
