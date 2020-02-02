@@ -420,7 +420,13 @@ _git_log_preview_open() {
     if [ "$1" = "-S" ];then
         option="-S"
     fi
-    local hashCommit=`git log --oneline $option $2| fzf --height=100% --prompt "SELECT COMMIT>" --preview "echo {} | cut -d' ' -f1 | xargs git show --color=always"`
+    local hashCommit=`git log --oneline $option $2 \
+        | fzf \
+        --height=100% \
+        --prompt "SELECT COMMIT>" \
+        --preview "echo {} | cut -d' ' -f1 | xargs git show --color=always" \
+        --preview-window=right:50%
+        `
     if [ -n "$hashCommit" ]; then
         git show `echo ${hashCommit} | awk '{print $1}'`
     fi
