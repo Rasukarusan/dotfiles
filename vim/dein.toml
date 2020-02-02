@@ -150,6 +150,13 @@ repo = 'Quramy/tsuquyomi'
 repo = 'leafgarland/typescript-vim'
 
 # --------------------------------------------
+# TypscriptReactシンタックスハイライト
+# --------------------------------------------
+[[plugins]]
+repo = 'peitalin/vim-jsx-typescript'
+
+
+# --------------------------------------------
 # JavaScriptハイライト
 # --------------------------------------------
 [[plugins]]
