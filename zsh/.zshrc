@@ -414,28 +414,22 @@ _git_push_fzf() {
     local remote=`git remote | fzf`
     git push ${remote} $(git branch | grep "*" | sed -e "s/^\*\s*//g")
 }
+
 # git logをpreviewで差分を表示する
+# -S "pattern"でpatternを含む差分のみを表示することができる
 _git_log_preview_open() {
-    local option=''
-    if [ "$1" = "-S" ];then
-        option="-S"
-    fi
-    local hashCommit=`git log --oneline $option $2 \
+    git log --oneline "$@" \
         | fzf \
-        --height=100% \
-        --prompt "SELECT COMMIT>" \
-        --preview "echo {} | cut -d' ' -f1 | xargs git show --color=always" \
-        --preview-window=right:50%
-        `
-    if [ -n "$hashCommit" ]; then
-        git show `echo ${hashCommit} | awk '{print $1}'`
-    fi
+            --prompt 'SELECT COMMIT>' \
+            --delimiter=' ' --with-nth 1.. \
+            --preview 'git show --color=always {1}' \
+            --bind 'ctrl-y:execute-silent(echo -n {1} | pbcopy)' \
+            --preview-window=right:50% \
+            --height=100% \
+        | awk '{print $1}' \
+        | xargs git show
 }
-# 差分のあるファイルをfzfでプレビューしながら一覧に表示し、ENTERでlessモード&ファイルパスをクリップボードに
-_git_diff_preview_copy() {
-    local target_diff=`git diff $(git diff --name-only | fzf --prompt "CHECKOUT BRANCH>" --preview "git diff --color=always {}")`
-    echo $target_diff | grep "\-\-\- a" | sed "s/--- a\///g" | tr -d "\n" | pbcopy
-}
+
 # fzfを使ってプロセスKILL
 _process_kill(){
     local process=(`ps aux | awk '{print $2,$9,$11,$12}' | fzf | awk '{print $1}'`)
