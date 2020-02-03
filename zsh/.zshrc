@@ -757,20 +757,30 @@ _docker_commands() {
             echo $execCommand && eval $execCommand
             ;;
         'stop' )
-            docker ps --format "{{.Names}}" | fzf | xargs docker stop
+            containers=($(docker ps --format "{{.Names}}" | fzf ))
+            [ "${#containers[@]}" -eq 0 ] && return
+            for container in ${containers[@]}; do
+                docker stop $container
+            done
             ;;
         'rm' )
-            docker ps -a --format "{{.Names}}\t{{.ID}}\t{{.RunningFor}}\t{{.Status}}" \
+            containers=($(docker ps -a --format "{{.Names}}\t{{.ID}}\t{{.RunningFor}}\t{{.Status}}" \
                 | column -t -s "`printf '\t'`" \
                 | fzf --header "$(echo 'NAME\tCONTAINER_ID\tCREATED\tSTATUS' | column -t)" \
                 | awk '{print $2}' \
-                | xargs docker rm
+            ))
+            for container in ${containers[@]}; do
+                docker rm $container
+            done
             ;;
         'rmi' )
-            docker images \
+            images=($(docker images \
                 | fzf \
                 | awk '{print $3}' \
-                | xargs docker rmi -f
+            ))
+            for image in ${images[@]}; do
+                docker rmi -f $image
+            done
             ;;
         'cp' )
             local targetFiles=($(find . -maxdepth 1 \
