@@ -14,6 +14,10 @@ snippet fzf-prompt "fzf --prompt 'Input prompt'"
 --prompt '${1:str}'
 endsnippet
 
+snippet fzf-bind "fzf --bind '--bind 'ctrl-y:execute({})'"
+--bind 'ctrl-y:execute-silent(${1:command}$0 {})'
+endsnippet
+
 snippet fzf-preview-window "fzf --preview-window=up/down/right/left:50%"
 --preview-window=${1:up}:50%
 endsnippet
