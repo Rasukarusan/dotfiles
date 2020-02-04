@@ -1095,6 +1095,7 @@ alias zshrc='vim ~/.zshrc'
 alias szsh='source ~/.zshrc'
 alias stmux='tmux source-file ~/.tmux.conf'
 alias tconf='vim ~/.tmux.conf'
+alias hp='vim ~/.hyper.js'
 alias plantuml='java -jar ~/.plantuml/plantuml.jar'
 alias selenium-stop="ps aux | grep selenium | grep -v grep | awk '{print \$2}' | xargs kill -9"
 alias selenium-status='ps aux | grep -v grep | grep -c selenium'
