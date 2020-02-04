@@ -745,19 +745,19 @@ _docker_commands() {
     local arg=`echo $select_command | sed "s/docker //g"`
     case "${arg}" in
         'exec' )
-            container=$(docker ps --format "{{.Names}}" | fzf)
+            container=$(docker ps --format "{{.Names}}" | sort | fzf)
             test -z "$container" && return
             execCommand="docker exec -it $container bash"
             echo $execCommand && eval $execCommand
             ;;
         'logs' )
-            container=$(docker ps --format "{{.Names}}" | fzf)
+            container=$(docker ps --format "{{.Names}}" | sort | fzf)
             test -z "$container" && return
             execCommand="docker logs -ft $container"
             echo $execCommand && eval $execCommand
             ;;
         'stop' )
-            containers=($(docker ps --format "{{.Names}}" | fzf ))
+            containers=($(docker ps --format "{{.Names}}" | sort | fzf ))
             [ "${#containers[@]}" -eq 0 ] && return
             for container in ${containers[@]}; do
                 docker stop $container
