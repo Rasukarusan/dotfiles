@@ -334,6 +334,13 @@ manbash() {
     man bash | less -p "^       $1 "
 }
 
+# ログインShellを切り替える
+shell() {
+    local target=$(cat /etc/shells | grep '^/' | fzf)
+    [ -z "$target" ] && return
+    chsh -s $target
+}
+
 # ================================================== #
 #
 # ============================== #
