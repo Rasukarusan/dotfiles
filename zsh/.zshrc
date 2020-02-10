@@ -450,9 +450,16 @@ _process_kill(){
 # git add をfzfでdiffを見ながら選択
 _git_add(){
     local path_working_tree_root=$(git rev-parse --show-cdup)
+    local option='--modified --exclude-standard'
+    local previewCmd='git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy'
+    # Untracked fileのものだけ表示
+    if [ "$1" = '-u' ]; then
+        option='--others'
+        previewCmd='bat --color always {}'
+    fi
     [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
-    local files=($(git -C $path_working_tree_root ls-files --modified --exclude-standard --others \
-        | fzf --prompt "ADD FILES>" --preview "git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy"))
+    local files=($(eval git -C $path_working_tree_root ls-files $option \
+        | fzf --prompt "ADD FILES>" --preview "$previewCmd"))
     [ -z "$files" ] && return
     for file in "${files[@]}";do
         git add ${path_working_tree_root}${file}
@@ -499,7 +506,7 @@ _git_checkout(){
 _git_reset() {
     local path_working_tree_root=$(git rev-parse --show-cdup)
     [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
-    local files=($(git -C $path_working_tree_root ls-files --modified \
+    local files=($(git -C $path_working_tree_root ls-files \
         | fzf --prompt "RESET FILES>" --preview "git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy"))
     [ -z "$files" ] && return
     for file in "${files[@]}";do
