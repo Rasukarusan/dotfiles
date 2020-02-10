@@ -154,7 +154,10 @@ module.exports = {
       // "hyperminimal",
   ],
 
-  localPlugins: [],
+  localPlugins: [
+      'hyper-imgcat',
+      'hyper-translate',
+  ],
 
   keymaps: {
     // @See https://github.com/zeit/hyper/blob/master/app/keymaps/darwin.json
