@@ -425,7 +425,7 @@ _git_push_fzf() {
 # git logをpreviewで差分を表示する
 # -S "pattern"でpatternを含む差分のみを表示することができる
 _git_log_preview_open() {
-    git log --oneline "$@" \
+    local hashCommit=$(git log --oneline "$@" \
         | fzf \
             --prompt 'SELECT COMMIT>' \
             --delimiter=' ' --with-nth 1.. \
@@ -433,8 +433,10 @@ _git_log_preview_open() {
             --bind 'ctrl-y:execute-silent(echo -n {1} | pbcopy)' \
             --preview-window=right:50% \
             --height=100% \
-        | awk '{print $1}' \
-        | xargs git show
+        | awk '{print $1}'
+    )
+    [ -z "$hashCommit" ] && return
+    git show $hashCommit
 }
 
 # fzfを使ってプロセスKILL
