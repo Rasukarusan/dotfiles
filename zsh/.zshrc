@@ -203,22 +203,23 @@ vgg() {
     local arg=`echo $select_command | sed "s/vagrant //g"`
     case "${arg}" in
         'ssh' )
-            fqdn=`echo "default\norigin\nclone" | fzf`
-            test -z "$fqdn" && return
-            vagrant ssh $fqdn;;
-        'up' ) vagrant up ;;
-        'provision' ) vagrant provision ;;
-        'reload' ) vagrant reload ;;
-        'halt' ) 
-            fqdns=(`echo "default\norigin\nclone" | fzf`)
-            if [ ${#fqdns[@]} -eq 0 ]; then 
-                return 0 
-            fi
-            for fqdn in ${fqdns[@]}; do 
-                vagrant halt $fqdn
-            done
+            vagrant ssh 
             ;;
-        'global-status' ) vagrant global-status ;;
+        'up' ) 
+            vagrant up
+            ;;
+        'provision' )
+            vagrant provisio
+            ;;
+        'reload' )
+            vagrant reload
+            ;;
+        'halt' )
+            vagrant halt
+            ;;
+        'global-status' )
+            vagrant global-status
+            ;;
         'reload&provision' )
             vagrant reload
             vagrant provision
