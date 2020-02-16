@@ -351,8 +351,10 @@ list() {
     local targets=`cat <<-EOS | fzf
 	brew
 	cask
+	mas
 	npm
 	yarn
+	gem
 	pip
 	pip3
 	EOS`
@@ -360,27 +362,15 @@ list() {
     echo "$targets" | while read target; do
         local cmd=''
         case $target in
-            'brew')
-                cmd='brew list'
-                ;;
             'cask')
                 cmd='brew cask list'
                 ;;
             'npm')
                 cmd='npm ls -g'
                 ;;
-            'yarn')
-                cmd='yarn list'
-                ;;
-            'pip')
-                cmd='pip list'
-                ;;
-            'pip3')
-                cmd='pip3 list'
-                ;;
-            *) echo 'none'
+            *) cmd="$target list"
         esac
-        printf "\n\e[33m$cmd\e[m\n"
+        printf "\n\e[33m\$ $cmd\e[m\n"
         eval $cmd
     done
 }
