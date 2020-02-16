@@ -1,0 +1,10 @@
+packages:
+  - name: google-chrome
+  - name: firefox
+  - name: google-japanese-ime
+  - name: skype
+  - name: visual-studio-code
+  - name: iterm2
+  - name: hyper
+  - name: docker
+  - name: wireshark
