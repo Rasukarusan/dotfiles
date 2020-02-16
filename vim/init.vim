@@ -89,6 +89,10 @@ filetype plugin indent on
 syntax enable
 set t_Co=256
 colorscheme jellybeans
+" QuickFixで選択した行をわかりやすくするための設定
+hi QuickFixLine ctermbg=242 guibg=#a2227d
+" Cocのlistでカーソル行をわかりやすくするための設定
+hi CursorLine ctermbg=242 guibg=#a2227d
 set mouse=a
 set updatetime=250
 " 起動時の画面をスキップ(:introで表示可能)
