@@ -8,5 +8,12 @@
     },
     "list.insertMappings": {
         "<C-c>": "do:exit"
+    },
+    "languageserver": {
+        "dockerfile": {
+            "command": "docker-langserver",
+            "filetypes": ["dockerfile"],
+            "args": ["--stdio"]
+        }
     }
 }
