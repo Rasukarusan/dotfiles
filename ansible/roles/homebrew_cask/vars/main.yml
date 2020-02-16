@@ -8,3 +8,7 @@ packages:
   - name: hyper
   - name: docker
   - name: wireshark
+  - name: vagrant
+  - name: virtualbox
+  - name: sequel-pro-nightly
+  - name: ngrok
