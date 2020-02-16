@@ -92,7 +92,8 @@ colorscheme jellybeans
 " QuickFixで選択した行をわかりやすくするための設定
 hi QuickFixLine ctermbg=242 guibg=#a2227d
 " Cocのlistでカーソル行をわかりやすくするための設定
-hi CursorLine ctermbg=242 guibg=#a2227d
+hi CursorLine guibg=#a2227d
+hi Search cterm=underline ctermfg=0 ctermbg=11 gui=underline guifg=#f0a0c0 guibg=none
 set mouse=a
 set updatetime=250
 " 起動時の画面をスキップ(:introで表示可能)
