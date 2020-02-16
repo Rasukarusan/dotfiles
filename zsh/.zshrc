@@ -41,6 +41,8 @@ export EDITOR=vim
 # ggrepをgrepにするため
 export PATH="/usr/local/opt/grep/libexec/gnubin:$PATH"
 export PATH="/usr/local/opt/python@2/bin:$PATH"
+# gemでインストールしたものにPATHを通す
+export PATH="/usr/local/lib/ruby/gems/2.5.0/bin:$PATH"
 # fzfのリストを上から並べ、全画面ではなくvimのquickfixライクにする
 export FZF_DEFAULT_OPTS='--color=fg+:11 --height 70% --reverse --select-1 --exit-0 --multi --bind ctrl-a:select-all,ctrl-d:deselect-all,ctrl-t:toggle-all'
 # pyenvにPATHを通す(これをしないとpyenv globalでバージョンが切り替えられない)
@@ -63,6 +65,8 @@ export BAT_PAGER="less -R"
 # go getのインストール先
 export GOPATH=$HOME/go
 export PATH=$PATH:$GOPATH/bin
+# gtagsでpygmentsを指定(多言語対応 e.g.) ruby, javascript)
+export GTAGSLABEL=pygments
 # 文字コードの指定
 export LANG=ja_JP.UTF-8
 # 履歴ファイルの保存先
