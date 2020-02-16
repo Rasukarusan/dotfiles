@@ -1,0 +1,7 @@
+taps:
+  - homebrew/cask
+  - homebrew/core
+  - Rasukarusan/tap
+
+packages:
+  - name: fzf
