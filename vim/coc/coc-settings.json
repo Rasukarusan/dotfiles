@@ -1,11 +1,12 @@
 {
     "diagnostic.enable": false,
-    "coc.preferences.jumpCommand": "tabe",
+    "coc.preferences.jumpCommand": "drop",
+    "list.autoResize":false,
     "list.normalMappings": {
-		"<C-t>": "action:tabe",
-		"<C-c>": "do:exit"
+        "<C-t>": "action:tabe",
+        "<C-c>": "do:exit"
     },
-	"list.insertMappings": {
-		"<C-c>": "do:exit"
+    "list.insertMappings": {
+        "<C-c>": "do:exit"
     }
 }
