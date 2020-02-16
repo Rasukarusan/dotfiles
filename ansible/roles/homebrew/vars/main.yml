@@ -1,7 +1,52 @@
 taps:
   - homebrew/cask
   - homebrew/core
+  - homebrew/php
+  - heroku/brew
   - Rasukarusan/tap
 
 packages:
   - name: fzf
+  - name: bat
+  - name: autoconf
+  - name: carthage
+  - name: composer
+  - name: coreutils
+  - name: ctags
+  - name: curl
+  - name: diff-so-fancy
+  - name: exiftool
+  - name: fish
+  - name: fzf-chrome-active-tab
+  - name: gawk
+  - name: gcc
+  - name: git
+  - name: gitblamer
+  - name: global
+  - name: gnu-sed
+  - name: go
+  - name: grep
+  - name: heroku
+  - name: imagemagick
+  - name: jq
+  - name: mas
+  - name: mitmproxy
+  - name: ncdu
+  - name: neovim
+  - name: nkf
+  - name: node
+  - name: nodebrew
+  - name: phpbrew
+  - name: pyenv
+  - name: ricty
+  - name: ripgrep
+  - name: ruby
+  - name: the_silver_searcher
+  - name: tmux
+  - name: tree
+  - name: vim
+  - name: w3m
+  - name: watch
+  - name: wget
+  - name: yarn
+  - name: zsh
