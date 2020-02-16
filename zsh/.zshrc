@@ -346,6 +346,45 @@ shell() {
     chsh -s $target
 }
 
+# インストール一覧コマンド集
+list() {
+    local targets=`cat <<-EOS | fzf
+	brew
+	cask
+	npm
+	yarn
+	pip
+	pip3
+	EOS`
+    [ -z "$targets" ] && return
+    echo "$targets" | while read target; do
+        local cmd=''
+        case $target in
+            'brew')
+                cmd='brew list'
+                ;;
+            'cask')
+                cmd='brew cask list'
+                ;;
+            'npm')
+                cmd='npm ls -g'
+                ;;
+            'yarn')
+                cmd='yarn list'
+                ;;
+            'pip')
+                cmd='pip list'
+                ;;
+            'pip3')
+                cmd='pip3 list'
+                ;;
+            *) echo 'none'
+        esac
+        printf "\n\e[33m$cmd\e[m\n"
+        eval $cmd
+    done
+}
+
 # ================================================== #
 #
 # ============================== #
