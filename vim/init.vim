@@ -93,7 +93,7 @@ colorscheme jellybeans
 hi QuickFixLine ctermbg=242 guibg=#a2227d
 " Cocのlistでカーソル行をわかりやすくするための設定
 hi CursorLine guibg=#a2227d
-hi Search cterm=underline ctermfg=0 ctermbg=11 gui=underline guifg=#f0a0c0 guibg=none
+hi Search cterm=underline ctermfg=0 ctermbg=11 gui=underline guifg=#f0a0c0 guibg=NONE
 set mouse=a
 set updatetime=250
 " 起動時の画面をスキップ(:introで表示可能)
