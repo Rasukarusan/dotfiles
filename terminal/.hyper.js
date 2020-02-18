@@ -155,8 +155,8 @@ module.exports = {
   ],
 
   localPlugins: [
-      'hyper-imgcat',
-      'hyper-translate',
+      // 'hyper-imgcat',
+      // 'hyper-translate',
   ],
 
   keymaps: {

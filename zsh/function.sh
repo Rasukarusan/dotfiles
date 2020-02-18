@@ -1,7 +1,6 @@
-#!/usr/bin/env bash
-# ============================== #
-#         Function-alias         #
-# ============================== #
+# ==============================#
+#            Function           #
+# ==============================#
 
 # fzf版cdd
 _fzf-cdr() {
@@ -15,24 +14,6 @@ _fzf-cdr() {
     if [ -n "$target_dir" ]; then
         cd $target_dir
     fi
-}
-# 英語のmanを表示する
-#alias man='env LANG=C man'
-_run_selenium_server() {
-    local LOG_DIR=~/.selenium-log
-    if [ ! -e $LOG_DIR ]; then 
-        mkdir $LOG_DIR
-    fi
-    local is_run=`ps aux | grep -v grep | grep -c selenium`
-    local today=`date +%Y-%m-%d`
-    if [ $is_run -eq 0 ]; then
-        java -jar /Library/java/Extensions/selenium-server-standalone-3.4.0.jar > $LOG_DIR/$today.log 2>&1 &
-    fi
-}
-_tail_latest_selenium_log() {
-    local LOG_DIR=~/.selenium-log
-    local latest_selenium_log=`echo $(ls -t $LOG_DIR | head -n 1)`
-    tail -f $LOG_DIR/$latest_selenium_log
 }
 
 # ag & view
@@ -63,6 +44,7 @@ _look() {
     [ "$target_file" = "" ] && return
     vim $target_file
 }
+
 # remoteに設定されているURLを開く
 _git_remote_open() {
     local remote=$(git remote show | fzf)
@@ -73,6 +55,7 @@ _git_remote_open() {
     fi
     open $url
 }
+
 # 現在のブランチをoriginにpushする
 _git_push_fzf() {
     local remote=`git remote | fzf`
@@ -518,9 +501,11 @@ _tmux_commands() {
             tmux $command | less -S
             ;;
         'kill-session')
-            local session_no=$(tmux ls | fzf | awk -F ':' '{print $1}')
-            test -z "$session_no" && return
-            tmux kill-session -t $session_no
+            local sessionIds=($(tmux ls | fzf | awk -F ':' '{print $1}'))
+            test -z "$sessionIds" && return
+            for sessionId in ${sessionIds[@]}; do
+                tmux kill-session -t $sessionId
+            done
             ;;
         *)
             tmux $command
@@ -708,3 +693,274 @@ _toggle_desktop_icon_display() {
     fi
 }
 
+# 囲まれた文字のみを抽出
+_grep_surround_word() {
+    # 正規表現の特殊文字をエスケープ
+    local escape='
+        s/*/\\\*/g;
+        s/+/\\\+/g;
+        s/\./\\\./g;
+        s/?/\\\?/g;
+        s/{/\\\{/g;
+        s/}/\\\}/g;
+        s/(/\\\(/g;
+        s/)/\\\)/g;
+        s/\[/\\\[/g;
+        s/\]/\\\]/g;
+        s/\^/\\\^/g;
+        s/|/\\\|/g;
+        '
+    local firstWord=`echo "$1" | sed "$escape"`
+    local lastWord=`echo "$2" | sed "$escape"`
+    grep -oP "(?<=$firstWord).*(?=$lastWord)"
+}
+
+# seleniumの操作リスト
+_fzf_selenium() {
+    local action=`cat <<- EOF | fzf
+		status
+		log
+		up
+		stop
+	EOF`
+    [ -z "$action" ] && return
+    case $action in
+        'status' )
+            ps aux | grep -v grep | grep -c selenium
+            ;;
+        'log' )
+            local LOG_DIR=~/.selenium-log
+            local latest_selenium_log=$(echo $(ls -t $LOG_DIR | head -n 1))
+            tail -f $LOG_DIR/$latest_selenium_log
+            ;;
+        'up' )
+            local LOG_DIR=~/.selenium-log
+            if [ ! -e $LOG_DIR ]; then 
+                mkdir $LOG_DIR
+            fi
+            local is_run=`ps aux | grep -v grep | grep -c selenium`
+            local today=`date +%Y-%m-%d`
+            if [ $is_run -eq 0 ]; then
+                java -jar /Library/java/Extensions/selenium-server-standalone-3.4.0.jar > $LOG_DIR/$today.log 2>&1 &
+            fi
+            ;;
+        'stop' )
+            ps aux | grep selenium | grep -v grep | awk '{print \$2}' | xargs kill -9
+            ;;
+    esac
+    eval $select_command
+}
+
+# masterブランチを最新にする
+_update_master() {
+    git checkout master
+    git fetch --all
+    git pull --rebase origin master
+}
+
+# お天気情報を出力する
+_tenki() {
+    case "$1" in
+        "-c") curl -4 http://wttr.in/$2 ;;
+          "") finger Kanagawa@graph.no ;;
+           *) finger $1@graph.no ;;
+    esac
+}
+
+# vagrantのコマンドをfzfで選択
+_fzf_vagrant() {
+    local select_command=`cat <<- EOF | fzf
+		vagrant ssh
+		vagrant up
+		vagrant provision
+		vagrant reload
+		vagrant halt
+		vagrant reload&provision
+		vagrant global-status
+	EOF`
+    test -z "$select_command" && return
+    local arg=`echo $select_command | sed "s/vagrant //g"`
+    case "${arg}" in
+        'ssh' )
+            vagrant ssh 
+            ;;
+        'up' ) 
+            vagrant up
+            ;;
+        'provision' )
+            vagrant provisio
+            ;;
+        'reload' )
+            vagrant reload
+            ;;
+        'halt' )
+            vagrant halt
+            ;;
+        'global-status' )
+            vagrant global-status
+            ;;
+        'reload&provision' )
+            vagrant reload
+            vagrant provision
+            ;;
+        *) echo "${arg} Didn't match anything"
+    esac
+}
+
+# コマンド実行配下にパスワードなど漏れると危険な単語が入力されていないかをチェック
+_check_danger_input() {
+    for danger_word in `cat ~/danger_words.txt`; do
+    echo $danger_word
+        ag --ignore-dir=vendor $danger_word ./*
+    done
+}
+
+# 文字画像を生成。第一引数に生成したい文字を指定。
+_create_bg_img() {
+    local sizeList=(75x75 100x100 320x240 360x480 500x500 600x390 640x480 720x480 1000x1000 1024x768 1280x960)
+    local sizes=($(echo ${sizeList} | tr ' ' '\n' | fzf))
+    local backgroundColor="#000000"
+    local fillColor="#ff8ad8" # 文字色
+    # フォントによっては日本語対応しておらず「?」になってしまうので注意
+    local fontPath=/System/Library/Fonts/ヒラギノ明朝\ ProN.ttc 
+    local default_caption='(･∀･)'
+    local caption=${1:-$default_caption}
+    for size in ${sizes[@]}; do
+        local imgPath=~/Desktop/${size}.png
+        echo $imgPath
+        convert \
+          -size $size  \
+          -background $backgroundColor\
+          -fill $fillColor \
+          -font $fontPath \
+          caption:$caption \
+          $imgPath
+    done
+}
+
+# gmailを既読を付けずにタイトルだけ表示
+_gmail() {
+    local USER_ID=`cat ~/account.json | jq -r '.gmail.user_id'` 
+    local PASS=`cat ~/account.json | jq -r '.gmail.pass'` 
+    curl -u ${USER_ID}:${PASS} --silent "https://mail.google.com/mail/feed/atom" \
+        | tr -d '\n' \
+        | awk -F '<entry>' '{for (i=2; i<=NF; i++) {print $i}}' \
+        | sed -n "s/<title>\(.*\)<\/title.*name>\(.*\)<\/name>.*/\2 - \1/p"
+}
+
+# 定義済み関数をfzfで中身を見ながら出力する
+_show_functions() {
+    local func=$(
+       typeset -f \
+       | grep ".*() {$" \
+       | grep "^[a-z_]" \
+       | tr -d "() {"   \
+       | fzf --preview "source ~/.zshrc; typeset -f {}"
+   )
+    if [ -z "$func" ]; then
+        return
+    fi
+    typeset -f $func
+}
+
+# cddの履歴クリーン。存在しないPATHを履歴から削除
+_clear_cdr_cache() {
+    # while文はforkされて別プロセスで実行されるため、while文中の変数が使えない
+    # そのため別関数として切り出す
+    local getDeleteNumbers() {
+        local delete_line_number=1
+        local delete_line_numbers=()
+        while read line; do
+            ls $line >/dev/null 2>&1 
+            if [ $? -eq 1 ]; then
+                # 削除する際、上から順に削除すると行番号がずれるので逆順で配列に入れる
+                delete_line_numbers=($delete_line_number "${delete_line_numbers[@]}" )
+            fi
+            delete_line_number=$(expr $delete_line_number + 1)
+        done
+        echo "${delete_line_numbers[@]}"
+    }
+
+    local history_cache=~/.cache/cdr/history
+    local delete_line_numbers=($(cat $history_cache | tr -d "$" | tr -d "'" | getDeleteNumbers))
+    for delete_line_number in "${delete_line_numbers[@]}"
+    do
+        printf "\e[31;1m$(sed -n ${delete_line_number}p $history_cache)\n"
+        sed -i '' -e "${delete_line_number}d" $history_cache
+    done
+}
+
+_open_path_by_vim() {
+  vim "$(which -p "$1")"
+}
+
+# fzfの出力をしてからvimで開く
+_fzf_vim() {
+    local files=($(fzf --preview "bat --color always {}"))
+    [ -z "$files" ] && return
+    vim -p "${files[@]}"
+}
+
+# 現在開いているfinderのディレクトリに移動
+_cd_opend_finder() {
+    cd "$(osascript -e 'tell app "Finder" to POSIX path of (insertion location as alias)')";
+}
+
+# builtin-commandsのmanを参照
+_man_builtin_command_zsh() {
+    man zshbuiltins | less -p "^       $1 "
+}
+
+_man_builtin_command_bash() {
+    man bash | less -p "^       $1 "
+}
+
+# ログインShellを切り替える
+_switch_login_shell() {
+    local target=$(cat /etc/shells | grep '^/' | fzf)
+    [ -z "$target" ] && return
+    chsh -s $target
+}
+
+# インストール一覧コマンド集
+_show_installed_list() {
+    local targets=`cat <<-EOS | fzf
+	brew
+	cask
+	mas
+	npm
+	yarn
+	gem
+	pip
+	pip3
+	EOS`
+    [ -z "$targets" ] && return
+    echo "$targets" | while read target; do
+        local cmd=''
+        case $target in
+            'cask')
+                cmd='brew cask list'
+                ;;
+            'npm')
+                cmd='npm ls -g'
+                ;;
+            *) cmd="$target list"
+        esac
+        printf "\n\e[33m\$ $cmd\e[m\n"
+        eval $cmd
+    done
+}
+
+# phpbrewによるphpバージョン切り替え
+_fzf_phpbrew() {
+    local currentVersion=$(php -v)
+    local selected=$(phpbrew list \
+        | grep php \
+        | tr -d ' ' \
+        | tr -d '*' \
+        | currentVersion=$(php -v) fzf --preview="echo '$(php -v)'" --preview-window=down:50%
+    )
+    [ -z "$selected" ] && return
+    phpbrew use $selected
+    echo '$ php -v' && php -v
+}
