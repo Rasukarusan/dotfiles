@@ -127,8 +127,7 @@ typeset -U path PATH
 KEYTIMEOUT=0
 source /Users/$(whoami)/.phpbrew/bashrc
 
-[ -f ~/dotfiles/zsh/functions.sh ] && source ~/dotfiles/zsh/functions.sh
-[ -f ~/dotfiles/zsh/function_alias.sh ] && source ~/dotfiles/zsh/function_alias.sh
+[ -f ~/dotfiles/zsh/function.sh ] && source ~/dotfiles/zsh/function.sh
 [ -f ~/dotfiles/zsh/alias_script.sh ] && source ~/dotfiles/zsh/alias_script.sh
 [ -f ~/dotfiles/zsh/alias_command.sh ] && source ~/dotfiles/zsh/alias_command.sh
 [ -f ~/dotfiles/zsh/alias_function.sh ] && source ~/dotfiles/zsh/alias_function.sh

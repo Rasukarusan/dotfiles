@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 # ============================== #
 #         alias-Command          #
 # ============================== #
@@ -11,23 +10,20 @@ alias lh='ls -lh'
 alias grep='grep --color=auto'
 alias ...='cd ../../'
 alias ....='cd ../../../'
-alias his='history -E -i 1 | fzf'
 alias history='history 1'
+alias his='eval $(\history 1 | cut -d " " -f 3- | tail -r | fzf)'
 alias time='/usr/bin/time -p'
 alias ssh='TERM=xterm ssh'
 # treeコマンドで日本語表示
-alias tree="tree --charset=C -NC"
+alias tree='tree --charset=C -NC'
 alias szsh='source ~/.zshrc'
 alias stmux='tmux source-file ~/.tmux.conf'
 alias tconf='vim ~/.tmux.conf'
 alias hp='vim ~/.hyper.js'
 alias plantuml='java -jar ~/.plantuml/plantuml.jar'
-alias selenium-stop="ps aux | grep selenium | grep -v grep | awk '{print \$2}' | xargs kill -9"
-alias selenium-status='ps aux | grep -v grep | grep -c selenium'
 alias grepr='grep -r'
 alias phpS='php -S localhost:9000'
 alias phps='hyper-run -s localhost:9000 -t .'
-alias cot='open $1 -a /Applications/CotEditor.app'
 alias js='osascript -l JavaScript'
 # terminalの描画がおかしいときにそれも直してclearする
 alias clear='stty sane;clear'
@@ -35,7 +31,6 @@ alias gd='git diff -b'
 alias gdc='git diff -b --cached'
 # 現在のブランチをpullする
 alias -g gpl='git pull --rebase origin $(git branch | grep "*" | sed -e "s/^\*\s*//g")'
-alias chromium='/Applications/Chromium.app/Contents/MacOS/Chromium --headless --disable-gpu'
 alias repoo='vim `ls ~/Desktop/ru-she-1nian-mu/DayReport/*.md | fzf`'
 alias memo='vim ~/Desktop/ru-she-1nian-mu/memo.md -c ":$"'
 # git checkout branchをfzfで選択
@@ -46,7 +41,7 @@ alias gv='git remote -v'
 # 全てのファイルをgit checkout
 alias gca='git checkout $(git diff --name-only)'
 # ctagsをbrew installしたものを使う
-alias ctags="`brew --prefix`/bin/ctags"
+alias ctags='$(brew --prefix)/bin/ctags'
 # コマンドでgoogle翻訳
 alias trans='trans -b en:ja'
 alias transj='trans -b ja:en'
@@ -60,8 +55,6 @@ alias pcopy='pbpaste | pbcopy'
 alias rtable='pbpaste | tr "\t" "|" | sed -e "s/^/|/g" -e "s/$/|/g" -e "/|\"/s/|$//g" -e "/\"|/s/^|//g" | tr -d \" | pbcopy'
 # modifiedのファイルを全てタブで開く
 alias vims='vim -p `git diff --name-only`'
-# fzfの出力をしてからvimで開く
-alias vimf='vim -p `fzf`'
 # Unite tabでコピーしたものをタブで開く
 alias vimt="vim -p `pbpaste | sed 's/(\/)//g' | awk -F ':' '{print $2}' | grep -v '\[' | tr '\n' ' '`"
 # 合計値を出す。列が一つのときのみ有効
@@ -81,7 +74,6 @@ alias p1e='vim ~/p1'
 alias p2e='vim ~/p2'
 alias pd='vimdiff ~/p1 ~/p2'
 alias pst='pstree | less -S'
-alias gol='gol -f'
 alias oo='open .'
 alias hosts='sudo vim /etc/hosts'
 alias dekita='afplay ~/Music/iTunes/iTunes\ Media/Music/Unknown\ Artist/Unknown\ Album/dekita.mp3'
@@ -103,8 +95,6 @@ alias xcode-restore='update_xcode_plugins --restore'
 alias xcode-unsign='update_xcode_plugins --unsign'
 alias copyMinVimrc='cat ~/dotfiles/min_vimrc | grep -v "\"" | pbcopy'
 alias copyMinBashrc='cat ~/dotfiles/min_bashrc | grep -v "#" | pbcopy'
-alias selenium-stop="ps aux | grep selenium | grep -v grep | awk '{print \$2}' | xargs kill -9"
-alias selenium-status='ps aux | grep -v grep | grep -c selenium'
 # wifiをON/OFFする
 alias wifiConnect='networksetup -setairportpower en0 off && networksetup -setairportpower en0 on'
 # printfの色出力を一覧表示
