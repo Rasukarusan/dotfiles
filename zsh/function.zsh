@@ -896,7 +896,7 @@ _open_path_by_vim() {
 
 # fzfの出力をしてからvimで開く
 _fzf_vim() {
-    local files=($(fzf --preview "bat --color always {}"))
+    local files=($(find . -type f -o -type l | fzf --preview "bat --color always {}"))
     [ -z "$files" ] && return
     vim -p "${files[@]}"
 }
