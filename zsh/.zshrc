@@ -3,7 +3,7 @@ bindkey -e # ctrl-aやctrl-eでカーソル移動
 # zshのTab補完
 autoload -U compinit && compinit
 # テーマ読み込み
-source ~/dotfiles/zsh/zsh-my-theme.sh
+source ~/dotfiles/zsh/zsh-my-theme.zsh
 # Tabで選択できるように
 zstyle ':completion:*:default' menu select=2
 # 補完で大文字にもマッチ
@@ -127,9 +127,9 @@ typeset -U path PATH
 KEYTIMEOUT=0
 source /Users/$(whoami)/.phpbrew/bashrc
 
-[ -f ~/dotfiles/zsh/function.sh ] && source ~/dotfiles/zsh/function.sh
-[ -f ~/dotfiles/zsh/alias_script.sh ] && source ~/dotfiles/zsh/alias_script.sh
-[ -f ~/dotfiles/zsh/alias_command.sh ] && source ~/dotfiles/zsh/alias_command.sh
-[ -f ~/dotfiles/zsh/alias_function.sh ] && source ~/dotfiles/zsh/alias_function.sh
+[ -f ~/dotfiles/zsh/function.zsh ] && source ~/dotfiles/zsh/function.zsh
+[ -f ~/dotfiles/zsh/alias_script.zsh ] && source ~/dotfiles/zsh/alias_script.zsh
+[ -f ~/dotfiles/zsh/alias_command.zsh ] && source ~/dotfiles/zsh/alias_command.zsh
+[ -f ~/dotfiles/zsh/alias_function.zsh ] && source ~/dotfiles/zsh/alias_function.zsh
 # zshrc.localを読み込む(行末に書くことで設定を上書きする)
 [ -f ~/.zshrc.local ] && source ~/.zshrc.local
