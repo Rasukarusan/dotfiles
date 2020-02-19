@@ -617,9 +617,9 @@ _edit_vim_files() {
 _edit_zsh_files() {
     local zshFiles=$(find ~/dotfiles/zsh -type f)
     # 文字数でソートする
-    local editFile=$(echo "$zshFiles" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf)
-    test -z "$editFile" && return
-    vim $editFile
+    local editFiles=($(echo "$zshFiles" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf))
+    test -z "$editFiles" && return
+    vim -p "${editFiles[@]}"
 }
 
 # git stashでよく使うコマンド集
