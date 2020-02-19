@@ -617,7 +617,7 @@ _edit_vim_files() {
 _edit_zsh_files() {
     local zshFiles=$(find ~/dotfiles/zsh -type f)
     # 文字数でソートする
-    local editFiles=($(echo "$zshFiles" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf))
+    local editFiles=($(echo "$zshFiles" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf --preview "bat --color always {}"))
     test -z "$editFiles" && return
     vim -p "${editFiles[@]}"
 }
