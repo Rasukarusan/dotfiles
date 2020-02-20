@@ -11,7 +11,7 @@ alias grep='grep --color=auto'
 alias ...='cd ../../'
 alias ....='cd ../../../'
 alias history='history 1'
-alias his='eval $(\history 1 | cut -d " " -f 3- | tail -r | fzf)'
+alias his='eval $(\history 1 | cut -d " " -f 3- | tail -r | cut -d " " -f 2- | sed "s/^ //g" | fzf)'
 alias time='/usr/bin/time -p'
 alias ssh='TERM=xterm ssh'
 # treeコマンドで日本語表示
