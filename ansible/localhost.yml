@@ -5,3 +5,4 @@
   roles:
     - homebrew
     - homebrew_cask
+    - macos
