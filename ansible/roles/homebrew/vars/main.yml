@@ -6,9 +6,8 @@ taps:
   - Rasukarusan/tap
 
 packages:
-  - name: fzf
-  - name: bat
   - name: autoconf
+  - name: bat
   - name: carthage
   - name: composer
   - name: coreutils
@@ -17,6 +16,7 @@ packages:
   - name: diff-so-fancy
   - name: exiftool
   - name: fish
+  - name: fzf
   - name: fzf-chrome-active-tab
   - name: gawk
   - name: gcc
@@ -38,6 +38,7 @@ packages:
   - name: nodebrew
   - name: phpbrew
   - name: pyenv
+  - name: python3
   - name: ricty
   - name: ripgrep
   - name: ruby
