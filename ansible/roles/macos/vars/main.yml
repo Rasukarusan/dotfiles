@@ -1,0 +1,3 @@
+settings:
+  - { domain: com.apple.iphonesimulator, key: AllowFullscreenMode, type: bool, value: TRUE }
+  - { domain: com.apple.iphonesimulator, key: ShowSingleTouches, type: bool, value: TRUE }
