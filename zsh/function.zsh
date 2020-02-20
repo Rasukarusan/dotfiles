@@ -2,6 +2,19 @@
 #            Function           #
 # ==============================#
 
+# fgを使わずctrl+zで行ったり来たりする
+fancy-ctrl-z () {
+    if [[ $#BUFFER -eq 0 ]]; then
+        BUFFER="fg"
+        zle accept-line
+    else
+        zle push-input
+        zle clear-screen
+    fi
+}
+zle -N fancy-ctrl-z
+bindkey '^Z' fancy-ctrl-z
+
 # fzf版cdd
 _fzf-cdr() {
     local target_dir=$(cdr -l  \
