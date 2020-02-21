@@ -1,13 +1,18 @@
 # PATHがsource ~/.zshrcする度に重複して登録されないようにする
 typeset -U path PATH
 alias vim='nvim'
-[ -f ~/dotfiles/zsh/settings.zsh ] && source ~/dotfiles/zsh/settings.zsh
-[ -f ~/dotfiles/zsh/exports.zsh ] && source ~/dotfiles/zsh/exports.zsh
-[ -f ~/dotfiles/zsh/function.zsh ] && source ~/dotfiles/zsh/function.zsh
-[ -f ~/dotfiles/zsh/alias_script.zsh ] && source ~/dotfiles/zsh/alias_script.zsh
-[ -f ~/dotfiles/zsh/alias_command.zsh ] && source ~/dotfiles/zsh/alias_command.zsh
-[ -f ~/dotfiles/zsh/alias_function.zsh ] && source ~/dotfiles/zsh/alias_function.zsh
-[ -f ~/.phpbrew/bashrc ] && source /Users/$(whoami)/.phpbrew/bashrc
+
+source_file() {
+    [ -n "$1" ] && [ -f $1 ] && source $1
+}
+
+source_file ~/dotfiles/zsh/settings.zsh
+source_file ~/dotfiles/zsh/exports.zsh
+source_file ~/dotfiles/zsh/function.zsh
+source_file ~/dotfiles/zsh/alias_script.zsh
+source_file ~/dotfiles/zsh/alias_command.zsh
+source_file ~/dotfiles/zsh/alias_function.zsh
+source_file ~/.phpbrew/bashrc
 # zshrc.localを読み込む(行末に書くことで設定を上書きする)
-[ -f ~/.zshrc.local ] && source ~/.zshrc.local
+source_file ~/.zshrc.local
 
