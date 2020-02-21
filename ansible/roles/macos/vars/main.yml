@@ -1,3 +1,18 @@
 settings:
   - { domain: com.apple.iphonesimulator, key: AllowFullscreenMode, type: bool, value: TRUE }
   - { domain: com.apple.iphonesimulator, key: ShowSingleTouches, type: bool, value: TRUE }
+files:
+  # Zsh
+  - { src: ~/dotfiles/zsh/zshrc, dest: ~/.zshrc }
+  # Terminal
+  - { src: ~/dotfiles/terminal/tmux.conf, dest: ~/.tmux.conf }
+  - { src: ~/dotfiles/terminal/hyper.js, dest: ~/.hyper.js }
+  # Vim
+  - { src: ~/dotfiles/vim/xvimrc, dest: ~/.xvimrc }
+  - { src: ~/dotfiles/vim/init.vim, dest: ~/.vimrc }
+  - { src: ~/dotfiles/vim/init.vim, dest: ~/.config/nvim/init.vim }
+  - { src: ~/dotfiles/vim/dein.toml, dest: ~/.config/nvim/dein.toml }
+  - { src: ~/dotfiles/vim/plugin_settings, dest: ~/.config/nvim/plugin_settings }
+  - { src: ~/dotfiles/vim/coc/coc-settings.json, dest: ~/.config/nvim/coc-settings.json }
+  - { src: ~/dotfiles/vim/coc/package.json, dest: ~/.config/coc/extensions/package.json }
+  - { src: ~/dotfiles/vim/UltiSnips, dest: ~/.config/nvim/UltiSnips }
