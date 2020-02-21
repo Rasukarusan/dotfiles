@@ -11,5 +11,15 @@
     tags:
       - osx_defaults
 
+  - block:
+    - name: set symbolic link
+      file:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        state: link
+      with_items: "{{ files }}"
+    tags:
+      - symbolic_link
+
   tags:
     - macos
