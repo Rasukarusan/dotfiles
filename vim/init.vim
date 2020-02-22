@@ -94,6 +94,13 @@ hi QuickFixLine ctermbg=242 guibg=#a2227d
 " Cocのlistでカーソル行をわかりやすくするための設定
 hi CursorLine guibg=#a2227d
 hi Search cterm=underline ctermfg=0 ctermbg=11 gui=underline guifg=#f0a0c0 guibg=NONE
+" 拡張子別インデント設定。echo &filetypeでFileTypeを取得可能。
+augroup IndentSettings
+    autocmd!
+    autocmd FileType javascript      setlocal sw=2 sts=2 ts=2 et
+    autocmd FileType typescript      setlocal sw=2 sts=2 ts=2 et
+    autocmd FileType typescript.tsx  setlocal sw=2 sts=2 ts=2 et
+augroup END
 set mouse=a
 set updatetime=250
 " 起動時の画面をスキップ(:introで表示可能)
