@@ -11,7 +11,7 @@ alias execBatch='sh ~/scripts/execBatch.sh'
 alias cl='sh ~/scripts/clipboard.sh'
 alias ch='sh ~/scripts/chromeHistory.sh'
 alias pullReqCaption='sh ~/scripts/pullReqCaption.sh'
-alias showColors='~/getColorPrintf.sh'
+alias showColors='~/scripts/getColorPrintf.sh'
 alias itt='sh ~/scripts/iterm.sh'
 alias bb='sh ~/scripts/bitbucket.sh'
 # ディスプレイ明るさを0に
