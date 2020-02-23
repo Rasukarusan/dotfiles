@@ -909,7 +909,14 @@ _open_path_by_vim() {
 
 # fzfの出力をしてからvimで開く
 _fzf_vim() {
-    local files=($(find . -type f -o -type l | fzf --preview "bat --color always {}"))
+    local excludeDirs=(
+        node_modules
+    )
+    local excludeCmd
+    for excludeDir in ${excludeDirs[@]}; do
+        excludeCmd="$excludeCmd -type d -name "$excludeDir" -prune -o "
+    done
+    local files=($(eval find . $excludeCmd -type f -o -type l | fzf --preview "bat --color always {}"))
     [ -z "$files" ] && return
     vim -p "${files[@]}"
 }
