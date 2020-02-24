@@ -911,6 +911,7 @@ _open_path_by_vim() {
 _fzf_vim() {
     local excludeDirs=(
         node_modules
+        .git
     )
     local excludeCmd
     for excludeDir in ${excludeDirs[@]}; do
@@ -983,4 +984,16 @@ _fzf_phpbrew() {
     [ -z "$selected" ] && return
     phpbrew use $selected
     echo '$ php -v' && php -v
+}
+
+# npmコマンドをfzfで実行
+_fzf_npm() {
+    if [ -f package.json ]; then 
+        local action=$(cat package.json | jq -r '.scripts | keys | .[]' \
+            | fzf --preview "cat package.json | jq -r '.scripts[\"{}\"]'" --preview-window=up:1)
+        [ -z "$action" ] && return
+        npm run $action
+    else
+        echo 'Not Found package.json'
+    fi
 }
