@@ -161,8 +161,8 @@ _git_checkout(){
 _git_reset() {
     local path_working_tree_root=$(git rev-parse --show-cdup)
     [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
-    local files=($(git -C $path_working_tree_root ls-files \
-        | fzf --prompt "RESET FILES>" --preview "git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy"))
+    local files=($(git -C $path_working_tree_root diff --name-only --cached \
+        | fzf --prompt "RESET FILES>" --preview "git diff --cached --color=always $(git rev-parse --show-cdup){} | diff-so-fancy"))
     [ -z "$files" ] && return
     for file in "${files[@]}";do
         git reset ${path_working_tree_root}${file}
