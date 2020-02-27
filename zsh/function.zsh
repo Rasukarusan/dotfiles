@@ -109,7 +109,7 @@ _git_add(){
     local previewCmd='git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy'
     # Untracked fileのものだけ表示
     if [ "$1" = '-u' ]; then
-        option='--others'
+        option='--others --exclude-standard'
         previewCmd='bat --color always {}'
     fi
     [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
