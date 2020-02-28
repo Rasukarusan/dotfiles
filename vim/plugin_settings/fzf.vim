@@ -20,6 +20,9 @@ function! FloatingFZF()
     call nvim_open_win(buf, v:true, opts)
 endfunction
 
+command! -bang -nargs=? -complete=dir Files
+    \ call fzf#vim#files(<q-args>, {'options': [ '--preview', 'bat --color always {}']}, <bang>0)
+
 " ファイル検索
 nmap <C-p> :Files<CR>
 " コマンド履歴
