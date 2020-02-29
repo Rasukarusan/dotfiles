@@ -23,8 +23,11 @@ endfunction
 command! -bang -nargs=? -complete=dir Files
     \ call fzf#vim#files(<q-args>, {'options': [ '--preview', 'bat --color always {}']}, <bang>0)
 
+command! -bang -nargs=? -complete=dir GFiles
+    \ call fzf#vim#gitfiles(<q-args>, {'options': [ '--preview', 'bat --color always {}']}, <bang>0)
+
 " ファイル検索
-nmap <C-p> :Files<CR>
+nmap <C-p> :GFiles<CR>
 " コマンド履歴
 " nmap <C-h> :History:<CR>
 " 検索単語履歴
