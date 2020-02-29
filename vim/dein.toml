@@ -140,9 +140,11 @@ hook_add = 'source ~/.config/nvim/plugin_settings/php_localvarcheck.vim'
 
 # --------------------------------------------
 # Typscript IDE
+# filetypeを勝手に変えてしまい、vim-fzfでtsxを開くとtypescriptreactで
+# 認識されてハイライトが効かなくなってしまうため、コメントアウト
 # --------------------------------------------
-[[plugins]]
-repo = 'Quramy/tsuquyomi'
+# [[plugins]]
+# repo = 'Quramy/tsuquyomi'
 
 # --------------------------------------------
 # Typscriptシンタックスハイライト
@@ -155,7 +157,6 @@ repo = 'leafgarland/typescript-vim'
 # --------------------------------------------
 [[plugins]]
 repo = 'peitalin/vim-jsx-typescript'
-
 
 # --------------------------------------------
 # JavaScriptハイライト
@@ -224,5 +225,5 @@ hook_post_update = '''
 # --------------------------------------------
 [[plugins]]
 repo = 'airblade/vim-gitgutter'
-hook_add = 'source ~/.config/nvim/plugin_settings/vim-gitgutter.vim'
+# hook_add = 'source ~/.config/nvim/plugin_settings/vim-gitgutter.vim'
 
