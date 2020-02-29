@@ -100,6 +100,7 @@ augroup IndentSettings
     autocmd FileType javascript      setlocal sw=2 sts=2 ts=2 et
     autocmd FileType typescript      setlocal sw=2 sts=2 ts=2 et
     autocmd FileType typescript.tsx  setlocal sw=2 sts=2 ts=2 et
+    autocmd BufEnter *.tsx set filetype=typescript
 augroup END
 set mouse=a
 set updatetime=250
@@ -239,4 +240,3 @@ vnoremap tl >>
 nnoremap rr :source ~/.config/nvim/init.vim<CR>
 " 現在開いているスクリプトを読み込む
 nnoremap S :source %<CR>
-
