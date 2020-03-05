@@ -3,7 +3,7 @@
 # ==============================#
 
 # crontab -eでもvimを開くようにする
-export EDITOR=vim
+export EDITOR=nvim
 # メモリに保存される履歴の件数
 export HISTSIZE=1000
 # 履歴ファイルに保存される履歴の件数
@@ -30,7 +30,7 @@ export LANG=ja_JP.UTF-8
 export FZF_DEFAULT_OPTS='--color=fg+:11 --height 70% --reverse --select-1 --exit-0 --multi --bind ctrl-a:select-all,ctrl-d:deselect-all,ctrl-t:toggle-all'
 export MY_TARGET_GIT_DIR=(
     ~/dotfiles
-    ~/Desktop/ru-she-1nian-mu
+    ~/Desktop/develop_tools
 )
 # ggrepをgrepにするため
 export PATH="/usr/local/opt/grep/libexec/gnubin:$PATH"
