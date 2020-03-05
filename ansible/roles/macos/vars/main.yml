@@ -1,6 +1,7 @@
 settings:
   - { domain: com.apple.iphonesimulator, key: AllowFullscreenMode, type: bool, value: TRUE }
   - { domain: com.apple.iphonesimulator, key: ShowSingleTouches, type: bool, value: TRUE }
+  - { domain: com.apple.finder, key: QuitMenuItem, type: bool, value: TRUE }
 files:
   # Zsh
   - { src: ~/dotfiles/zsh/zshrc, dest: ~/.zshrc }
