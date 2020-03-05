@@ -12,5 +12,6 @@ fi
 # Install Ansible
 if ! exists ansible ; then
     brew install ansible
-    cd ansible && ansible-playbook -i inventory/localhost localhost.yml
+    cd ansible
+    ansible-playbook -i inventory/localhost localhost.yml --ask-become-pass
 fi
