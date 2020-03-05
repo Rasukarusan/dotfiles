@@ -13,7 +13,7 @@ function! s:denite_my_settings() abort
 endfunction
 
 " キーマップ
-noremap <Space>h :Denite command_history<CR>
+" noremap <Space>h :Denite command_history<CR>
 
 " 候補表示の設定。Floating Window
 " let s:denite_win_width_percent = 1.0
