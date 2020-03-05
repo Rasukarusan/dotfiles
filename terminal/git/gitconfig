@@ -1,0 +1,24 @@
+[user]
+	name = 
+	email = 
+[core]
+	excludesfile = ~/.gitignore_global
+	quotepath = false
+	editor = nvim
+	pager = diff-so-fancy | less --tabs=4 -R
+[init]
+	templatedir = ~/.git_template
+[color]
+	ui = true
+[color "diff-highlight"]
+	oldNormal = red 
+	oldHighlight = red  52
+	newNormal = green
+	newHighlight = green 22
+[color "diff"]
+	meta = yellow
+	frag = magenta 
+	commit = yellow 
+	old = red 
+	new = green 
+	whitespace = red reverse
