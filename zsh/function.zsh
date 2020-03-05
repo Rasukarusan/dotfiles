@@ -279,7 +279,7 @@ _show_mail_log() {
 
 # 記事メモコマンド
 _write_article() {
-    local ARTICLE_DIR=/Users/`whoami`/Desktop/ru-she-1nian-mu/articles
+    local ARTICLE_DIR=/Users/`whoami`/Desktop/develop_tools/articles
     local article=`ls ${ARTICLE_DIR}/*.md | xargs basename | fzf`
 
     # 何も選択しなかった場合は終了
@@ -301,7 +301,7 @@ _move_posted_articles() {
     # 投稿完了を意味する目印
     local POSTED_MARK='完'
     # 下書き記事の保存場所
-    local ARTICLE_DIR=/Users/`whoami`/Desktop/ru-she-1nian-mu/articles
+    local ARTICLE_DIR=/Users/`whoami`/Desktop/develop_tools/articles
 
     # 投稿が完了した記事を保存するディレクトリ
     local POSTED_DIR=$ARTICLE_DIR/posted
