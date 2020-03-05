@@ -1,0 +1,12 @@
+logs/
+*.sql
+*.css
+tags
+*.log
+*%*
+*.map
+*.min.js
+jquery*
+GPATH
+GRTAGS
+GTAGS
