@@ -1,6 +1,6 @@
 {
     "diagnostic.enable": false,
-    "coc.preferences.jumpCommand": "drop",
+    "coc.preferences.jumpCommand": "tabe",
     "list.autoResize":false,
     "list.normalMappings": {
         "<C-t>": "action:tabe",
