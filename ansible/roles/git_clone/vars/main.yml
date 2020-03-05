@@ -1,5 +1,6 @@
 repositories:
   - {repo: https://github.com/mollifier/anyframe, dest: ~/.zsh/anyframe}
-  - {repo: https://github.com/Rasukarusan/nvim.git , dest: ~/.conig/nvim}
+  - {repo: https://github.com/Rasukarusan/nvim.git , dest: ~/.config/nvim}
+  - {repo: https://github.com/Rasukarusan/nvim.git , dest: ~/.vim}
   - {repo: https://github.com/Rasukarusan/develop_tools.git, dest: ~/Desktop/develop_tools}
   - {repo: https://github.com/Rasukarusan/chrome-extension-packs.git, dest: ~/Documents/chrome-extension-packs}
