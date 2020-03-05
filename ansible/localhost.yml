@@ -5,4 +5,5 @@
   roles:
     - homebrew
     - homebrew_cask
+    - git_clone
     - macos
