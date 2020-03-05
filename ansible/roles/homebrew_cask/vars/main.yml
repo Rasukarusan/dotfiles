@@ -1,4 +1,5 @@
 packages:
+  - name: font-ricty-diminished
   - name: google-chrome
   - name: firefox
   - name: google-japanese-ime
