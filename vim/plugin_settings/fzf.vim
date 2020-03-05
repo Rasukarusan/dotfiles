@@ -26,9 +26,13 @@ command! -bang -nargs=? -complete=dir Files
 command! -bang -nargs=? -complete=dir GFiles
     \ call fzf#vim#gitfiles(<q-args>, {'options': [ '--preview', 'bat --color always {}']}, <bang>0)
 
-" ファイル検索
+" Git管理下ファイル検索
 nmap <C-p> :GFiles<CR>
+" 以前開いたことのあるファイルを開く
+nmap <SPACE>o :History<CR>
 " コマンド履歴
-" nmap <C-h> :History:<CR>
+nmap <SPACE>c :History:<CR>
 " 検索単語履歴
-" nmap <C-h>w :History/<CR>
+nmap <SPACE>/ :History/<CR>
+" Window移動
+nmap <SPACE>w :Windows<CR>
