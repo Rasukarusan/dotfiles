@@ -104,6 +104,10 @@ _process_kill(){
 
 # git add をfzfでdiffを見ながら選択
 _git_add(){
+    if [ "$1" = '-A' ]; then
+        git add -A
+        return
+    fi
     local path_working_tree_root=$(git rev-parse --show-cdup)
     local option='--modified --exclude-standard'
     local previewCmd='git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy'
