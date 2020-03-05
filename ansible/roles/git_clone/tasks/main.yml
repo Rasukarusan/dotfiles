@@ -1,0 +1,8 @@
+- block:
+  - name: git clone repositories
+    git:
+      repo: "{{ item.repo }}"
+      dest: "{{ item.dest }}"
+    with_items: "{{ repositories }}"
+  tags:
+    - git_clone
