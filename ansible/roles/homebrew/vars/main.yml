@@ -1,9 +1,9 @@
 taps:
   - homebrew/cask
   - homebrew/core
-  - homebrew/php
   - heroku/brew
   - Rasukarusan/tap
+  - homebrew/cask-fonts
 
 packages:
   - name: autoconf
@@ -36,10 +36,8 @@ packages:
   - name: nkf
   - name: node
   - name: nodebrew
-  - name: phpbrew
   - name: pyenv
   - name: python3
-  - name: ricty
   - name: ripgrep
   - name: ruby
   - name: the_silver_searcher
