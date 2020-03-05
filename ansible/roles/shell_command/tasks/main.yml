@@ -1,0 +1,35 @@
+- block:
+  - block: 
+    - name: Install npm packages
+      npm:
+        name: "{{ item }}"
+        global: yes
+      with_items: "{{ npm_packages }}"
+    tags:
+      - npm
+
+  - block: 
+    - name: Install pip
+      shell: easy_install pip
+      become: yes
+      changed_when: false
+
+    - name: Install Neovim by pip
+      shell: pip install neovim
+      changed_when: false
+
+    - name: Install Neovim by pip3
+      shell: pip3 install neovim
+      changed_when: false
+
+    - name: Download dein
+      get_url: 
+        url: https://raw.githubusercontent.com/Shougo/dein.vim/master/bin/installer.sh 
+        dest: ~/.config/nvim/
+
+    - name: Install dein
+      shell: sh ~/.config/nvim/installer.sh ~/.config/nvim/dein
+      changed_when: false
+
+  tags:
+    - shell_command

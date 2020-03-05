@@ -2,6 +2,20 @@ settings:
   - { domain: com.apple.iphonesimulator, key: AllowFullscreenMode, type: bool, value: TRUE }
   - { domain: com.apple.iphonesimulator, key: ShowSingleTouches, type: bool, value: TRUE }
   - { domain: com.apple.finder, key: QuitMenuItem, type: bool, value: TRUE }
+
+directories:
+  - {path: ~/.zsh}
+  - {path: ~/.config/nvim}
+  - {path: ~/.cache/cdr}
+
+modes:
+  - {path: /usr/local/share/zsh, mode: 755}
+  - {path: /usr/local/share/zsh/site-functions, mode: 755}
+
+removes:
+  - {path: ~/.hyper.js}
+  - {path: ~/.config/nvim/installer.sh}
+
 files:
   # Zsh
   - { src: ~/dotfiles/zsh/zshrc, dest: ~/.zshrc }

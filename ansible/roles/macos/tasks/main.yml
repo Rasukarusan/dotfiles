@@ -21,5 +21,32 @@
     tags:
       - symbolic_link
 
+  - block:
+    - name: make directories
+      file:
+        path: "{{ item.path }}"
+        state: directory
+      with_items: "{{ directories }}"
+    tags:
+      - directories
+
+  - block:
+    - name: change mode
+      file:
+        path: "{{ item.path }}"
+        mode: "{{ item.mode }}"
+      with_items: "{{ modes }}"
+    tags:
+      - change_mode
+
+  - block:
+    - name: remove files
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      with_items: "{{ removes }}"
+    tags:
+      - remove_files
+
   tags:
     - macos
