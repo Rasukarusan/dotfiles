@@ -2,7 +2,7 @@
   "dependencies": {
     "coc-json": ">=1.2.5",
     "coc-phpls": ">=2.1.7",
-    "coc-snippets": ">=2.1.19",
+    "coc-snippets": ">=2.1.21",
     "coc-solargraph": ">=1.1.6",
     "coc-tsserver": ">=1.4.9",
     "coc-ultisnips": ">=1.2.3"
