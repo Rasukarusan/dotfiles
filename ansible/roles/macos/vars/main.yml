@@ -8,6 +8,10 @@ files:
   # Terminal
   - { src: ~/dotfiles/terminal/tmux.conf, dest: ~/.tmux.conf }
   - { src: ~/dotfiles/terminal/hyper.js, dest: ~/.hyper.js }
+  - { src: ~/dotfiles/terminal/agignore, dest: ~/.agignore }
+  - { src: ~/dotfiles/terminal/gitconfig, dest: ~/.gitconfig }
+  - { src: ~/dotfiles/terminal/gitignore_global, dest: ~/.gitignore_global }
+  - { src: ~/dotfiles/terminal/git_template, dest: ~/.git_template }
   # Vim
   - { src: ~/dotfiles/vim/xvimrc, dest: ~/.xvimrc }
   - { src: ~/dotfiles/vim/init.vim, dest: ~/.vimrc }
