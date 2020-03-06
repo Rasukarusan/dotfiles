@@ -1001,3 +1001,14 @@ _fzf_npm() {
         echo 'Not Found package.json'
     fi
 }
+
+# sedで一括置換
+_replace_all() {
+
+    if [ $# -ne 2 ];then
+        echo 'Usage: _replace_all $search $replace'
+        return
+    fi
+
+    find . -type f -print0 | xargs -0 gsed -i -e "s/$1/$2/"
+}
