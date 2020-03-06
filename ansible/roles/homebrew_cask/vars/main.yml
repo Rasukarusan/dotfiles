@@ -13,3 +13,4 @@ packages:
   - name: virtualbox
   - name: sequel-pro-nightly
   - name: ngrok
+  - name: java11
