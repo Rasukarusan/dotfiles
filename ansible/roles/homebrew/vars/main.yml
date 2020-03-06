@@ -4,6 +4,7 @@ taps:
   - heroku/brew
   - Rasukarusan/tap
   - homebrew/cask-fonts
+  - homebrew/cask-versions # for java
 
 packages:
   - name: autoconf
