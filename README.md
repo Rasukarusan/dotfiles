@@ -19,3 +19,10 @@ Should run following command in `nvim`.
 :CocInstall
 :checkhealth
 ```
+
+## Chrome Setup
+
+- extension toolbar menu
+
+1. Access `chrome://flags/`.
+2. Enable `Extensions Toolbar Menu`.
