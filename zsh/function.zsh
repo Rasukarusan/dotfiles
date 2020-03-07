@@ -175,14 +175,12 @@ _git_reset() {
 
 # fgをfzfで
 _fgg() {
-    local wc=$(jobs | grep -c ^)
-    if [ $wc -ne 0 ]; then
-        local job=$(jobs | awk -F "suspended" "{print $1 $2}"|sed -e "s/\-//g" -e "s/\+//g" -e "s/\[//g" -e "s/\]//g" | grep -v pwd | fzf | awk "{print $1}")
-        local wc_grep=$(echo $job | grep -v grep | grep 'suspended')
-        if [ "$wc_grep" != "" ]; then
-            fg %$job
-        fi
-    fi
+    local job=$(jobs \
+        | grep  '^\[' \
+        | fzf \
+        |grep -oP '(?<=\[)[1-9]*(?=\])'
+    )
+    [ -n "$job" ] && fg %${job}
 }
 
 # コマンド完了時に通知を受け取る
