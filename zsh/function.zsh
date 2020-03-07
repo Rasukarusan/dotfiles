@@ -83,7 +83,7 @@ _git_log_preview_open() {
             --prompt 'SELECT COMMIT>' \
             --delimiter=' ' --with-nth 1.. \
             --preview 'git show --color=always {1}' \
-            --bind 'ctrl-y:execute-silent(echo -n {1} | pbcopy)' \
+            --bind 'ctrl-y:execute-silent(echo -n {} | pbcopy)' \
             --preview-window=right:50% \
             --height=100% \
         | awk '{print $1}'
