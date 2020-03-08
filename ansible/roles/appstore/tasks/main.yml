@@ -1,0 +1,25 @@
+- block:
+
+  - name: mas is installed
+    shell: brew list
+    register: mas_brew_list
+    changed_when: False
+    check_mode: no
+
+  - block:
+
+      - name: mas get installed list
+        shell: mas list
+        register: mas_installed_list
+        changed_when: False
+        check_mode: no
+
+      - name: mas install items
+        shell: "mas install {{ item.id }}"
+        when: '"item.id" not in mas_installed_list.stdout'
+        with_items: "{{ packages }}"
+
+    when: '"mas" in mas_brew_list.stdout_lines'
+
+  tags:
+    - mas
