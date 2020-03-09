@@ -240,3 +240,16 @@ vnoremap tl >>
 nnoremap rr :source ~/.config/nvim/init.vim<CR>
 " 現在開いているスクリプトを読み込む
 nnoremap S :source %<CR>
+" InsertモードのときはFキーを無効化(MacBookProのキーボードがおかしいせいでF5が入力されしまう等があるため)
+imap <F1> <nop>
+imap <F2> <nop>
+imap <F3> <nop>
+imap <F4> <nop>
+imap <F5> <nop>
+imap <F6> <nop>
+imap <F7> <nop>
+imap <F8> <nop>
+imap <F9> <nop>
+imap <F10> <nop>
+imap <F11> <nop>
+imap <F12> <nop>
