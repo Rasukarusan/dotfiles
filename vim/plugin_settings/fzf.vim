@@ -1,5 +1,9 @@
 set rtp+=/usr/local/opt/fzf
 
+" fzf実行時はステータスバーを非表示に
+autocmd! FileType fzf set laststatus=0 noshowmode noruler
+  \| autocmd BufLeave <buffer> set laststatus=2 showmode ruler
+
 " 候補表示のwindow設定
 if has('nvim')
     let g:fzf_layout = { 'window': 'call FloatingFZF()' }
@@ -22,12 +26,15 @@ endfunction
 
 command! -bang -nargs=? -complete=dir Files
     \ call fzf#vim#files(<q-args>, {'options': [ '--preview', 'bat --color always {}']}, <bang>0)
-
 command! -bang -nargs=? -complete=dir GFiles
     \ call fzf#vim#gitfiles(<q-args>, {'options': [ '--preview', 'bat --color always {}']}, <bang>0)
+command! -bang Colors
+  \ call fzf#vim#colors({'left': '15%', 'options': '--reverse --margin 30%,0'}, <bang>0)
 
 " Git管理下ファイル検索
 nmap <C-p> :GFiles<CR>
+" カレントディレクトリ配下のファイル検索
+command! F :Files
 " 以前開いたことのあるファイルを開く
 nmap <SPACE>o :History<CR>
 " コマンド履歴
