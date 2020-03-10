@@ -843,7 +843,7 @@ _create_bg_img() {
     local backgroundColor="#000000"
     local fillColor="#ff8ad8" # 文字色
     # フォントによっては日本語対応しておらず「?」になってしまうので注意
-    local fontPath=/System/Library/Fonts/ヒラギノ明朝\ ProN.ttc 
+    local fontPath=/System/Library/Fonts/ヒラギノ丸ゴ\ ProN\ W4.ttc
     local default_caption='(･∀･)'
     local caption=${1:-$default_caption}
     for size in ${sizes[@]}; do
