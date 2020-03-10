@@ -619,11 +619,11 @@ _change_config_local() {
 
 # vim関連ファイルをfzfで選択しvimで開く
 _edit_vim_files() {
-    local nvimFiles=$(find ~/dotfiles $XDG_CONFIG_HOME/nvim/myautoload -follow -name "*.vim")
+    local nvimFiles=$(find ~/dotfiles ${XDG_CONFIG_HOME}/nvim/myautoload -follow -name "*.vim")
     local deinToml=~/dotfiles/vim/dein.toml
-    local xvimrc=~/dotfiles/vim/.xvimrc
+    local xvimrc=~/dotfiles/vim/xvimrc
     # 文字数でソートする
-    local editFile=$(echo "$nvimFiles\n$deinToml\n$xvimrc" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf)
+    local editFile=$(echo "${nvimFiles}\n${deinToml}\n${xvimrc}" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf --preview "bat --color always {}")
     test -z "$editFile" && return
     vim $editFile
 }
