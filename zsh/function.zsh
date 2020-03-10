@@ -347,16 +347,22 @@ _markdown_to_redmine() {
     echo "$converted"
 }
 
-# 定義済みの関数を表示
-_show_function() {
-    cmd=`alias | fzf` 
-    if [ -z "$cmd" ]; then 
-        return
-    fi
-    if $(echo $cmd | grep "'" > /dev/null) ; then
+# 定義済みのaliasを表示
+_show_alias() {
+    local cmd=$(alias | sort | fzf)
+    [ -z "$cmd" ] && return
+
+    if $(echo $cmd | grep "'" > /dev/null) ; then # コマンドaliasの場合
         echo $cmd
-    else 
-        functions `echo $cmd | awk -F '=' '{print $2}'`
+    else # 関数aliasの場合
+        ag $cmd ~/dotfiles/zsh
+        local functionName=$(echo $cmd | awk -F '=' '{print $2}')
+        [ -z "$functionName" ] && return
+
+        local definePath=~/dotfiles/zsh/function.zsh
+        local define=$(ag $functionName $definePath | fzf --delimiter $':' --with-nth 1 --preview='echo {3}' | awk -F ':' '{print $1}')
+        [ -z "$define" ] && return
+        vim $definePath +${define}
     fi
 }
 
