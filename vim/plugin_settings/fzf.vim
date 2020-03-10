@@ -34,7 +34,7 @@ command! -bang Colors
 " Git管理下ファイル検索
 nmap <C-p> :GFiles<CR>
 " カレントディレクトリ配下のファイル検索
-command! F :Files
+nmap <Space>f :Files<CR>
 " 以前開いたことのあるファイルを開く
 nmap <SPACE>o :History<CR>
 " コマンド履歴
