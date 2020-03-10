@@ -19,6 +19,7 @@ removes:
 files:
   # Zsh
   - { src: ~/dotfiles/zsh/zshrc, dest: ~/.zshrc }
+  - { src: ~/dotfiles/zsh/.zshrc.local, dest: ~/.zshrc.local }
   # Terminal
   - { src: ~/dotfiles/terminal/tmux.conf, dest: ~/.tmux.conf }
   - { src: ~/dotfiles/terminal/hyper.js, dest: ~/.hyper.js }
