@@ -22,6 +22,10 @@ snippet fzf-preview-window "fzf --preview-window=up/down/right/left:50%"
 --preview-window=${1:up}:50%
 endsnippet
 
+snippet fzf-nth "fzf --with-nth 1,.."
+--with-nth ..$0
+endsnippet
+
 snippet fzf-delimiter "fzf --delimiter $'\t' --widh-nth N"
 --delimiter $'\t' --with-nth ${1:N} 
 endsnippet
