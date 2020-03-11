@@ -418,7 +418,7 @@ _docker_commands() {
         'exec' )
             container=$(docker ps --format "{{.Names}}" | sort | fzf)
             test -z "$container" && return
-            execCommand="docker exec -it $container bash"
+            execCommand="docker exec -it $container $(docker exec -it $container cat /etc/shells | tail +2 | fzf | tr -d '\r')"
             echo $execCommand && eval $execCommand
             ;;
         'logs' )
