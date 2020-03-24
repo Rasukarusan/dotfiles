@@ -418,7 +418,13 @@ _docker_commands() {
         'exec' )
             container=$(docker ps --format "{{.Names}}" | sort | fzf)
             test -z "$container" && return
-            execCommand="docker exec -it $container $(docker exec -it $container cat /etc/shells | tail +2 | fzf | tr -d '\r')"
+            # bashが使えるなら選択の余地なしにbashでログインする
+            availableShells=$(docker exec -it $container cat /etc/shells)
+            if  echo "$availableShells" | grep bash >/dev/null ; then
+                execCommand="docker exec -it $container bash"
+            else
+                execCommand="docker exec -it $container $(echo "$availableShells" | tail +2 | fzf | tr -d '\r')"
+            fi
             echo $execCommand && eval $execCommand
             ;;
         'logs' )
