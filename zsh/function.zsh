@@ -1022,3 +1022,11 @@ _replace_all() {
 
     find . -type f -print0 | xargs -0 gsed -i -e "s/$1/$2/"
 }
+
+# fzfでrm
+_rmm() {
+    for removeFile in $(find . -type f | sort |  fzf --preview='bat --color=always {}'); do
+        echo "$removeFile"
+        rm "$removeFile"
+    done
+}
