@@ -2,6 +2,8 @@ settings:
   - { domain: com.apple.iphonesimulator, key: AllowFullscreenMode, type: bool, value: TRUE }
   - { domain: com.apple.iphonesimulator, key: ShowSingleTouches, type: bool, value: TRUE }
   - { domain: com.apple.finder, key: QuitMenuItem, type: bool, value: TRUE }
+  - { domain: com.apple.screencapture, key: show-thumbnail, type: bool, value: FALSE }
+  - { domain: com.apple.screencapture, key: name, type: string, value: "screenshot_" }
 
 directories:
   - {path: ~/.zsh}
