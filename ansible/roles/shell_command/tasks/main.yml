@@ -31,5 +31,10 @@
       shell: sh ~/.config/nvim/installer.sh ~/.config/nvim/dein
       changed_when: false
 
+    - name: Refresh SystemUIServer for screencapture
+      shell: killall SystemUIServer
+      become: yes
+      changed_when: false
+
   tags:
     - shell_command
