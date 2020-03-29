@@ -43,9 +43,6 @@ zshaddhistory() {
         && ${cmd} != (fg|fgg)
     ]]
 }
-fpath=(~/.zsh/anyframe(N-/) $fpath)
-autoload -Uz anyframe-init
-anyframe-init
 # cdrの設定
 autoload -Uz is-at-least
 if is-at-least 4.3.11
