@@ -183,14 +183,6 @@ _fgg() {
     [ -n "$job" ] && fg %${job}
 }
 
-# コマンド完了時に通知を受け取る
-_noti() {
-    local msg=$1
-    if [ -z "$msg" ]; then
-        msg='コマンド完了'
-    fi
-    terminal-notifier -message "$msg"
-}
 # あらかじめ指定したGitディレクトリを全て最新にする
 _update_dotfile() {
     for targetDir in ${MY_TARGET_GIT_DIR[@]}; do 
@@ -224,23 +216,6 @@ _preview_my_git_diff() {
         return
     fi
     git -C $target_dir add -p && git -C $target_dir commit
-}
-# 全テーブル検索
-_findValue() {
-    # 現在使用している端末のtty
-    local currentTerminal=`tty`
-    # 使用していないが開いている端末のtty
-    local anotherTerminal=`w -h | grep -v "console" | awk '{t="/dev/tty"$2} END {if(t != "'"$currentTerminal"'")print t}'`
-    # 画面分割していない場合終了
-    if [ -z "$anotherTerminal" ]; then
-        anotherTerminal=$currentTerminal
-    fi
-    echo $currentTerminal
-    echo $anotherTerminal
-    # grepで抽出した結果をファイルとして保存する
-    local RESULT_FILE_PATH=~/result.txt
-    sh ~/findValue.sh $1 | tee > $anotherTerminal >(grep --color=never -B 2 -A 2 '|' > $currentTerminal) >(grep --color=never -B 2 -A 2 '|' > $RESULT_FILE_PATH)
-    getTable
 }
 # bcコマンドを簡単にかつ小数点時に.3333となるのを0.3333に直す(0を付け足す)
 _bcc() {
