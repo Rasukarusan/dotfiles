@@ -45,10 +45,6 @@ alias ctags='$(brew --prefix)/bin/ctags'
 # コマンドでgoogle翻訳
 alias trans='trans -b en:ja'
 alias transj='trans -b ja:en'
-# 対象のDBでカラム名を検索
-alias getTable='cat ~/result.txt | tgrep "SELECT * FROM " " WHERE"'
-# Docコメントの"*"を削除してダブルクォートで囲む
-alias deled='(echo -n \" ; pbpaste | sed "s/*//g" ; echo -n \")'
 # ブラウザからコピーした時など、プレーンテキストに戻したい時に使用
 alias pcopy='pbpaste | pbcopy'
 # スプレッドシートから表をコピーしてRedmineのテーブル形式に整形したい時に使用(先頭と末尾に|を挿入,タブを|に置換)
@@ -93,8 +89,6 @@ alias pbc='pbcopy'
 alias myip='curl ifconfig.io'
 alias xcode-restore='update_xcode_plugins --restore'
 alias xcode-unsign='update_xcode_plugins --unsign'
-alias copyMinVimrc='cat ~/dotfiles/min_vimrc | grep -v "\"" | pbcopy'
-alias copyMinBashrc='cat ~/dotfiles/min_bashrc | grep -v "#" | pbcopy'
 # wifiをON/OFFする
 alias wifiConnect='networksetup -setairportpower en0 off && networksetup -setairportpower en0 on'
 # printfの色出力を一覧表示
