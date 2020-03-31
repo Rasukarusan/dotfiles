@@ -5,4 +5,4 @@ repositories:
   - {repo: https://github.com/Rasukarusan/chrome-extension-packs.git, dest: ~/Documents/chrome-extension-packs}
   - {repo: https://github.com/Rasukarusan/keynote-template.git, dest: ~/Documents/keynote-template}
   - {repo: https://github.com/Rasukarusan/scripts.git, dest: ~/scripts}
-  - {repo: https://github.com/Rasukarusan/articles.git, dest: ~/Documents/articles.git}
+  - {repo: https://github.com/Rasukarusan/articles.git, dest: ~/Documents/articles}
