@@ -790,7 +790,7 @@ _fzf_vagrant() {
             vagrant up
             ;;
         'provision' )
-            vagrant provisio
+            vagrant provision
             ;;
         'reload' )
             vagrant reload
