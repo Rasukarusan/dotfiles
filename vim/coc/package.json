@@ -1,8 +1,10 @@
 {
   "dependencies": {
+    "coc-css": ">=1.2.2",
+    "coc-html": ">=1.2.4",
     "coc-json": ">=1.2.5",
     "coc-phpls": ">=2.1.8",
-    "coc-snippets": ">=2.1.22",
+    "coc-snippets": ">=2.1.23",
     "coc-solargraph": ">=1.1.6",
     "coc-tsserver": ">=1.4.12",
     "coc-ultisnips": ">=1.2.3"
