@@ -10,3 +10,5 @@ jquery*
 GPATH
 GRTAGS
 GTAGS
+node_modules
+static
