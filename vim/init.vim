@@ -253,3 +253,6 @@ imap <F9> <nop>
 imap <F10> <nop>
 imap <F11> <nop>
 imap <F12> <nop>
+
+" ページタイトル\nページURL形式をマークダウン記法にする
+nnoremap Mf ^i- [<ESC>A]<ESC>Js(<ESC>A)<ESC>^
