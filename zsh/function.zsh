@@ -52,7 +52,7 @@ _look() {
         | sed 's/\.\///g' \
         | grep -v -e '.jpg' -e '.gif' -e '.png' -e '.jpeg' \
         | sort -r \
-        | fzf --prompt 'vim ' --preview 'bat --color always {}'
+        | fzf --prompt 'vim ' --preview 'bat --color always {}' --preview-window=right:70%
     ))
     [ "$target_files" = "" ] && return
     vim -p ${target_files[@]}
