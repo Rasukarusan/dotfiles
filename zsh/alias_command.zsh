@@ -32,7 +32,7 @@ alias gdc='git diff -b --cached'
 # 現在のブランチをpullする
 alias -g gpl='git pull --rebase origin $(git branch | grep "*" | sed -e "s/^\*\s*//g")'
 alias repoo='vim `ls ~/Desktop/develop_tools/DayReport/*.md | fzf`'
-alias memo='vim ~/Desktop/develop_tools/memo.md -c ":$"'
+alias memo='vim ~/memo.md -c ":$"'
 # git checkout branchをfzfで選択
 alias co='git checkout $(git branch -a | tr -d " " |fzf --height=100% --prompt "CHECKOUT BRANCH>" --preview "git log --color=always {}" | head -n 1 | sed -e "s/^\*\s*//g" | perl -pe "s/remotes\/origin\///g")'
 alias co-='git checkout -'
