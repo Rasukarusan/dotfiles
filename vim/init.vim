@@ -152,9 +152,10 @@ set backspace=indent,eol,start
 set nofoldenable
 " ビープ音をOFFにする
 set belloff=all
-
 " crontab: temp file must be edited in placeのエラー文が出るのでtmpではバックアップをしないよう設定
 set backupskip=/tmp/*,/private/tmp/*
+" 行末の1文字先までカーソル移動を可
+set virtualedit=onemore
 
 " ===============キーマップ関連===================== "
 " 入力モードでのカーソル移動
@@ -256,3 +257,4 @@ imap <F12> <nop>
 
 " ページタイトル\nページURL形式をマークダウン記法にする
 nnoremap Mf ^i- [<ESC>A]<ESC>Js(<ESC>A)<ESC>^
+
