@@ -1,7 +1,7 @@
 # ============================== #
 #         alias-Command          #
 # ============================== #
-alias l='ls -ltrG'
+alias l='ls -1'
 alias la='ls -laG'
 alias laa='ls -ld .*'
 alias ll='ls -lG'
