@@ -129,7 +129,7 @@ repo = 'aklt/plantuml-syntax'
 [[plugins]]
 repo = 'iamcco/markdown-preview.nvim'
 on_ft = ['markdown', 'pandoc.markdown', 'rmd']
-build =  'cd app & yarn install' 
+build =  'cd app & yarn install'
 
 # --------------------------------------------
 # PHPコードチェック、未使用変数のハイライト
@@ -151,6 +151,7 @@ hook_add = 'source ~/.config/nvim/plugin_settings/php_localvarcheck.vim'
 # --------------------------------------------
 [[plugins]]
 repo = 'leafgarland/typescript-vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/typescript-vim.vim'
 
 # --------------------------------------------
 # TypscriptReactシンタックスハイライト
@@ -233,4 +234,3 @@ repo = 'airblade/vim-gitgutter'
 [[plugins]]
 repo = 'vim-vdebug/vdebug'
 hook_add = 'source ~/.config/nvim/plugin_settings/vim-vdebug.vim'
-
