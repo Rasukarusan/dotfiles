@@ -64,7 +64,10 @@ _git_remote_open() {
     local url=$(git remote get-url $remote)
     if [ "$url" = '' ]; then; return; fi
     if ! echo $url | grep 'http' >/dev/null; then
+        # Bitbucketの場合
         url=$(echo $url | sed 's/git@bitbucket.org:/https:\/\/bitbucket\.org\//g')
+        # GithubでSSHの場合
+        url=$(echo $url | grep -oP "(?<=@).*(?=.git)" | tr ':' '/' | sed 's/^/https:\/\//g')
     fi
     open $url
 }
