@@ -121,7 +121,11 @@ _git_add(){
     fi
     [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
     local files=($(eval git -C $path_working_tree_root ls-files $option \
-        | fzf --prompt "ADD FILES>" --preview "$previewCmd"))
+        | fzf \
+            --prompt "ADD FILES>" \
+            --preview "$previewCmd" \
+            --preview-window=right:70% \
+        ))
     [ -z "$files" ] && return
     for file in "${files[@]}";do
         git add ${path_working_tree_root}${file}
