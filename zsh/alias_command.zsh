@@ -99,3 +99,4 @@ alias fortKill="ps aux | grep 'Fort' | awk '{print \$2}' | xargs kill"
 alias metabase-run='docker run -d -p 3300:3000 -v /tmp:/tmp -e "MB_DB_FILE=/tmp/metabase.db" --name metabase metabase/metabase'
 # Redemineのテンプレート文言をvimで開く
 alias redmine_template='vim $(mktemp XXXXXXXXXX) -c ":read! cat ~/redmine_template.txt"'
+alias ts='ts-node'
