@@ -101,6 +101,7 @@ augroup IndentSettings
     autocmd FileType typescript      setlocal sw=2 sts=2 ts=2 et
     autocmd FileType typescript.tsx  setlocal sw=2 sts=2 ts=2 et
     autocmd BufEnter *.tsx set filetype=typescript
+    autocmd FileType php             setlocal sw=4 sts=0 ts=5 et
 augroup END
 set mouse=a
 set updatetime=250
@@ -112,9 +113,10 @@ set autoindent
 set ambiwidth=double
 " タブをスペースに変換
 set expandtab
-set tabstop=4
-set shiftwidth=4
-set softtabstop=0
+" rrでvimrcを再度読み込む際、augroupで設定した設定が上書きされてしまうためコメントアウト
+" set tabstop=4
+" set shiftwidth=4
+" set softtabstop=0
 " 履歴件数
 set history=1000
 " jsonやmarkdownでダブルクォート、*が消えるのを回避
