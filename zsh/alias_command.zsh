@@ -30,7 +30,7 @@ alias gd='git diff -b'
 alias gdc='git diff -b --cached'
 # 現在のブランチをpullする
 alias -g gpl='git pull --rebase origin $(git branch | grep "*" | sed -e "s/^\*\s*//g")'
-alias repoo='vim `ls ~/Desktop/develop_tools/DayReport/*.md | fzf`'
+alias repoo='vim `ls ~/Documents/github/develop_tools/DayReport/*.md | fzf`'
 alias memo='vim ~/memo.md -c ":$"'
 # git checkout branchをfzfで選択
 alias co='git checkout $(git branch -a | tr -d " " |fzf --height=100% --prompt "CHECKOUT BRANCH>" --preview "git log --color=always {}" | head -n 1 | sed -e "s/^\*\s*//g" | perl -pe "s/remotes\/origin\///g")'
@@ -71,12 +71,11 @@ alias pd='vimdiff ~/p1 ~/p2'
 alias pst='pstree | less -S'
 alias oo='open .'
 alias hosts='sudo vim /etc/hosts'
-alias dekita='afplay ~/Music/iTunes/iTunes\ Media/Music/Unknown\ Artist/Unknown\ Album/dekita.mp3'
 alias chen='afplay ~/Music/iTunes/iTunes\ Media/Music/Unknown\ Artist/Unknown\ Album/jacky_chen.mp3'
 alias mailque='postqueue -p'
 alias maildel='sudo postsuper -d ALL deferred'
 # YYYY/mm/dd(曜日)形式で本日を出力
-alias today="date '+%Y/%m/%d(%a)'" 
+alias today="date '+%Y/%m/%d(%a)'"
 # クリップボードの行数を出力
 alias wcc='pbpaste | grep -c ^'
 # vimをvimrcなし, プラグインなしで起動する
