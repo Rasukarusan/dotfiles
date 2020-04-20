@@ -54,3 +54,25 @@ then
     zstyle ':chpwd:*'      recent-dirs-file "$HOME/.cache/cdr/history"
     zstyle ':completion:*' recent-dirs-insert both
 fi
+
+# 自作Snippet
+show_snippets() {
+    local snippets=$(cat ~/zsh_snippet | fzf | cut -d':' -f2-)
+    LBUFFER="${LBUFFER}${snippets}"
+    zle reset-prompt
+}
+zle -N show_snippets
+bindkey '^o' show_snippets
+
+# 現在行をvimで編集して実行する
+edit_current_line() {
+    local tmpfile=$(mktemp)
+    echo "$BUFFER" > $tmpfile
+    vim $tmpfile -c "normal $" -c "set filetype=zsh"
+    BUFFER="$(cat $tmpfile)"
+    CURSOR=${#BUFFER}
+    rm $tmpfile
+    zle reset-prompt
+}
+zle -N edit_current_line
+bindkey '^w' edit_current_line
