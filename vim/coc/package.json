@@ -4,9 +4,9 @@
     "coc-html": ">=1.2.4",
     "coc-json": ">=1.2.5",
     "coc-phpls": ">=2.1.8",
-    "coc-snippets": ">=2.1.24",
+    "coc-snippets": ">=2.1.25",
     "coc-solargraph": ">=1.1.6",
-    "coc-tsserver": ">=1.4.15",
+    "coc-tsserver": ">=1.5.1",
     "coc-ultisnips": ">=1.2.3"
   }
 }
