@@ -101,7 +101,9 @@ augroup IndentSettings
     autocmd FileType typescript      setlocal sw=2 sts=2 ts=2 et
     autocmd FileType typescript.tsx  setlocal sw=2 sts=2 ts=2 et
     autocmd BufEnter *.tsx set filetype=typescript
-    autocmd FileType php             setlocal sw=4 sts=0 ts=5 et
+    autocmd FileType php             setlocal sw=4 sts=0 ts=4 et
+    autocmd FileType zsh             setlocal sw=4 sts=0 ts=4 et
+    autocmd FileType sh             setlocal sw=4 sts=0 ts=4 et
 augroup END
 set mouse=a
 set updatetime=250
