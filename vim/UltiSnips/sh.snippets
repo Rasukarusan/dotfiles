@@ -34,3 +34,14 @@ snippet printf "printf '\e[33m${1:str}\e[m\n'"
 printf "\e[33m${1:str}\e[m\n"
 endsnippet
 
+snippet curl-token "curl -H 'Authorization: token ${TOKEN}'"
+-H 'Authorization: token ${1:token}'
+endsnippet
+
+snippet curl-Bearer "curl -H 'Authorization: Bearer ${TOKEN}'"
+-H 'Authorization: Bearer ${1:token}'
+endsnippet
+
+snippet curl-json "curl -H 'Content-Type:application/json'"
+-H 'Content-Type:application/json'
+endsnippet
