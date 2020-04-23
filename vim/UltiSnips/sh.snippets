@@ -30,8 +30,20 @@ snippet fzf-delimiter "fzf --delimiter $'\t' --widh-nth N"
 --delimiter $'\t' --with-nth ${1:N} 
 endsnippet
 
-snippet printf "printf '\e[33m${1:str}\e[m\n'"
+snippet printf-yellow "printf '\e[33m${1:str}\e[m\n'"
 printf "\e[33m${1:str}\e[m\n"
+endsnippet
+
+snippet printf-red "printf '\e[31m${1:str}\e[m\n'"
+printf "\e[31m${1:str}\e[m\n"
+endsnippet
+
+snippet printf-cyan "printf '\e[36m${1:str}\e[m\n'"
+printf "\e[36m${1:str}\e[m\n"
+endsnippet
+
+snippet printf-magenta "printf '\e[35m${1:str}\e[m\n'"
+printf "\e[35m${1:str}\e[m\n"
 endsnippet
 
 snippet curl-token "curl -H 'Authorization: token ${TOKEN}'"
