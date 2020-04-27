@@ -1012,3 +1012,14 @@ _rmm() {
         rm "$removeFile"
     done
 }
+
+# yarnコマンドをfzfで選択
+_fzf_yarn() {
+    local gitRoot=$(git rev-parse --show-cdup)
+    local packageJson=$(find ${gitRoot}. -maxdepth 2  -name 'package.json')
+    -z packageJson && return
+    local action=$(cat ${packageJson} | jq -r '.scripts | keys | .[]' \
+        | fzf --preview "cat ${packageJson} | jq -r '.scripts[\"{}\"]'" --preview-window=up:1)
+    [ -z "$action" ] && return
+    yarn $action
+}
