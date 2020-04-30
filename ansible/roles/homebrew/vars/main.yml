@@ -50,3 +50,4 @@ packages:
   - name: wget
   - name: yarn
   - name: zsh
+  - name: swiftformat
