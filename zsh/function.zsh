@@ -1013,13 +1013,28 @@ _rmm() {
     done
 }
 
-# yarnコマンドをfzfで選択
+# fzfでyarn
 _fzf_yarn() {
     local gitRoot=$(git rev-parse --show-cdup)
     local packageJson=$(find ${gitRoot}. -maxdepth 2  -name 'package.json')
-    -z packageJson && return
+    [ -z "$packageJson" ] && return
     local action=$(cat ${packageJson} | jq -r '.scripts | keys | .[]' \
         | fzf --preview "cat ${packageJson} | jq -r '.scripts[\"{}\"]'" --preview-window=up:1)
     [ -z "$action" ] && return
     yarn $action
+}
+
+# fzfでcarthage
+_fzf_carthage() {
+    local gitRoot=$(git rev-parse --show-cdup)
+    local cartfile=$(find ${gitRoot}. -maxdepth 1  -name 'Cartfile')
+    [ -z "$cartfile" ] && echo 'Carfile is not found' && return
+    local packages=$(cat ${cartfile} | grep -oP '(?<=/).*(?=")')
+    local target=$(echo "全てupdate\n${packages}" | fzf --preview "grep {} $cartfile" --preview-window=up:1)
+    [ -z "$target" ] && return
+    if ! grep $target $cartfile >/dev/null ; then
+        carthage update --platform ios
+    else
+        carthage update --platform ios $target
+    fi
 }
