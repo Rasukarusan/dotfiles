@@ -38,3 +38,4 @@ files:
   - { src: ~/dotfiles/vim/coc/coc-settings.json, dest: ~/.config/nvim/coc-settings.json }
   - { src: ~/dotfiles/vim/coc/package.json, dest: ~/.config/coc/extensions/package.json }
   - { src: ~/dotfiles/vim/UltiSnips, dest: ~/.config/nvim/UltiSnips }
+  - { src: ~/dotfiles/vim/autoload, dest: ~/.config/nvim/myautoload }
