@@ -106,6 +106,15 @@ augroup IndentSettings
     autocmd FileType sh              setlocal sw=4 sts=4 ts=4 et
     autocmd FileType markdown        setlocal sw=4 sts=4 ts=4 et
 augroup END
+
+" 拡張子別のファイル設定
+augroup vimrc
+    autocmd!
+    autocmd BufRead,BufNewFile *.sh :call s:insert_shebang() " shファイルを開いたときに自動でシェバン挿入
+    autocmd InsertLeave * set nopaste
+    autocmd FileType markdown colorscheme jellybeans " markdownを開くときはmolokaiテーマ
+augroup END
+
 set mouse=a
 set updatetime=250
 " 起動時の画面をスキップ(:introで表示可能)
@@ -262,3 +271,5 @@ imap <F12> <nop>
 
 " ページタイトル\nページURL形式をマークダウン記法にする
 nnoremap Mf ^i- [<ESC>A]<ESC>Js(<ESC>A)<ESC>^
+
+set tags=./.tags;
