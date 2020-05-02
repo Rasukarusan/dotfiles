@@ -234,3 +234,9 @@ repo = 'airblade/vim-gitgutter'
 [[plugins]]
 repo = 'vim-vdebug/vdebug'
 hook_add = 'source ~/.config/nvim/plugin_settings/vim-vdebug.vim'
+
+# --------------------------------------------
+# Swift - シンタックスハイライト
+# --------------------------------------------
+[[plugins]]
+repo = 'keith/swift.vim'
