@@ -105,6 +105,9 @@ augroup IndentSettings
     autocmd FileType zsh             setlocal sw=4 sts=0 ts=4 et
     autocmd FileType sh              setlocal sw=4 sts=4 ts=4 et
     autocmd FileType markdown        setlocal sw=4 sts=4 ts=4 et
+    autocmd FileType html            setlocal sw=4 sts=4 ts=4 et
+    autocmd FileType json            setlocal sw=4 sts=4 ts=4 et
+    autocmd FileType yaml            setlocal sw=4 sts=4 ts=4 et
 augroup END
 
 " 拡張子別のファイル設定
