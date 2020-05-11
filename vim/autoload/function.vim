@@ -145,16 +145,20 @@ endfunction
 " =============================================
 " カーソル下の単語をGoogleで検索する
 " =============================================
-function! s:search_by_google()
+function! s:search_by_google(...)
     let line = line(".")
     let col  = col(".")
     let searchWord = expand("<cword>")
+    if a:0 >= 1
+        let searchWord = join(split(a:1))
+        " let searchWord = printf('%s',a:1)
+    end
     if searchWord  != ''
         execute 'read !open https://www.google.co.jp/search\?q\=' . searchWord
         execute 'call cursor(' . line . ',' . col . ')'
     endif
 endfunction
-command! SearchByGoogle call s:search_by_google()
+command! -nargs=? SearchByGoogle call s:search_by_google(<f-args>)
 nnoremap <silent> <Space>g :SearchByGoogle<CR>
 
 " =============================================
@@ -200,7 +204,7 @@ endfunction
 command! SyntaxInfo call s:get_syn_info()
 
 " =============================================
-" 本日の日付を曜日込みで挿入する 
+" 本日の日付を曜日込みで挿入する
 " ex.) # 2019/05/07(火)
 " =============================================
 function! s:insert_today()
@@ -229,7 +233,7 @@ command! Testshell call s:open_test_shell()
 " =============================================
 " Terminalを開く
 " =============================================
-function! s:open_terminal_by_floating_window() 
+function! s:open_terminal_by_floating_window()
     " 空のバッファを作る
     let buf = nvim_create_buf(v:false, v:true)
     " そのバッファを使って floating windows を開く
@@ -245,10 +249,10 @@ function! s:open_terminal_by_floating_window()
         \ 'height': height,
         \ 'anchor': 'NE',
     \}
-    let g:win_id = nvim_open_win(buf, v:true, opts) 
+    let g:win_id = nvim_open_win(buf, v:true, opts)
     set winblend=40
     terminal
-    startinsert 
+    startinsert
 endfunction
 nnoremap T :call <SID>open_terminal_by_floating_window()<CR>
 
@@ -268,7 +272,7 @@ function! s:show_commit_messages(str)
     call setline('.', a:str)
     " let command = 'cat ~/commit_messages_en.txt | grep ' . a:str
     " call fzf#run({
-    " \ 'source': command, 
+    " \ 'source': command,
     " \ 'sink'  : function('<SID>categorize_commit_messages'),
     " \ 'down'  : '40%'
     " \ })
