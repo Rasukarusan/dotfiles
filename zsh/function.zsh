@@ -383,6 +383,7 @@ _docker_commands() {
 		docker ps -a
 		docker stop
 		docker system df
+		docker stats
 		docker images -a
 		docker-compose ps
 		docker-compose up
