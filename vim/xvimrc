@@ -79,6 +79,8 @@ nnoremap sy byw
 " コメントアウト
 nnoremap <C--><C-->  :xcmenucmd Comment Selection<CR>
 vnoremap <C--><C-->  :xcmenucmd Comment Selection<CR>
+nnoremap <space>-  :xcmenucmd Comment Selection<CR>
+vnoremap <space>- :xcmenucmd Comment Selection<CR>
 " ctrl-pみたいなもの
 noremap <C-p> :xccmd openQuickly<CR>
 " フォルダ内のファイル一覧表示
