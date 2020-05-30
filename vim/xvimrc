@@ -92,4 +92,4 @@ nmap <space>l :xcmenucmd Show Inspectors<CR>
 " 定義元にジャンプ
 nmap <space>d :xcmenucmd Jump to Definition<CR>
 " 定義の説明を表示する
-nmap <space>s :xcmenucmd Show Quick Help for Selected Item<CR>
+nmap K :xcmenucmd Show Quick Help for Selected Item<CR>
