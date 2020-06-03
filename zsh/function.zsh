@@ -414,7 +414,7 @@ _docker_commands() {
         'logs' )
             container=$(docker ps --format "{{.Names}}" | sort | fzf)
             test -z "$container" && return
-            execCommand="docker logs -ft $container"
+            execCommand="docker logs -f --tail=100 $container"
             echo $execCommand && eval $execCommand
             ;;
         'stop' )
