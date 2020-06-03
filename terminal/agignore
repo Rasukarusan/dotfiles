@@ -14,3 +14,4 @@ node_modules
 static
 swagger-ui/
 dist/
+coverage/
