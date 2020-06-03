@@ -5,7 +5,7 @@
 # fgを使わずctrl+zで行ったり来たりする
 fancy-ctrl-z () {
     if [[ $#BUFFER -eq 0 ]]; then
-        BUFFER="fg"
+        BUFFER="fgg"
         zle accept-line
     else
         zle push-input
