@@ -934,6 +934,18 @@ _man_builtin_command_bash() {
     man bash | less -p "^       $1 "
 }
 
+# gitコマンドのmanを参照
+_fzf_man_git() {
+    local target=$(ls $(git help -a | grep -oP "(?<=available git commands in ').*(?=')") \
+        | sed 's/git-//g' \
+        | fzf \
+            --preview "git help {} | head -n 100 " \
+            --preview-window=right:80%
+        )
+    [ -z "$target" ] && return
+    git help $target
+}
+
 # ログインShellを切り替える
 _switch_login_shell() {
     local target=$(cat /etc/shells | grep '^/' | fzf)
