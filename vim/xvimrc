@@ -69,11 +69,7 @@ autocmd InsertLeave * set nopaste
 " ESCを二回押すことでハイライトを消す
 nmap <Esc><Esc> :nohl<CR>
 " Yで末尾までコピー
-nnoremap Y v$y
-" yyで行コピーができないので代替
-nnoremap yy ^v$y
-" pでpasteすると改行されないので改行してからペーストするようにする
-" nnoremap p o<Esc>p
+nnoremap Y y$
 " syで単語コピー
 nnoremap sy byw
 " コメントアウト
