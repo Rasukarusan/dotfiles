@@ -111,6 +111,15 @@ augroup IndentSettings
     autocmd FileType yaml            setlocal sw=4 sts=4 ts=4 et
 augroup END
 
+" =============================================
+" 先頭行にシェバンが存在しないとき、挿入する
+" =============================================
+function! s:insert_shebang()
+    let head = getline(1)
+    if head !~ "bin"
+        :execute ':s/^/#!\/usr\/bin\/env bash\r/g'
+    endif
+endfunction
 " 拡張子別のファイル設定
 augroup vimrc
     autocmd!
