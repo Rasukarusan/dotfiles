@@ -132,15 +132,6 @@ function! s:insert_head_and_tail(...) range
 endfunction
 command! -nargs=+ -range InTH <line1>,<line2> call s:insert_head_and_tail(<f-args>)
 
-" =============================================
-" 先頭行にシェバンが存在しないとき、挿入する
-" =============================================
-function! s:insert_shebang()
-    let head = getline(1)
-    if head !~ "bin"
-        :execute ':s/^/#!\/usr\/bin\/env bash\r/g'
-    endif
-endfunction
 
 " =============================================
 " カーソル下の単語をGoogleで検索する
