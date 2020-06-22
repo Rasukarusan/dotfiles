@@ -1055,7 +1055,7 @@ _fzf_carthage() {
 
 # modifiedとuntrachedのファイルをfzfで選択して開く
 _fzf_vim_git_modified_untracked() {
-    local files=($(git ls-files -m -o --exclude-standard | fzf --preview='bat --color=always {}') )
+    local files=($(git ls-files -m -o --exclude-standard | sort | fzf --preview='bat --color=always {}') )
     [ -z "$files" ] && return
     vim -p "${files[@]}"
 }
