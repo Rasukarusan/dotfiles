@@ -1,2 +1,2 @@
 zsh/.zshrc.local
-vim/autoload/vimrc.local.vim
+vim/autoload/local.vim
