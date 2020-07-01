@@ -1059,3 +1059,14 @@ _fzf_vim_git_modified_untracked() {
     [ -z "$files" ] && return
     vim -p "${files[@]}"
 }
+
+# vimメモ帳
+_memo() {
+    local MEMO_PATH=~/memo.md
+    local today=`date '+%Y/%m/%d(%a)'`
+    if ! grep "# $today" $MEMO_PATH >/dev/null ; then
+        echo "\n# $today" >> $MEMO_PATH
+    fi
+    # 最下行を一番上にしてvimを開く (:help scroll-cursor)
+    echo "Gzt" | vim -s - $MEMO_PATH
+}
