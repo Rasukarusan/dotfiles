@@ -51,3 +51,4 @@ packages:
   - name: yarn
   - name: zsh
   - name: swiftformat
+  - name: cocoapods
