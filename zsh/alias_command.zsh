@@ -99,3 +99,4 @@ alias metabase-run='docker run -d -p 3300:3000 -v /tmp:/tmp -e "MB_DB_FILE=/tmp/
 alias redmine_template='vim $(mktemp XXXXXXXXXX) -c ":read! cat ~/redmine_template.txt"'
 alias ts='ts-node'
 alias bll='bluetooth-fzf'
+alias fa='find ./ -name'
