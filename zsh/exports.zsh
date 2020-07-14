@@ -51,7 +51,7 @@ export PATH="$HOME/.pyenv/shims:$PATH"
 # mysql8.0が入っていて、古いmysqlを使いたい場合必要
 export PATH="/usr/local/opt/mysql@5.6/bin:$PATH"
 # composerの設定
-export PATH="$HOME/.composer/vendor/bin:$PATH"
+export PATH="$HOME/.config/composer/vendor/bin:$PATH"
 # remoteAtomの設定
 export PATH=$HOME/local/bin:$PATH
 # phpenvの設定
