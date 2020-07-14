@@ -398,6 +398,7 @@ _docker_commands() {
 		docker cp
 	EOF`
     local arg=`echo $select_command | sed "s/docker //g"`
+    local execCommand
     case "${arg}" in
         'exec' )
             container=$(docker ps --format "{{.Names}}" | sort | fzf)
@@ -463,6 +464,8 @@ _docker_commands() {
             ;;
         *) echo $select_command && eval $select_command ;;
     esac
+    [ -n "$execCommand" ] && print -s "$execCommand"
+    [ -n "$select_command" ] && print -s "$select_command"
 }
 
 # 自作スクリプト編集時、fzfで選択できるようにする
@@ -645,7 +648,9 @@ _git_stash_commands() {
     )
     local action=$(echo "${actions[@]}" | tr ' ' '\n' | awk -F ':' '{print $1}' | fzf)
     test -z "$action" && return
-    eval $(echo "${actions[@]}" | tr ' ' '\n' | grep $action | awk -F ':' '{print $2}')
+    local execCommand=$(echo "${actions[@]}" | tr ' ' '\n' | grep $action | awk -F ':' '{print $2}')
+    eval "$execCommand"
+    print -s "$execCommand"
 }
 
 _git_stash_list() {
@@ -735,14 +740,15 @@ _fzf_selenium() {
 		stop
 	EOF`
     [ -z "$action" ] && return
+    local execCommand
     case $action in
         'status' )
-            ps aux | grep -v grep | grep -c selenium
+            execCommand="ps aux | grep -v grep | grep -c selenium"
             ;;
         'log' )
             local LOG_DIR=~/.selenium-log
             local latest_selenium_log=$(echo $(ls -t $LOG_DIR | head -n 1))
-            tail -f $LOG_DIR/$latest_selenium_log
+            execCommand="tail -f $LOG_DIR/$latest_selenium_log"
             ;;
         'up' )
             local LOG_DIR=~/.selenium-log
@@ -752,14 +758,15 @@ _fzf_selenium() {
             local is_run=`ps aux | grep -v grep | grep -c selenium`
             local today=`date +%Y-%m-%d`
             if [ $is_run -eq 0 ]; then
-                java -jar /Library/java/Extensions/selenium-server-standalone-3.4.0.jar > $LOG_DIR/$today.log 2>&1 &
+                execCommand="java -jar /Library/java/Extensions/selenium-server-standalone-3.4.0.jar > ${LOG_DIR}/${today}.log 2>&1 &"
             fi
             ;;
         'stop' )
-            ps aux | grep selenium | grep -v grep | awk '{print \$2}' | xargs kill -9
+            execCommand="ps aux | grep selenium | grep -v grep | awk '{print \$2}' | xargs kill -9"
             ;;
     esac
-    eval $select_command
+    print -s "$execCommand"
+    eval "$execCommand"
 }
 
 # masterブランチを最新にする
@@ -1003,6 +1010,7 @@ _fzf_npm() {
             | fzf --preview "cat package.json | jq -r '.scripts[\"{}\"]'" --preview-window=up:1)
         [ -z "$action" ] && return
         npm run $action
+        print -s "npm run $action"
     else
         echo 'Not Found package.json'
     fi
@@ -1036,6 +1044,7 @@ _fzf_yarn() {
         | fzf --preview "cat ${packageJson} | jq -r '.scripts[\"{}\"]'" --preview-window=up:1)
     [ -z "$action" ] && return
     yarn $action
+    print -s "yarn $action"
 }
 
 # fzfでcarthage
