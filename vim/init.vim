@@ -66,18 +66,6 @@ let g:markdown_fenced_languages = [
     \]
 
 " ==============================
-"       Floating Windows
-" ==============================
-if has('nvim')
-    set termguicolors
-    set winblend=5
-    hi NormalFloat guifg=#ffffff guibg=#383838
-    tnoremap <Esc> <C-\><C-n>
-    " tnoremap jj <C-\><C-n>
-    tnoremap <silent>:q <C-\><C-n>:call nvim_win_close(win_id, v:true)<CR>
-endif
-
-" ==============================
 " vimでファイルを開いたときに、tmuxのwindow名にファイル名を表示
 " ==============================
 if exists('$TMUX') && !exists('$NORENAME')
@@ -110,6 +98,19 @@ augroup IndentSettings
     autocmd FileType json            setlocal sw=4 sts=4 ts=4 et
     autocmd FileType yaml            setlocal sw=4 sts=4 ts=4 et
 augroup END
+
+" ==============================
+"       Floating Windows
+" ==============================
+if has('nvim')
+    set termguicolors
+    set winblend=10
+    " colorscheme jellybeans よりもあとに書かないと反映されない(上書きされてしまう)ので注意
+    hi NormalFloat guifg=#ffffff guibg=#07343b
+    tnoremap <Esc> <C-\><C-n>
+    " tnoremap jj <C-\><C-n>
+    tnoremap <silent>:q <C-\><C-n>:call nvim_win_close(win_id, v:true)<CR>
+endif
 
 " =============================================
 " 先頭行にシェバンが存在しないとき、挿入する
