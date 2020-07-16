@@ -263,8 +263,8 @@ nnoremap sy byw
 " インデントショートカット
 nnoremap th <<
 nnoremap tl >>
-vnoremap th <<
-vnoremap tl >>
+vnoremap th <
+vnoremap tl >
 " source ~/.vimrcを簡略化
 nnoremap rr :source ~/.config/nvim/init.vim<CR>
 " 現在開いているスクリプトを読み込む
@@ -299,5 +299,3 @@ cmap <F12> <nop>
 nnoremap Mf ^i- [<ESC>A]<ESC>Js(<ESC>A)<ESC>^
 " Reactコンポーネント内でのコメントアウト
 nnoremap Com ^i{/*<ESC>A*/}<ESC>:w<CR>:nohlsearch<CR>
-
-set tags=./.tags;
