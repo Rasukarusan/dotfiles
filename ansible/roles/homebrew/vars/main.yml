@@ -52,3 +52,4 @@ packages:
   - name: zsh
   - name: swiftformat
   - name: cocoapods
+  - name: chromedriver
