@@ -487,6 +487,7 @@ _source_my_script() {
 # tmuxコマンド集
 _tmux_commands() {
     local command=$(cat <<-EOF | fzf --bind 'ctrl-y:execute-silent(echo {} | pbcopy)'
+		resize
 		rename-window
 		man
 		list-keys
@@ -500,6 +501,14 @@ _tmux_commands() {
     test -z "$command" && return
 
     case "${command}" in
+        'resize')
+            local actions=('Left' 'Right' 'Up' 'Down')
+            echo "${actions[@]}" \
+                | tr ' ' '\n' \
+                | fzf \
+                    --prompt 'Press Ctrl-p > ' \
+                    --bind 'ctrl-p:execute-silent(tmux resize-pane -$(echo {} | cut -c 1-1))'
+            ;; 
         'rename-window')
             /bin/echo  -n 'INPUT NAME>'
             read  name
