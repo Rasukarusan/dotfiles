@@ -653,6 +653,7 @@ _git_stash_commands() {
         'stash一覧表示(list):_git_stash_list'
         'stash適用(apply):_fzf_git_stash_apply'
         'stashを名前を付けて保存(save):_git_stash_with_name'
+        'stashをファイル単位で実行(push):_git_stash_each_file'
         'stashを削除(drop):_fzf_git_stash_drop'
     )
     local action=$(echo "${actions[@]}" | tr ' ' '\n' | awk -F ':' '{print $1}' | fzf)
@@ -681,6 +682,15 @@ _git_stash_with_name() {
     read name
     test -z "${name}" && return
     git stash save "${name}"
+}
+
+_git_stash_each_file() {
+    local targets=($(git ls-files -m -o --exclude-standard | sort | fzf --preview='bat --color=always {}'))
+    [ -z "$targets" ] && return
+    echo "保存名を入力してくだい"
+    read name
+    test -z "${name}" && return
+    git stash push -u "${targets[@]}" -m "${name}"
 }
 
 _fzf_git_stash_apply() {
