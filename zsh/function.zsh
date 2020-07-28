@@ -294,7 +294,8 @@ _move_posted_articles() {
         tail -n 1 ${ARTICLE_DIR}/${file} | grep $POSTED_MARK > /dev/null
         # 投稿が完了したファイルを別ディレクトリに移す
         if [ $? -eq 0 ]; then 
-            git mv ${ARTICLE_DIR}/${file} $POSTED_DIR/
+            # git管理されていない場合失敗するので通常のmvを実行する
+            git mv ${ARTICLE_DIR}/${file} $POSTED_DIR/ || mv ${ARTICLE_DIR}/${file} $POSTED_DIR/
             printf "\e[33m${file} is moved!\e[m\n"
         fi
     done
