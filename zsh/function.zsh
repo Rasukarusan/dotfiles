@@ -657,11 +657,9 @@ _git_stash_commands() {
         'stashをファイル単位で実行(push):_git_stash_each_file'
         'stashを削除(drop):_fzf_git_stash_drop'
     )
-    local action=$(echo "${actions[@]}" | tr ' ' '\n' | awk -F ':' '{print $1}' | fzf)
-    test -z "$action" && return
-    local execCommand=$(echo "${actions[@]}" | tr ' ' '\n' | grep $action | awk -F ':' '{print $2}')
-    eval "$execCommand"
-    print -s "$execCommand"
+    local action=$(echo "${actions[@]}" | tr ' ' '\n' | fzf -d ':' --with-nth=1 | cut -d ':' -f 2,2)
+    [ -n "$action" ] && eval "$action"
+    print -s "$action"
 }
 
 _git_stash_list() {
