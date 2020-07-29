@@ -3,7 +3,7 @@
     "coc-css": ">=1.2.4",
     "coc-html": ">=1.2.4",
     "coc-json": ">=1.2.6",
-    "coc-phpls": ">=2.1.8",
+    "coc-phpls": ">=2.1.10",
     "coc-snippets": ">=2.1.28",
     "coc-solargraph": ">=1.1.6",
     "coc-tsserver": ">=1.5.3",
