@@ -234,20 +234,16 @@ _ag_and_vim() {
         echo 'Usage: agg PATTERN'
         return 0
     fi
-    local result=`ag $1 | fzf`
-    local line=`echo "$result" | awk -F ':' '{print $2}'`
-    local file=`echo "$result" | awk -F ':' '{print $1}'`
-    if [ -n "$file" ]; then
-        vim $file +$line
-    fi
+    ag $1 | fzf | IFS=':' read -A selected
+    [ ${#selected[@]} -lt 2 ] && return
+    vim ${selected[1]} +${selected[2]}
 }
 
 
 # ファイルパス:行番号のようなものをvimで開く
 viml() {
-    local file_path=`pbpaste | awk -F ':' '{print $1}'`
-    local line_num=`pbpaste | awk -F ':' '{print $2}'`
-    vim $file_path +$line_num
+    pbpaste | IFS=':' read -A selected
+    vim ${selected[1]} +${selected[2]}
 }
 
 # terminal上からGoogle検索
@@ -551,10 +547,8 @@ _danger_git_commands() {
         'コミットのAuthorを全て書き換える:_change_author'
         'ローカル(特定リポジトリ)のConfigを変更:_change_config_local'
     )
-    local action=$(echo "${actions[@]}" | tr ' ' '\n' | awk -F ':' '{print $1}' | fzf)
-    test -z "$action" && return
-    eval $(echo "${actions[@]}" | tr ' ' '\n' | grep $action | awk -F ':' '{print $2}')
-
+    local action=$(echo "${actions[@]}" | tr ' ' '\n' | fzf -d ':' --with-nth=1 | cut -d ':' -f 2,2)
+    [ -n "$action" ] && eval "$action"
 }
 
 # 特定ファイルの履歴を全て削除(ファイルも削除されるので注意)
