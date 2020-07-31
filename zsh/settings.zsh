@@ -38,7 +38,7 @@ zshaddhistory() {
     local cmd=${line%% *}
     # 以下の条件をすべて満たすものだけをヒストリに追加する
     [[ ${#line} -ge 5
-        && ${cmd} != (l|l[sal]) # l,ls,la,ll
+        && ${cmd} != (l|l[sal]$) # l,ls,la,ll
         && ${cmd} != (c|cd)
         && ${cmd} != (fg|fgg)
     ]]
