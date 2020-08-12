@@ -389,3 +389,27 @@ function! s:copy_last_message()
     echo 'clipped: ' . @*[:20] . '...'
 endfunction
 command! CopyLastMessage call s:copy_last_message()
+
+" =============================================
+" jsxでコメントアウト開始/終了を差し込む
+" =============================================
+function! s:comment_out_jsx() range
+    " 下記2行でも実現可能だが、置換した旨がechoされてしまい邪魔なのでfor文でしている。silentでも消えない。
+    " execute ':'.a:firstline.','.a:lastline.' s/\(\S\)/{\/* \1/'
+    " execute ':'.a:firstline.','.a:lastline.' s/$/ *\/}/'
+    for currentLineNo in range(a:firstline, a:lastline)
+        " 指定した行を取得
+        let currentLine = getline(currentLineNo)
+        let isComment = stridx(currentLine, '{/*')
+        if isComment != -1
+            execute ':'.currentLineNo.' s/{\/\* //'
+            execute ':'.currentLineNo.' s/ \*\/}//'
+        else
+            execute ':'.currentLineNo.' s/\(\S\)/{\/* \1/'
+            execute ':'.currentLineNo.' s/$/ *\/}/'
+        endif
+    endfor
+endfunction
+command! -range CommentOut <line1>,<line2>call s:comment_out_jsx()
+nnoremap Com :CommentOut<CR>
+vnoremap Com :CommentOut<CR>
