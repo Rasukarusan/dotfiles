@@ -297,3 +297,5 @@ cmap <F12> <nop>
 
 " ページタイトル\nページURL形式をマークダウン記法にする
 nnoremap Mf ^i- [<ESC>A]<ESC>Js(<ESC>A)<ESC>^
+" 直前のファイルを開く
+nnoremap <S-x> :tabe #<CR>
