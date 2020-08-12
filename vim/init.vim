@@ -297,5 +297,3 @@ cmap <F12> <nop>
 
 " ページタイトル\nページURL形式をマークダウン記法にする
 nnoremap Mf ^i- [<ESC>A]<ESC>Js(<ESC>A)<ESC>^
-" Reactコンポーネント内でのコメントアウト
-nnoremap Com ^i{/*<ESC>A*/}<ESC>:w<CR>:nohlsearch<CR>
