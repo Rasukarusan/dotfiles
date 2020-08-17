@@ -562,11 +562,19 @@ _delete_all_histories_by_file() {
 # masterのコミットを全て削除する(自分のPublicリポジトリにpushする際使用)
 _delete_all_git_log() {
     local PC_ENV=`cat ~/account.json | jq -r '.pc_env["'$USER'"]'` 
-    echo $PC_ENV
-    # プライベートPCでのみ実行する
+    printf "env: \e[37;1m${PC_ENV}\e[m\n"
+    # プライベートPCではない場合、確認を取る
     if [ "$PC_ENV" != 'private' ]; then
-        echo 'This computer is not private'
-        return 0
+        printf "\e[31mThis computer is not private.\nDo you continue? (y/n)\e[m"
+        read isContinue
+        case "${isContinue}" in
+            y|Y|yes)
+                ;;
+            *)
+                printf "\e[33mcanceled!\e[m\n"
+                return 0
+                ;;
+        esac
     fi
     /bin/echo -n '本当に実行して良いですか？(y/N) > '
     read isOK
