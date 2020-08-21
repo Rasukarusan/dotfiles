@@ -701,9 +701,11 @@ _fzf_git_stash_apply() {
 }
 
 _fzf_git_stash_drop() {
-    local stashNo=$(git stash list | fzf --preview 'echo {} | awk "{print \$1}" | tr -d ":" | xargs git stash show --color=always -p' | awk '{print $1}' | tr -d ':' )
-    test -z "${stashNo}" && return
-    git stash drop "${stashNo}"
+    local stashNos=($(git stash list | fzf --preview 'echo {} | awk "{print \$1}" | tr -d ":" | xargs git stash show --color=always -p' | awk '{print $1}' | tr -d ':' ))
+    test -z "${stashNos}" && return
+    for stashNo in ${stashNos[@]}; do
+        git stash drop "${stashNo}"
+    done
 }
 
 _clipboard_diff() {
