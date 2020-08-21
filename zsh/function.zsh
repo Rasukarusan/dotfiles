@@ -1051,7 +1051,9 @@ _replace_all() {
 
 # fzfでrm
 _rmm() {
-    for removeFile in $(find . -type f | sort |  fzf --preview='bat --color=always {}'); do
+    for removeFile in $(find . -type d \( -name node_modules -o -name .git \) -prune -o -type f \
+        | sort \
+        |  fzf --preview='bat --color=always {}'); do
         echo "$removeFile"
         rm "$removeFile"
     done
