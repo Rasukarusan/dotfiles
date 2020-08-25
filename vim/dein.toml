@@ -247,3 +247,9 @@ repo = 'keith/swift.vim'
 [[plugins]]
 repo = 'gorodinskiy/vim-coloresque'
 
+# --------------------------------------------
+# デバッグ文を自動でインクリメントしてくれる
+# --------------------------------------------
+[[plugins]]
+repo = 'sentriz/vim-print-debug'
+hook_add = 'source ~/.config/nvim/plugin_settings/vim-print-debug.vim'
