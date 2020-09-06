@@ -1060,9 +1060,13 @@ _rmm() {
 }
 
 # fzfでyarn
+# カレントディレクトリにpackege.jsonがある場合はそれを利用。なければgit管理化のrootにあるpackage.jsonを利用
 _fzf_yarn() {
-    local gitRoot=$(git rev-parse --show-cdup)
-    local packageJson=$(find ${gitRoot}. -maxdepth 2  -name 'package.json')
+    local packageJson=$(find ./ -maxdepth 1  -name 'package.json')
+    if [ -z "$packageJson" ]; then 
+        local gitRoot=$(git rev-parse --show-cdup)
+        packageJson=$(find ${gitRoot}. -maxdepth 2  -name 'package.json')
+    fi
     [ -z "$packageJson" ] && return
     local action=$(cat ${packageJson} | jq -r '.scripts | keys | .[]' \
         | fzf --preview "cat ${packageJson} | jq -r '.scripts[\"{}\"]'" --preview-window=up:1)
