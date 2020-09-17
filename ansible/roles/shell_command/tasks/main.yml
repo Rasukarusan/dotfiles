@@ -22,6 +22,10 @@
       shell: pip3 install neovim
       changed_when: false
 
+    - name: Install PythonProvider by pip3
+      shell: pip3 install pynvim
+      changed_when: false
+
     - name: Download dein
       get_url: 
         url: https://raw.githubusercontent.com/Shougo/dein.vim/master/bin/installer.sh 
