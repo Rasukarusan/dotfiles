@@ -1125,7 +1125,7 @@ _popuptmux() {
     fi
 }
 
-_imgcat() {
+_imgcat_for_tmux() {
     # @See: https://qastack.jp/unix/88296/get-vertical-cursor-position
     get_cursor_position() {
         old_settings=$(stty -g) || exit
@@ -1137,6 +1137,10 @@ _imgcat() {
         x=${pos##*;} y=${pos%%;*}
         stty "$old_settings"
     }
+    if [ ! "$TMUX" ]; then
+        imgcat "$1"
+        return
+    fi
     imgcat "$1"
     [ $? -ne 0 ] && return
     get_cursor_position
