@@ -1107,3 +1107,22 @@ _memo() {
     # 最下行を一番上にしてvimを開く (:help scroll-cursor)
     echo "Gzt" | vim -s - $MEMO_PATH
 }
+
+_imgcat_for_tmux() {
+    # @See: https://qastack.jp/unix/88296/get-vertical-cursor-position
+    get_cursor_position() {
+        old_settings=$(stty -g) || exit
+        stty -icanon -echo min 0 time 3 || exit
+        printf '\033[6n'
+        pos=$(dd count=1 2> /dev/null)
+        pos=${pos%R*}
+        pos=${pos##*\[}
+        x=${pos##*;} y=${pos%%;*}
+        stty "$old_settings"
+    }
+    imgcat "$1"
+    [ $? -ne 0 ] && return
+    get_cursor_position
+    # 2行分画像が残ってしまうためtputで再描画判定させて消す
+    read && tput cup `expr $y - 2` 0
+}
