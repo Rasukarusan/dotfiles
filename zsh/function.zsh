@@ -1137,12 +1137,9 @@ _imgcat_for_tmux() {
         x=${pos##*;} y=${pos%%;*}
         stty "$old_settings"
     }
-    if [ ! "$TMUX" ]; then
-        imgcat "$1"
-        return
-    fi
     imgcat "$1"
     [ $? -ne 0 ] && return
+    [ ! "$TMUX" ] && return
     get_cursor_position
     # 2行分画像が残ってしまうためtputで再描画判定させて消す
     read && tput cup `expr $y - 2` 0
