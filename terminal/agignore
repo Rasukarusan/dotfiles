@@ -15,3 +15,7 @@ static
 swagger-ui/
 dist/
 coverage/
+bundle*.js
+embed*.js
+sample/data/
+skills/
