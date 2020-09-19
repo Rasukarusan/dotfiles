@@ -1108,6 +1108,14 @@ _memo() {
     echo "Gzt" | vim -s - $MEMO_PATH
 }
 
+_popuptmux() {
+    if [ "$(tmux display-message -p -F "#{session_name}")" = "popup" ];then
+        tmux detach-client
+    else
+        tmux popup -KER "tmux attach -t popup || tmux new -s popup"
+    fi
+}
+
 _imgcat_for_tmux() {
     # @See: https://qastack.jp/unix/88296/get-vertical-cursor-position
     get_cursor_position() {
