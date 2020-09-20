@@ -643,7 +643,7 @@ _edit_vim_files() {
     local deinToml=~/dotfiles/vim/dein.toml
     local xvimrc=~/dotfiles/vim/xvimrc
     # 文字数でソートする
-    local editFile=$(echo "${nvimFiles}\n${deinToml}\n${xvimrc}" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf --preview "bat --color always {}")
+    local editFile=$(echo "${nvimFiles}\n${deinToml}\n${xvimrc}" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf-tmux -p80% --preview "bat --color always {}")
     test -z "$editFile" && return
     vim $editFile
 }
@@ -652,7 +652,7 @@ _edit_vim_files() {
 _edit_zsh_files() {
     local zshFiles=$(find ~/dotfiles/zsh -type f)
     # 文字数でソートする
-    local editFiles=($(echo "$zshFiles" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf --preview "bat --color always {}"))
+    local editFiles=($(echo "$zshFiles" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf-tmux -p80% --preview "bat --color always {}"))
     test -z "$editFiles" && return
     vim -p "${editFiles[@]}"
 }
