@@ -3,7 +3,7 @@ typeset -U path PATH
 alias vim='nvim'
 
 source_file() {
-    [ -n "$1" ] && [ -f $1 ] && source $1
+  [ -n "$1" ] && [ -f $1 ] && source $1
 }
 
 source_file ~/dotfiles/zsh/settings.zsh
