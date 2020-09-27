@@ -28,18 +28,18 @@ export GTAGSLABEL=pygments
 export LANG=ja_JP.UTF-8
 # fzfのリストを上から並べ、全画面ではなくvimのquickfixライクにする
 export FZF_DEFAULT_OPTS='
-    --color fg:188,hl:103,fg+:222,bg+:234,hl+:104
-    --color info:183,prompt:110,spinner:107,pointer:167,marker:215
-    --height 70%
-    --reverse
-    --select-1
-    --exit-0
-    --multi
-    --bind ctrl-a:select-all,ctrl-d:deselect-all,ctrl-t:toggle-all
-    '
+  --color fg:188,hl:103,fg+:222,bg+:234,hl+:104
+  --color info:183,prompt:110,spinner:107,pointer:167,marker:215
+  --height 70%
+  --reverse
+  --select-1
+  --exit-0
+  --multi
+  --bind ctrl-a:select-all,ctrl-d:deselect-all,ctrl-t:toggle-all
+  '
 export MY_TARGET_GIT_DIR=(
-    ~/dotfiles
-    ~/Desktop/develop_tools
+  ~/dotfiles
+  ~/Desktop/develop_tools
 )
 # ggrepをgrepにするため
 export PATH="/usr/local/opt/grep/libexec/gnubin:$PATH"
