@@ -413,3 +413,24 @@ endfunction
 command! -range CommentOut <line1>,<line2>call s:comment_out_jsx()
 nnoremap Com :CommentOut<CR>
 vnoremap Com :CommentOut<CR>
+
+
+" =============================================
+" shellコマンドを実行
+" @See https://vim.fandom.com/wiki/Display_output_of_shell_commands_in_new_window
+" =============================================
+function! s:exec_shell_command(cmdline)
+  let expanded_cmdline = a:cmdline
+  for part in split(a:cmdline, ' ')
+     if part[0] =~ '\v[%#<]'
+        let expanded_part = fnameescape(expand(part))
+        let expanded_cmdline = substitute(expanded_cmdline, part, expanded_part, '')
+     endif
+  endfor
+  botright new
+  setlocal buftype=nofile bufhidden=wipe nobuflisted noswapfile nowrap
+  execute '0read !'. expanded_cmdline
+  setlocal nomodifiable
+  1 " カーソルを先頭へ移動
+endfunction
+command! -complete=shellcmd -nargs=+ Shell call s:exec_shell_command(<q-args>)
