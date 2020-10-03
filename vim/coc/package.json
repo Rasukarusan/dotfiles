@@ -4,7 +4,7 @@
     "coc-html": ">=1.2.4",
     "coc-json": ">=1.2.6",
     "coc-phpls": ">=2.1.10",
-    "coc-snippets": ">=2.2.0",
+    "coc-snippets": ">=2.2.1",
     "coc-solargraph": ">=1.1.7",
     "coc-tsserver": ">=1.5.7",
     "coc-ultisnips": ">=1.2.3"
