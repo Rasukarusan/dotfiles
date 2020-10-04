@@ -299,3 +299,5 @@ cmap <F12> <nop>
 nnoremap Mf ^i- [<ESC>A]<ESC>Js(<ESC>A)<ESC>^
 " 直前のファイルを開く
 nnoremap <S-x> :tabe #<CR>
+" 検索時のfoo/hogeなどの/を自動でエスケープして挿入する
+cnoremap <expr> / (getcmdtype() == '/') ? '\/' : '/'
