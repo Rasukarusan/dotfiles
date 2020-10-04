@@ -434,3 +434,33 @@ function! s:exec_shell_command(cmdline)
   1 " カーソルを先頭へ移動
 endfunction
 command! -complete=shellcmd -nargs=+ Shell call s:exec_shell_command(<q-args>)
+
+" =============================================
+" Exコマンドの補完をfzfでする
+" =============================================
+function! CompletionExCmdWithFzf()
+    let currentCmdLine = getcmdline()
+    let isCall = stridx(currentCmdLine, 'call ') != -1 
+    let type = 'command'
+
+    if isCall == 1
+      let cmdLines = split(currentCmdLine, ' ')
+      let currentCmdLine = len(cmdLines) > 1 ? cmdLines[1] : ''
+      let type = 'function'
+    endif
+
+    let result = fzf#run({
+      \'source': getcompletion(currentCmdLine, type), 
+      \ 'tmux': '-p90%,60%'
+      \}
+    \)
+    if len(result) == 0
+      return ''
+    endif
+
+    let prefix = type == 'function' ? 'call ' : ''
+    " fzf#runの結果はlist型で返されるので、そのままコマンドラインに返すと^@が末尾に付与される
+    " ^@を削除するためjoin()している
+    return prefix . join(result, '')
+endfunction
+cnoremap <TAB> <C-\>eCompletionExCmdWithFzf()<CR>
