@@ -440,25 +440,33 @@ command! -complete=shellcmd -nargs=+ Shell call s:exec_shell_command(<q-args>)
 " =============================================
 function! CompletionExCmdWithFzf()
     let currentCmdLine = getcmdline()
+    let isVisualMode = stridx(currentCmdLine, "'<,'>") != -1 
     let isCall = stridx(currentCmdLine, 'call ') != -1 
     let type = 'command'
+    let prefix = ''
 
     if isCall == 1
       let cmdLines = split(currentCmdLine, ' ')
       let currentCmdLine = len(cmdLines) > 1 ? cmdLines[1] : ''
       let type = 'function'
+      let prefix = 'call '
+    elseif isVisualMode == 1
+      let cmdLines = split(currentCmdLine, '>')
+      let currentCmdLine = len(cmdLines) > 1 ? cmdLines[1] : ''
+      let type = 'command'
+      let prefix = "'<,'>"
     endif
 
     let result = fzf#run({
-      \'source': getcompletion(currentCmdLine, type), 
-      \ 'tmux': '-p90%,60%'
+      \'source': getcompletion(currentCmdLine, type),
+      \ 'tmux': '-p60%,60%',
+      \ 'options': '--no-multi --bind tab:down'
       \}
     \)
     if len(result) == 0
       return ''
     endif
 
-    let prefix = type == 'function' ? 'call ' : ''
     " fzf#runの結果はlist型で返されるので、そのままコマンドラインに返すと^@が末尾に付与される
     " ^@を削除するためjoin()している
     return prefix . join(result, '')
