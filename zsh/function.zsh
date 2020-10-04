@@ -965,11 +965,11 @@ _cd_opend_finder() {
 
 # builtin-commandsのmanを参照
 _man_builtin_command_zsh() {
-  man zshbuiltins | less -p "^     $1 "
+  man zshbuiltins | less -p "^       $1 "
 }
 
 _man_builtin_command_bash() {
-  man bash | less -p "^     $1 "
+  man bash | less -p "^       $1 "
 }
 
 # gitコマンドのmanを参照
