@@ -440,8 +440,8 @@ command! -complete=shellcmd -nargs=+ Shell call s:exec_shell_command(<q-args>)
 " =============================================
 function! CompletionExCmdWithFzf()
     let currentCmdLine = getcmdline()
-    let isVisualMode = stridx(currentCmdLine, "'<,'>") != -1 
-    let isCall = stridx(currentCmdLine, 'call ') != -1 
+    let isVisualMode = stridx(currentCmdLine, "'<,'>") != -1
+    let isCall = stridx(currentCmdLine, 'call ') != -1
     let type = 'command'
     let prefix = ''
 
@@ -472,3 +472,37 @@ function! CompletionExCmdWithFzf()
     return prefix . join(result, '')
 endfunction
 cnoremap <TAB> <C-\>eCompletionExCmdWithFzf()<CR>
+
+" =============================================
+" 別ブランチのファイルを開く
+" =============================================
+function! s:open_file_of_branch(branch, file)
+  execute ':Gtabedit '.a:branch.':'.a:file
+endfunction
+
+" =============================================
+" 別ブランチのファイル一覧をfzfで表示して開く
+" =============================================
+function! s:fzf_show_git_files(branch)
+  call fzf#run({
+    \ 'source': 'git ls-tree -r --name-only ' . a:branch,
+    \ 'sink': function('s:open_file_of_branch', [a:branch]),
+    \ 'tmux': '-p60%,60%',
+    \ })
+endfunction
+
+" =============================================
+" ブランチ一覧を表示しファイルを選択して表示する
+" =============================================
+function! s:fzf_show_branch(...)
+  if a:0 == 1
+    call <SID>fzf_show_git_files(a:1)
+  else
+    call fzf#run({
+      \ 'source': 'git branch -a',
+      \ 'sink': function('s:fzf_show_git_files'),
+      \ 'tmux': '-p60%,60%',
+      \ })
+  endif
+endfunction
+command! -nargs=? Cof call s:fzf_show_branch(<f-args>)
