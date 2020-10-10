@@ -506,3 +506,20 @@ function! s:fzf_show_branch(...)
   endif
 endfunction
 command! -nargs=? Cof call s:fzf_show_branch(<f-args>)
+
+" =============================================
+" カレントディレクトリをfzfで変更
+" =============================================
+function! s:fzf_cd()
+  let excludeDirs = ['node_modules', '.git']
+  let excludeCmd = ''
+  for excludeDir in excludeDirs
+    let excludeCmd = excludeCmd . ' -type d -name ' . excludeDir . ' -prune -o'
+  endfor
+  call fzf#run({
+    \ 'source': 'find . $(git rev-parse --show-cdup) ' . excludeCmd . ' -type d',
+    \ 'sink': 'cd',
+    \ 'tmux': '-p60%,60%',
+    \ })
+endfunction
+command! Cdd call s:fzf_cd()
