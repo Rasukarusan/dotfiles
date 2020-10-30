@@ -100,3 +100,5 @@ alias redmine_template='vim $(mktemp XXXXXXXXXX) -c ":read! cat ~/redmine_templa
 alias ts='ts-node'
 alias bll='bluetooth-fzf'
 alias fa='find ./ -name'
+# 半角文字のみの行を抽出する。-vをつければ全角文字の行のみ抽出する
+alias hankaku="LANG=C grep '^[[:cntrl:][:print:]]*$'"
