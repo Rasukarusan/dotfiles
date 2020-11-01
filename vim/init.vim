@@ -1,7 +1,9 @@
+let g:python_host_prog = $PYENV_ROOT.'/versions/neovim2/bin/python'
+let g:python3_host_prog = $PYENV_ROOT.'/versions/neovim3/bin/python'
+
 if &compatible
   set nocompatible
 endif
-
 set runtimepath+=$XDG_CONFIG_HOME/nvim/dein/repos/github.com/Shougo/dein.vim
 let s:rc_dir    = expand($XDG_CONFIG_HOME.'/nvim')
 let s:toml      = s:rc_dir . '/dein.toml'
