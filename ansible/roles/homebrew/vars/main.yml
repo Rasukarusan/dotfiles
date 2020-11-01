@@ -38,6 +38,7 @@ packages:
   - name: node
   - name: nodebrew
   - name: pyenv
+  - name: pyenv-virtualenv
   - name: python3
   - name: ripgrep
   - name: ruby
