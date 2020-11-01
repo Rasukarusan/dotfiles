@@ -9,6 +9,16 @@
       - npm
 
   - block: 
+    - name: Set pyenv python2 for neovim
+      shell: pyenv install 2.7.15 && pyenv virtualenv 2.7.13 neovim2 && pyenv activate neovim2 && pip2 install neovim
+      become: yes
+      changed_when: false
+
+    - name: Set pyenv python3 for neovim
+      shell: pyenv install 3.5.3 && pyenv virtualenv 3.5.3 neovim3 && pyenv activate neovim3 && pip install neovim
+      become: yes
+      changed_when: false
+
     - name: Install pip
       shell: easy_install pip
       become: yes
