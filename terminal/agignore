@@ -19,3 +19,4 @@ bundle*.js
 embed*.js
 sample/data/
 skills/
+reports/
