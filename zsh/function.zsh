@@ -492,7 +492,7 @@ _source_my_script() {
 
 # tmuxコマンド集
 _tmux_commands() {
-  local command=$(cat <<-EOF | fzf-tmux -p --bind 'ctrl-y:execute-silent(echo {} | pbcopy)'
+  local command=$(cat <<-EOF | fzf --bind 'ctrl-y:execute-silent(echo {} | pbcopy)'
 		resize
 		rename-window
 		man
