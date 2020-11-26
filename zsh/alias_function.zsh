@@ -4,6 +4,7 @@
 alias cdd='_fzf-cdr'
 alias jump='_jump'
 alias lk='_look'
+alias lkk='_look_all'
 alias gro='_git_remote_open'
 alias tigg='_git_log_preview_open'
 alias tigd='_git_diff_preview_copy'
