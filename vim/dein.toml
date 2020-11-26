@@ -214,12 +214,12 @@ repo = 'honza/vim-snippets'
 # --------------------------------------------
 # firenvim - ブラウザでNeoVim
 # --------------------------------------------
-# [[plugins]]
-# repo = 'glacambre/firenvim'
-# hook_add = 'source ~/.config/nvim/plugin_settings/firenvim.vim'
-# hook_post_update = '''
-#   call firenvim#install(0)
-# '''
+[[plugins]]
+repo = 'glacambre/firenvim'
+hook_add = 'source ~/.config/nvim/plugin_settings/firenvim.vim'
+hook_post_update = '''
+  call firenvim#install(0)
+'''
 
 # --------------------------------------------
 # gitの差分を+ - で表示
@@ -253,3 +253,10 @@ repo = 'gorodinskiy/vim-coloresque'
 [[plugins]]
 repo = 'sentriz/vim-print-debug'
 hook_add = 'source ~/.config/nvim/plugin_settings/vim-print-debug.vim'
+
+# --------------------------------------------
+# 共同編集
+# --------------------------------------------
+[[plugins]]
+repo = 'jbyuki/instant.nvim'
+hook_add = 'source ~/.config/nvim/plugin_settings/instant.vim'
