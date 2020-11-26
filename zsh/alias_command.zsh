@@ -102,3 +102,5 @@ alias bll='bluetooth-fzf'
 alias fa='find ./ -name'
 # 半角文字のみの行を抽出する。-vをつければ全角文字の行のみ抽出する
 alias hankaku="LANG=C grep '^[[:cntrl:][:print:]]*$'"
+# gitで変更があったファイルのみ対象にagをかける
+alias mag='git ls-files -m -o --exclude-standard  | xargs ag'
