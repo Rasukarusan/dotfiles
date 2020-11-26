@@ -65,6 +65,16 @@ _look() {
   [ "$target_files" = "" ] && return
   vim -p ${target_files[@]}
 }
+_look_all() {
+  local target_files=($(find . -type f -not -path "./node_modules/*" \
+    | sed 's/\.\///g' \
+    | grep -v -e '.jpg' -e '.gif' -e '.png' -e '.jpeg' \
+    | sort -r \
+    | fzf-tmux -p80% --prompt 'vim ' --preview 'bat --color always {}' --preview-window=right:70%
+  ))
+  [ "$target_files" = "" ] && return
+  vim -p ${target_files[@]}
+}
 
 # remoteに設定されているURLを開く
 _git_remote_open() {
