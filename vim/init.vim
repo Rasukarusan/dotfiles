@@ -269,6 +269,8 @@ vnoremap th <
 vnoremap tl >
 " source ~/.vimrcを簡略化
 nnoremap rr :source ~/.config/nvim/init.vim<CR>
+" ファイル再読み込み
+nnoremap re :e!<CR>
 " 現在開いているスクリプトを読み込む
 nnoremap S :source %<CR>
 " InsertモードのときはFキーを無効化(MacBookProのキーボードがおかしいせいでF5が入力されしまう等があるため)
