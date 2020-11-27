@@ -1154,3 +1154,10 @@ _imgcat_for_tmux() {
   # 2行分画像が残ってしまうためtputで再描画判定させて消す
   read && tput cup `expr $y - 2` 0
 }
+
+_show_commit_only_current_branch() {
+  local currentBranch=$(git branch --show-current)
+  local compareBranch=$(git branch -a | grep -v $currentBranch | tr -d ' ' | fzf --prompt "Select the branch to compare >" --preview "git cherry -v {}")
+  [ -z "$compareBranch" ] && return
+  git cherry -v $compareBranch
+}
