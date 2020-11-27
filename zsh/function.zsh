@@ -143,7 +143,7 @@ _git_add(){
     | fzf-tmux -p80% \
       --prompt "ADD FILES>" \
       --preview "$previewCmd" \
-      --preview-window=right:70% \
+      --preview-window=right:50% \
     ))
   [ -z "$files" ] && return
   for file in "${files[@]}";do
@@ -156,7 +156,7 @@ _git_add-p(){
   local path_working_tree_root=$(git rev-parse --show-cdup)
   [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
   local files=($(git -C $path_working_tree_root ls-files --modified \
-    | fzf-tmux -p80% --prompt "ADD FILES>" --preview "git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy"))
+    | fzf-tmux -p80% --prompt "ADD FILES>" --preview "git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy" --preview-window=right:50% ))
   [ -z "$files" ] && return
   for file in "${files[@]}";do
     git add -p ${path_working_tree_root}${file}
@@ -168,7 +168,7 @@ _git_diff(){
   local path_working_tree_root=$(git rev-parse --show-cdup)
   [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
   local files=($(git -C $path_working_tree_root ls-files --modified \
-    | fzf-tmux -p80% --prompt "SELECT FILES>" --preview 'git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy'))
+    | fzf-tmux -p80% --prompt "SELECT FILES>" --preview 'git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy' --preview-window=right:50% ))
   [ -z "$files" ] && return
   for file in "${files[@]}";do
     git diff -b ${path_working_tree_root}${file}
@@ -180,7 +180,7 @@ _git_checkout(){
   local path_working_tree_root=$(git rev-parse --show-cdup)
   [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
   local files=($(git -C $path_working_tree_root ls-files --modified \
-    | fzf-tmux -p80% --prompt "CHECKOUT FILES>" --preview "git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy"))
+    | fzf-tmux -p80% --prompt "CHECKOUT FILES>" --preview "git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy" --preview-window=right:50%))
   [ -z "$files" ] && return
   for file in "${files[@]}";do
     git checkout ${path_working_tree_root}${file}
@@ -192,7 +192,7 @@ _git_reset() {
   local path_working_tree_root=$(git rev-parse --show-cdup)
   [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
   local files=($(git -C $path_working_tree_root diff --name-only --cached \
-    | fzf-tmux -p80% --prompt "RESET FILES>" --preview "git diff --cached --color=always $(git rev-parse --show-cdup){} | diff-so-fancy"))
+    | fzf-tmux -p80% --prompt "RESET FILES>" --preview "git diff --cached --color=always $(git rev-parse --show-cdup){} | diff-so-fancy" --preview-window=right:50% ))
   [ -z "$files" ] && return
   for file in "${files[@]}";do
     git reset ${path_working_tree_root}${file}
