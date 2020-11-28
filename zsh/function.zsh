@@ -1,15 +1,7 @@
 # ==============================#
-#            Function           #
+#           Functions           #
 # ==============================#
 #
-FZF() {
-  fzf-tmux -p80% "$@"
-}
-
-tmux_popup() {
-  tmux popup -h80% -w80% -d '#{pane_current_path}' "$@"
-}
-
 # fgを使わずctrl+zで行ったり来たりする
 fancy-ctrl-z () {
   if [[ $#BUFFER -eq 0 ]]; then
@@ -567,7 +559,7 @@ _tmux_commands() {
       tmux rename-window $name
       ;;
     'man')
-      tmux_popup -KER "tmux new 'man tmux'"
+      man tmux
       ;;
     'tmux')
       tmux
