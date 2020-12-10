@@ -108,7 +108,7 @@ if has('nvim')
     set termguicolors
     set winblend=10
     " colorscheme jellybeans よりもあとに書かないと反映されない(上書きされてしまう)ので注意
-    hi NormalFloat guifg=#ffffff guibg=#07343b
+    hi NormalFloat guifg=#ffffff guibg=#000000
     tnoremap <Esc> <C-\><C-n>
     " tnoremap jj <C-\><C-n>
     tnoremap <silent>:q <C-\><C-n>:call nvim_win_close(win_id, v:true)<CR>
