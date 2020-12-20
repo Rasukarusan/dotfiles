@@ -254,8 +254,6 @@ nnoremap <C-j> <ESC><C-w>j
 nnoremap <Tab>n :tabmove +<CR>
 " 現在のタブを左へ移動
 nnoremap <Tab>p :tabmove -<CR>
-" pasteモード(,iでもペーストモードへ)
-nnoremap ,i :<C-u>set paste<Return>i
 " ESCを二回押すことでハイライトを消す
 nmap <silent> <Esc><Esc> :nohlsearch<CR>
 " Yで末尾までコピー
@@ -298,10 +296,18 @@ cmap <F9> <nop>
 cmap <F10> <nop>
 cmap <F11> <nop>
 cmap <F12> <nop>
-
 " ページタイトル\nページURL形式をマークダウン記法にする
 nnoremap Mf ^i- [<ESC>A]<ESC>Js(<ESC>A)<ESC>^
 " 直前のファイルを開く
 nnoremap <S-x> :tabe #<CR>
 " 検索時のfoo/hogeなどの/を自動でエスケープして挿入する
 cnoremap <expr> / (getcmdtype() == '/') ? '\/' : '/'
+" ペースト時にインデントを合わせる
+" nnoremap p ]p
+" nnoremap P ]P
+" nnoremap ]p p
+" nnoremap ]P P
+"pで貼り付けたテキストの選択
+nnoremap <expr> gp '`[' . strpart(getregtype(), 0, 1) . '`]'
+" ctrl-pでコマンド履歴を入力中の文字で遡る
+cnoremap <C-p> <Up>
