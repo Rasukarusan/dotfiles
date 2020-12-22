@@ -19,12 +19,6 @@ Should run following command in `nvim`.
 :CocInstall
 :checkhealth
 ```
-- Global npm package
-```sh
-npm install -g dockerfile-language-server-nodejs
-npm install -g eslint
-npm install -g eslint_d
-```
 
 ## Chrome Setup
 

@@ -33,6 +33,7 @@ files:
   - { src: ~/dotfiles/vim/xvimrc, dest: ~/.xvimrc }
   - { src: ~/dotfiles/vim/init.vim, dest: ~/.vimrc }
   - { src: ~/dotfiles/vim/init.vim, dest: ~/.config/nvim/init.vim }
+  - { src: ~/dotfiles/vim/textlintrc, dest: ~/.textlintrc }
   - { src: ~/dotfiles/vim/dein.toml, dest: ~/.config/nvim/dein.toml }
   - { src: ~/dotfiles/vim/plugin_settings, dest: ~/.config/nvim/plugin_settings }
   - { src: ~/dotfiles/vim/coc/coc-settings.json, dest: ~/.config/nvim/coc-settings.json }
