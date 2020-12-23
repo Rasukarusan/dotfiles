@@ -5,7 +5,7 @@
         "max": 200
       },
       "no-exclamation-question-mark": false,
-       "no-hankaku-kana": true
+       "no-hankaku-kana": false
     },
     "spellcheck-tech-word": true
   }
