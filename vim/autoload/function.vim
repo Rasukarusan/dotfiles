@@ -523,3 +523,14 @@ function! s:fzf_cd()
     \ })
 endfunction
 command! Cdd call s:fzf_cd()
+
+" =============================================
+" カレントバッファより後ろのバッファを全て削除
+" =============================================
+function! s:delete_all_buffers()
+  let buffer_count = bufnr('$')
+  if buffer_count > 1
+    execute ':.+,$bwipeout'
+  endif
+endfunction
+nnoremap <silent> BB :call <SID>delete_all_buffers()<CR>
