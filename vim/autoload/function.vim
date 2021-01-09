@@ -354,10 +354,10 @@ endfunction
 command! Zshrc call s:fzf_zshrc()
 
 " =============================================
-" :messagesの最後の行を取得する
+" コマンドの結果を取得する
 " @see http://koturn.hatenablog.com/entry/2015/07/31/001507
 " =============================================
-function! s:redir(cmd) abort
+function! s:get_command_result(cmd) abort
   let [verbose, verbosefile] = [&verbose, &verbosefile]
   set verbose=0 verbosefile=
   redir => str
@@ -367,20 +367,26 @@ function! s:redir(cmd) abort
   return str
 endfunction
 
-function! s:get_messages_tail() abort
-  let lines = filter(split(s:redir('messages'), "\n"), 'v:val !=# ""')
+" =============================================
+" :messagesの最後の行を取得する
+" =============================================
+function! s:get_last_message() abort
+  let lines = filter(split(s:get_command_result('messages'), "\n"), 'v:val !=# ""')
   if len(lines) <= 0
       return ''
   end
   return lines[len(lines) - 1 :][0]
 endfunction
-command! MessageLast call s:get_messages_tail()
+command! MessageLast call s:get_last_message()
+
+" Rasukarusan/popup_message.nvimの関数
+nnoremap MM :call popup_message#open(<SID>get_last_message())<CR>
 
 " =============================================
 " :messagesの最後の行をコピーする
 " =============================================
 function! s:copy_last_message()
-    let lastMessage = s:get_messages_tail()
+    let lastMessage = s:get_last_message()
     if strlen(lastMessage) <= 0
         echo 'メッセージがありません'
         return
