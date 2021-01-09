@@ -138,7 +138,7 @@ set shortmess+=I
 " 自動でインデントを挿入
 set autoindent
 " 全角記号がずれるのを回避
-set ambiwidth=double
+" set ambiwidth=double
 " タブをスペースに変換
 set expandtab
 " rrでvimrcを再度読み込む際、augroupで設定した設定が上書きされてしまうためコメントアウト
@@ -311,3 +311,5 @@ cnoremap <expr> / (getcmdtype() == '/') ? '\/' : '/'
 nnoremap <expr> gp '`[' . strpart(getregtype(), 0, 1) . '`]'
 " ctrl-pでコマンド履歴を入力中の文字で遡る
 cnoremap <C-p> <Up>
+" :messagesの短縮
+cabbrev ms messages
