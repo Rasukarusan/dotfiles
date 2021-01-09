@@ -267,3 +267,9 @@ hook_add = 'source ~/.config/nvim/plugin_settings/vim-print-debug.vim'
 [[plugins]]
 repo = 'AndrewRadev/splitjoin.vim'
 hook_add = 'source ~/.config/nvim/plugin_settings/splitjoin.vim'
+
+# --------------------------------------------
+# 指定したメッセージをFloatingWindowで表示する
+# --------------------------------------------
+[[plugins]]
+repo = 'Rasukarusan/vim-popup-message'
