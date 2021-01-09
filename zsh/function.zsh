@@ -1210,6 +1210,7 @@ _imgcat_for_tmux() {
     x=${pos##*;} y=${pos%%;*}
     stty "$old_settings"
   }
+  clear
   command imgcat "$1"
   [ $? -ne 0 ] && return
   [ ! "$TMUX" ] && return
