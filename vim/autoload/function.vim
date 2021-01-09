@@ -380,7 +380,7 @@ endfunction
 command! MessageLast call s:get_last_message()
 
 " Rasukarusan/popup_message.nvimの関数
-nnoremap MM :call popup_message#open(<SID>get_last_message())<CR>
+nnoremap <silent> MM :call popup_message#open(<SID>get_last_message())<CR>
 
 " =============================================
 " :messagesの最後の行をコピーする
