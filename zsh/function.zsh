@@ -254,6 +254,19 @@ _preview_my_git_diff() {
   fi
   git -C $target_dir add -p && git -C $target_dir commit
 }
+
+alias sgs='_show_git_status'
+_show_git_status() {
+  ls -1 ~/Documents/github | while read dir; do
+    local dir=~/Documents/github/${dir}
+    if [ -n "$(git -C ${dir} status --porcelain)" ]; then
+      printf "\e[33m${dir}\e[m\n"
+      git -C ${dir} status -s
+    fi
+  done
+}
+
+
 # bcコマンドを簡単にかつ小数点時に.3333となるのを0.3333に直す(0を付け足す)
 alias bcc='_bcc'
 _bcc() {
