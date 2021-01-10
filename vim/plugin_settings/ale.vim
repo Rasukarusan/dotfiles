@@ -14,3 +14,4 @@ let g:ale_fix_on_save = 1
 " エラー箇所に飛ぶ
 nmap <silent> <C-a><C-n> <Plug>(ale_next_wrap)
 nmap <silent> <C-a><C-p> <Plug>(ale_previous_wrap)
+let g:ale_virtualtext_cursor = 1
