@@ -15,3 +15,4 @@ let g:ale_fix_on_save = 1
 nmap <silent> <C-a><C-n> <Plug>(ale_next_wrap)
 nmap <silent> <C-a><C-p> <Plug>(ale_previous_wrap)
 let g:ale_virtualtext_cursor = 1
+let g:ale_virtualtext_prefix = ' --> '
