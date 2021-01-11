@@ -477,7 +477,7 @@ function! CompletionExCmdWithFzf()
     " ^@を削除するためjoin()している
     return prefix . join(result, '')
 endfunction
-cnoremap <TAB> <C-\>eCompletionExCmdWithFzf()<CR>
+" cnoremap <TAB> <C-\>eCompletionExCmdWithFzf()<CR>
 
 " =============================================
 " 別ブランチのファイルを開く
