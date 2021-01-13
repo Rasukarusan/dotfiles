@@ -1238,3 +1238,9 @@ _show_commit_only_current_branch() {
   [ -z "$compareBranch" ] && return
   git cherry -v $compareBranch
 }
+
+# plistファイルをjsonで出力
+alias plist_to_json='_plist_to_json'
+_plist_to_json() {
+  plutil -convert json $1 -o -
+}
