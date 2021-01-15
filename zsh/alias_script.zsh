@@ -4,7 +4,7 @@
 alias cl='sh ~/scripts/clipboard.sh'
 alias ch='sh ~/scripts/chromeHistory.sh'
 alias showColors='~/scripts/getColorPrintf.sh'
-alias itt='sh ~/scripts/iterm.sh'
+alias itt='sh ~/Documents/github/iterm-scripts/iterm.sh'
 # ディスプレイ明るさを0に
 alias 00='osascript ~/scripts/up_or_down_brightness.sh 1'
 alias 11='osascript ~/scripts/up_or_down_brightness.sh 0'
