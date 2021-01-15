@@ -218,11 +218,6 @@ nnoremap <up> gk
 inoremap <silent> jj <ESC>
 " 日本語入力で”っj”と入力してもEnterキーで確定させればインサートモードを抜ける
 inoremap <silent> っj <ESC>
-" 入力モード中:wqと打つとノーマルモードに戻って:wqになる
-inoremap :wq <ESC>:wq
-inoremap ：wq <ESC>:wq
-inoremap :w <ESC>:w
-inoremap :q <ESC>:q
 " 閉じかっこをENTERと同時に挿入
 inoremap {<Enter> {}<Left><CR><ESC><S-o>
 inoremap [<Enter> []<Left><CR><ESC><S-o>
