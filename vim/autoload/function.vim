@@ -251,7 +251,7 @@ nnoremap T :call <SID>open_terminal_by_floating_window()<CR>
 " READMEテンプレートを挿入
 " =============================================
 function! s:insert_template_github_readme()
-    let template = "Name \r====\r\rOverview\r\r## Description\r\r## Demo\r\r## Requirement\r\r## Install\r\r## Usage"
+    let template = "Name \r====\r\rOverview\r\r## Description\r\r## Requirement\r\r## Install\r\r## Usage"
     execute ':normal i' . template
 endfunction
 command! Readme call s:insert_template_github_readme()
@@ -540,3 +540,23 @@ function! s:delete_all_buffers()
   endif
 endfunction
 nnoremap <silent> BB :call <SID>delete_all_buffers()<CR>
+
+" =============================================
+" はてなブログ用 - キャプション付きの画像
+" =============================================
+function! s:hatena_make_figure()
+  let current_line = getline('.')
+  let text = '<figure class="figure-image figure-image-fotolife" title="説明"><img src="' . current_line .'"><figcaption>説明</figcaption></figure>'
+  call setline('.', text)
+endfunction
+command! HatenaFigure call s:hatena_make_figure()
+
+" =============================================
+" はてなブログ用 - サイト埋込み
+" =============================================
+function! s:hatena_embed_cite()
+  let current_line = getline('.')
+  let text = '[' . current_line . ':embed:cite]'
+  call setline('.', text)
+endfunction
+command! HatenaEmbedCite call s:hatena_embed_cite()
