@@ -308,7 +308,7 @@ _show_mail_log() {
 alias art='_write_article'
 _write_article() {
   local ARTICLE_DIR=/Users/`whoami`/Documents/github/articles
-  local article=`ls ${ARTICLE_DIR}/*.md | xargs basename | fzf-tmux -p80%`
+  local article=`ls ${ARTICLE_DIR}/*.md | xargs basename | fzf-tmux -p80% --preview "bat --color=always ${ARTICLE_DIR}/{}"`
 
   # 何も選択しなかった場合は終了
   if [ -z "$article" ]; then
