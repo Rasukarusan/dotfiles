@@ -85,9 +85,9 @@ hook_add = 'source ~/.config/nvim/plugin_settings/denite-gtags.vim'
 # --------------------------------------------
 # gtags,ctagsを自動生成
 # --------------------------------------------
-[[plugins]]
-repo = 'jsfaint/gen_tags.vim'
-hook_add = 'source ~/.config/nvim/plugin_settings/gen_tags.vim'
+# [[plugins]]
+# repo = 'jsfaint/gen_tags.vim'
+# hook_add = 'source ~/.config/nvim/plugin_settings/gen_tags.vim'
 
 # --------------------------------------------
 # リアルタイムLinter
@@ -286,3 +286,9 @@ repo = 'skanehira/translate.vim'
 [[plugins]]
 repo = 'Rasukarusan/vim-block-paste'
 hook_add = 'source ~/.config/nvim/plugin_settings/vim-block-paste.vim'
+
+# --------------------------------------------
+# 置換結果をプレビュー
+# --------------------------------------------
+[[plugins]]
+repo = 'markonm/traces.vim'
