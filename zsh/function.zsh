@@ -308,6 +308,12 @@ _show_mail_log() {
 alias art='_write_article'
 _write_article() {
   local ARTICLE_DIR=/Users/`whoami`/Documents/github/articles
+  if [ "$1" = '-a' ];then
+    local targetFile=$(find $ARTICLE_DIR -name "*.md" | fzf-tmux -p80% --delimiter 'articles' --with-nth  -1 --preview "bat --color=always {}")
+    [ -z "$targetFile" ] && return
+    vim $targetFile
+    return
+  fi
   local article=`ls ${ARTICLE_DIR}/*.md | xargs basename | fzf-tmux -p80% --preview "bat --color=always ${ARTICLE_DIR}/{}"`
 
   # 何も選択しなかった場合は終了
@@ -316,10 +322,13 @@ _write_article() {
   fi
 
   if [ "$article" = "00000000.md" ]; then
-    echo "タイトルを入力してくだい"
-    read title
-    today=`date '+%Y_%m_%d_'`
-    vim ${ARTICLE_DIR}/${today}${title}.md
+    local tmpfile=$(mktemp)
+    vim $tmpfile
+    local title="$(cat $tmpfile | tr -d '\n')"
+    rm $tmpfile
+
+    local today=`date '+%Y_%m_%d_'`
+    vim ${ARTICLE_DIR}/${today}${title}.md -c "call setline(1, '# ${title}')"
   else
     vim ${ARTICLE_DIR}/${article}
   fi
