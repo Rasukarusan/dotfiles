@@ -27,7 +27,7 @@ snippet fzf-nth "fzf --with-nth 1,.."
 endsnippet
 
 snippet fzf-delimiter "fzf --delimiter $'\t' --widh-nth N"
---delimiter $'\t' --with-nth ${1:N} 
+--delimiter $'\t' --with-nth ${1:N}
 endsnippet
 
 snippet printf-yellow "printf '\e[33m${1:str}\e[m\n'"
@@ -56,4 +56,8 @@ endsnippet
 
 snippet curl-json "curl -H 'Content-Type:application/json'"
 -H 'Content-Type:application/json'
+endsnippet
+
+snippet read "read a <<< command"
+read a <<< "$()"
 endsnippet
