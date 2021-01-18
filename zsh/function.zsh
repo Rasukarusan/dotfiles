@@ -1244,3 +1244,62 @@ alias plist_to_json='_plist_to_json'
 _plist_to_json() {
   plutil -convert json $1 -o -
 }
+
+# 指定のSystemPreferenceを表示する
+alias sp='_show_preference'
+_show_preference() {
+  # @see https://developer.apple.com/documentation/devicemanagement/systempreferences
+  local pane_id=$(cat << EOS | fzf --delimiter '\.' --with-nth -1
+com.apple.ClassroomSettings
+com.apple.Localization
+com.apple.preference.datetime
+com.apple.preference.desktopscreeneffect
+com.apple.preference.digihub.discs
+com.apple.preference.displays
+com.apple.preference.dock
+com.apple.preference.energysaver
+com.apple.preference.expose
+com.apple.preference.general
+com.apple.preference.ink
+com.apple.preference.keyboard
+com.apple.preference.mouse
+com.apple.preference.network
+com.apple.preference.notifications
+com.apple.preference.printfax
+com.apple.preference.screentime
+com.apple.preference.security
+com.apple.preference.sidecar
+com.apple.preference.sound
+com.apple.preference.speech
+com.apple.preference.spotlight
+com.apple.preference.startupdisk
+com.apple.preference.trackpad
+com.apple.preference.universalaccess
+com.apple.preferences.AppleIDPrefPane
+com.apple.preferences.appstore
+com.apple.preferences.Bluetooth
+com.apple.preferences.configurationprofiles
+com.apple.preferences.extensions
+com.apple.preferences.FamilySharingPrefPane
+com.apple.preferences.icloud
+com.apple.preferences.internetaccounts
+com.apple.preferences.parentalcontrols
+com.apple.preferences.password
+com.apple.preferences.sharing
+com.apple.preferences.softwareupdate
+com.apple.preferences.users
+com.apple.preferences.wallet
+com.apple.prefpanel.fibrechannel
+com.apple.prefs.backup
+com.apple.Xsan
+EOS
+)
+  [ -z "$pane_id" ] && return
+  osascript << EOS
+    tell application "System Preferences"
+      set show all to true
+      activate
+      set current pane to pane id "$pane_id"
+    end tell
+EOS
+}
