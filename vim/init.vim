@@ -64,7 +64,8 @@ let g:markdown_fenced_languages = [
     \ 'erb=eruby',
     \ 'ruby',
     \ 'sql',
-    \ 'html'
+    \ 'html',
+    \ 'yaml'
     \]
 
 " ==============================
@@ -98,7 +99,7 @@ augroup IndentSettings
     autocmd FileType markdown        setlocal sw=4 sts=4 ts=4 et
     autocmd FileType html            setlocal sw=4 sts=4 ts=4 et
     autocmd FileType json            setlocal sw=4 sts=4 ts=4 et
-    autocmd FileType yaml            setlocal sw=4 sts=4 ts=4 et
+    autocmd FileType yaml            setlocal sw=2 sts=2 ts=2 et
 augroup END
 
 " ==============================
