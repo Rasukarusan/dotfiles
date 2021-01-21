@@ -24,7 +24,7 @@ _fzf-cdr() {
         --preview "echo {} | sed 's/~/\/Users\/$(whoami)/g' | xargs -I{} ls -l {} | head -n100" \
     )
   # ~だと移動できないため、/Users/hogeの形にする
-  target_dir=$(echo ${target_dir/\~/$HOME})
+  target_dir=$(echo ${target_dir/\~/$HOME} | tr -d '\')
   if [ -n "$target_dir" ]; then
     cd $target_dir
   fi
