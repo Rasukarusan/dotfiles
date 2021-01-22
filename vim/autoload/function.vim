@@ -560,3 +560,16 @@ function! s:hatena_embed_cite()
   call setline('.', text)
 endfunction
 command! HatenaEmbedCite call s:hatena_embed_cite()
+
+
+" =============================================
+" 背景色を黒に変更
+" =============================================
+function! s:change_background_black()
+  :highlight Normal  guibg=#000000
+  :highlight NonText guibg=#000000
+  :highlight LineNr  guibg=#000000
+  :highlight SignColumn guibg=#000000
+endfunction
+
+command! Black call s:change_background_black()
