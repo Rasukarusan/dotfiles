@@ -1329,3 +1329,21 @@ _goyo!() {
   . ~/Documents/github/mac-scripts/dock
   . ~/Documents/github/mac-scripts/desktop_icon 0
 }
+
+# ブログ用のkeynoteファイルを開く
+alias bb='_open_blog_keynote'
+_open_blog_keynote() {
+  local targets=$(cat << EOS
+$HOME/Documents/github/blog-assets/blog_header_image.key
+$HOME/Documents/github/keynote-template/myshape.key
+EOS
+)
+  local target=$(echo "${targets}"| fzf)
+  [ -z "$target" ] && return
+  osascript <<EOS
+tell application "Keynote"
+  activate
+  open "$target"
+end tell
+EOS
+}
