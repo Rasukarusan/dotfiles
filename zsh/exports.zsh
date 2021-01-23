@@ -32,7 +32,6 @@ export FZF_DEFAULT_OPTS='
   --color info:183,prompt:110,spinner:107,pointer:167,marker:215
   --height 70%
   --reverse
-  --select-1
   --exit-0
   --multi
   --bind ctrl-a:select-all,ctrl-d:deselect-all,ctrl-t:toggle-all

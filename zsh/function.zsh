@@ -55,7 +55,7 @@ _look() {
     | sed 's/\.\///g' \
     | grep -v -e '.jpg' -e '.gif' -e '.png' -e '.jpeg' \
     | sort -r \
-    | fzf-tmux -p80% --prompt 'vim ' --preview 'bat --color always {}' --preview-window=right:70%
+    | fzf-tmux -p80% --select-1 --prompt 'vim ' --preview 'bat --color always {}' --preview-window=right:70%
   ))
   [ "$target_files" = "" ] && return
   vim -p ${target_files[@]}
@@ -67,7 +67,7 @@ _look_all() {
     | sed 's/\.\///g' \
     | grep -v -e '.jpg' -e '.gif' -e '.png' -e '.jpeg' \
     | sort -r \
-    | fzf-tmux -p80% --prompt 'vim ' --preview 'bat --color always {}' --preview-window=right:70%
+    | fzf-tmux -p80% --select-1 --prompt 'vim ' --preview 'bat --color always {}' --preview-window=right:70%
   ))
   [ "$target_files" = "" ] && return
   vim -p ${target_files[@]}
@@ -76,7 +76,7 @@ _look_all() {
 # remoteに設定されているURLを開く
 alias gro='_git_remote_open'
 _git_remote_open() {
-  local remote=$(git remote show | fzf)
+  local remote=$(git remote show | fzf --select-1)
   local url=$(git remote get-url $remote)
   if [ "$url" = '' ]; then; return; fi
   if ! echo $url | grep 'http' >/dev/null; then
@@ -91,7 +91,7 @@ _git_remote_open() {
 # 現在のブランチをoriginにpushする
 alias po='_git_push_fzf'
 _git_push_fzf() {
-  local remote=`git remote | fzf`
+  local remote=`git remote | fzf --select-1`
   git push ${remote} $(git branch | grep "*" | sed -e "s/^\*\s*//g")
 }
 
@@ -172,7 +172,7 @@ _git_diff(){
   local path_working_tree_root=$(git rev-parse --show-cdup)
   [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
   local files=($(git -C $path_working_tree_root ls-files --modified \
-    | fzf-tmux -p80% --prompt "SELECT FILES>" --preview 'git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy' --preview-window=right:50% ))
+    | fzf-tmux -p80% --select-1 --prompt "SELECT FILES>" --preview 'git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy' --preview-window=right:50% ))
   [ -z "$files" ] && return
   for file in "${files[@]}";do
     git diff -b ${path_working_tree_root}${file}
@@ -210,7 +210,7 @@ alias fgg='_fgg'
 _fgg() {
   local job=$(jobs \
     | grep  '^\[' \
-    | fzf \
+    | fzf --select-1\
     |grep -oP '(?<=\[)[1-9]*(?=\])'
   )
   [ -n "$job" ] && fg %${job}
