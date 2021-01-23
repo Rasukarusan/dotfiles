@@ -1057,14 +1057,14 @@ _man_builtin_command_bash() {
 # gitコマンドのmanを参照
 alias mangit='_fzf_man_git'
 _fzf_man_git() {
-  local target=$(ls $(git help -a | grep -oP "(?<=available git commands in ').*(?=')") \
-    | sed 's/git-//g' \
+  local target=$(git help -a | awk '{print $1}' | grep -Ev '^[A-Z]' | sed '/^$/d' \
     | fzf \
       --preview "git help {} | head -n 100 " \
       --preview-window=right:80%
     )
   [ -z "$target" ] && return
   git help $target
+  print -s "git help $target"
 }
 
 # ログインShellを切り替える
