@@ -1,19 +1,71 @@
+snippet readme "README template"
+${1:Name}
+====
+
+Overview
+
+## Description
+
+## Requirement
+
+## Install
+
+## Usage
+
+endsnippet
+
 snippet table "Table"
-$0
+$1
 | Column | Column |
 | ------ | ------ |
 | Cell   | Cell   |
 | Cell   | Cell   |
 endsnippet
 
-snippet color "<span style='color:red;'></span>"
-<span style="color:${1:color};">$0</span>
+snippet font-color "<span style='color:red;'></span>"
+<span style="color:${1:red};">$2</span>
 endsnippet
 
-snippet font "<span style='font-size:100%;'></span>"
-<span style="font-size:100%;">$0</span>
+snippet font-size "<span style='font-size:100%;'></span>"
+<span style="font-size:100%;">$1</span>
 endsnippet
 
 snippet font-size-color "<span style='font-size:100%; color:red;'></span>"
-<span style="font-size:100%; color:red;">$0</span>
+<span style="font-size:100%; color:red;">$1</span>
+endsnippet
+
+snippet image-caption "<figure><figcaption></figcaption></figure>"
+<figure class="figure-image figure-image-fotolife" title="${1:desc}">
+	img
+	<figcaption>$1</figcaption>
+</figure>
+endsnippet
+
+snippet image-caption-with-img-tag "<figure><img src=''><figcaption></figcaption></figure>"
+<figure class="figure-image figure-image-fotolife" title="${1:desc}">
+	<img src="">
+	<figcaption>$1</figcaption>
+</figure>
+endsnippet
+
+snippet image-caption-with-border "<figure><p style='border:solid 1px #dfdfdf'><.p><figcaption></figcaption></figure>"
+<figure class="figure-image figure-image-fotolife" title="${1:desc}">
+	<p style="border:solid 1px #dfdfdf"></p>
+	<figcaption>$1</figcaption>
+</figure>
+endsnippet
+
+snippet video "Insert mp4 video"
+<div style="text-align:center">
+	<video controls muted autoplay playsinline width="95%">
+		<source src="https://github.com/Rasukarusan/blog-assets/blob/master/'DIR_NAME'/demo.mp4?raw=true">
+	</video>
+	<p style="font-size:95%;opacity:.7">$1</p>
+</div>
+endsnippet
+
+snippet c "code block"
+\`\`\`${1:sh}
+$2
+\`\`\`
 endsnippet
