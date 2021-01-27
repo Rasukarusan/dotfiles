@@ -133,18 +133,20 @@ _git_add(){
     return
   fi
   local path_working_tree_root=$(git rev-parse --show-cdup)
-  local option='--modified --exclude-standard'
-  local previewCmd='git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy'
-  # Untracked fileのものだけ表示
+  local option='--modified --others --exclude-standard'
+  # modifiedのみ表示
+  if [ "$1" = '-m' ]; then
+    option='--modified --exclude-standard'
+  fi
+  # Untracked fileのみ表示する
   if [ "$1" = '-u' ]; then
     option='--others --exclude-standard'
-    previewCmd='bat --color always {}'
   fi
   [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
   local files=($(eval git -C $path_working_tree_root ls-files $option \
     | fzf-tmux -p80% \
       --prompt "ADD FILES>" \
-      --preview "$previewCmd" \
+      --preview "git diff --exit-code {} >/dev/null && bat --color always {} || git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy" \
       --preview-window=right:50% \
     ))
   [ -z "$files" ] && return
