@@ -219,7 +219,7 @@ _fgg() {
 # あらかじめ指定したGitディレクトリを全て最新にする
 alias upd='_update_dotfile'
 _update_dotfile() {
-  for targetDir in ${MY_TARGET_GIT_DIR[@]}; do 
+  for targetDir in ${MY_TARGET_GIT_DIR[@]}; do
     printf "\e[33m`basename ${targetDir}`\e[m\n"
     git -C ${targetDir} pull origin master
     echo ""
@@ -228,7 +228,7 @@ _update_dotfile() {
 # あらかじめ指定したGitディレクトリを全てpushする
 alias psd='_push_dotfile'
 _push_dotfile() {
-  for targetDir in ${MY_TARGET_GIT_DIR[@]}; do 
+  for targetDir in ${MY_TARGET_GIT_DIR[@]}; do
     printf "\e[33m`basename ${targetDir}`\e[m\n"
     git -C ${targetDir} add -A
     git -C ${targetDir} commit -v
@@ -239,7 +239,7 @@ _push_dotfile() {
 # あらかじめ指定したGitディレクトリのgit statusを表示
 alias std='_show_git_status_dotfile'
 _show_git_status_dotfile() {
-  for targetDir in ${MY_TARGET_GIT_DIR[@]}; do 
+  for targetDir in ${MY_TARGET_GIT_DIR[@]}; do
     printf "\e[33m`basename ${targetDir}`\e[m\n"
     git -C ${targetDir} status
     echo ""
@@ -249,7 +249,7 @@ _show_git_status_dotfile() {
 alias stdd='_preview_my_git_diff'
 _preview_my_git_diff() {
   local target_dir=$(echo ${MY_TARGET_GIT_DIR[@]} | tr ' ' '\n' | fzf --preview 'git -C {} diff --color=always')
-  if [ -z "$target_dir" ]; then 
+  if [ -z "$target_dir" ]; then
     return
   fi
   git -C $target_dir add -p && git -C $target_dir commit
@@ -347,7 +347,7 @@ _move_posted_articles() {
   for file in `ls $ARTICLE_DIR`; do
     tail -n 1 ${ARTICLE_DIR}/${file} | grep $POSTED_MARK > /dev/null
     # 投稿が完了したファイルを別ディレクトリに移す
-    if [ $? -eq 0 ]; then 
+    if [ $? -eq 0 ]; then
       # git管理されていない場合失敗するので通常のmvを実行する
       git mv ${ARTICLE_DIR}/${file} $POSTED_DIR/ || mv ${ARTICLE_DIR}/${file} $POSTED_DIR/
       printf "\e[33m${file} is moved!\e[m\n"
@@ -362,7 +362,7 @@ _redmine_to_markdown() {
   sed "s/h2./##/g"  | \
   sed "s/h3./###/g" | \
   sed "s/<pre>/\`\`\`zsh/g" | \
-  sed "s/<\/pre>/\`\`\`/g" 
+  sed "s/<\/pre>/\`\`\`/g"
 }
 
 # markdown記法からRedmine形式へ変換
@@ -377,8 +377,8 @@ _markdown_to_redmine() {
   # 偶数番目の<pre>を</pre>に変換
   local pre_line_numbers=(`echo "$converted" | grep -nP "^<pre>$" | sed 's/:.*//g'`)
   local cnt=0
-  for pre_line_number in ${pre_line_numbers[@]};do 
-    if [ `expr $cnt % 2` -ne 0 ]; then 
+  for pre_line_number in ${pre_line_numbers[@]};do
+    if [ `expr $cnt % 2` -ne 0 ]; then
       converted=`echo "$converted" | sed "$pre_line_number s/<pre>/<\/pre>/g"`
     fi
     cnt=`expr $cnt + 1`
@@ -574,7 +574,7 @@ _tmux_commands() {
         | fzf-tmux -p \
           --prompt 'Press Ctrl-p > ' \
           --bind 'ctrl-p:execute-silent(tmux resize-pane -$(echo {} | cut -c 1-1))'
-      ;; 
+      ;;
     'rename-window')
       /bin/echo  -n 'INPUT NAME>'
       read  name
@@ -604,7 +604,7 @@ _tmux_commands() {
 # 起動中のアプリを表示、選択して起動する
 alias oaa='_open_launched_app'
 _open_launched_app() {
-  local app=$(ps aux | awk -F '/' '{print "/"$2"/"$3}' | grep Applications | sort -u | sed 's/\/Applications\///g' | fzf ) 
+  local app=$(ps aux | awk -F '/' '{print "/"$2"/"$3}' | grep Applications | sort -u | sed 's/\/Applications\///g' | fzf )
   test -z "$app" && return
   open "/Applications/$app"
 }
@@ -632,7 +632,7 @@ _delete_all_histories_by_file() {
 
 # masterのコミットを全て削除する(自分のPublicリポジトリにpushする際使用)
 _delete_all_git_log() {
-  local PC_ENV=`cat ~/account.json | jq -r '.pc_env["'$USER'"]'` 
+  local PC_ENV=`cat ~/account.json | jq -r '.pc_env["'$USER'"]'`
   printf "env: \e[37;1m${PC_ENV}\e[m\n"
   # プライベートPCではない場合、確認を取る
   if [ "$PC_ENV" != 'private' ]; then
@@ -663,8 +663,8 @@ _delete_all_git_log() {
 
 # コミットのAuthor、Committerを全て変更
 _change_author() {
-  local USER_NAME=`cat ~/account.json | jq -r '.github["user_name"]'` 
-  local MAIL_ADDR=`cat ~/account.json | jq -r '.github["mail_addr"]'` 
+  local USER_NAME=`cat ~/account.json | jq -r '.github["user_name"]'`
+  local MAIL_ADDR=`cat ~/account.json | jq -r '.github["mail_addr"]'`
   test "$USER_NAME" = "null" || test "$MAIL_ADDR" = "null" && return
   echo -n "AUTHOR: $USER_NAME\nEMAIL: $MAIL_ADDR\nに書き換えますがよろしいですか？(y/N) > "
   read isOK
@@ -684,8 +684,8 @@ _change_author() {
 
 # ローカル(特定リポジトリ)のユーザー名,メールアドレスを変更
 _change_config_local() {
-  local USER_NAME=`cat ~/account.json | jq -r '.github["user_name"]'` 
-  local MAIL_ADDR=`cat ~/account.json | jq -r '.github["mail_addr"]'` 
+  local USER_NAME=`cat ~/account.json | jq -r '.github["user_name"]'`
+  local MAIL_ADDR=`cat ~/account.json | jq -r '.github["mail_addr"]'`
   test "$USER_NAME" = "null" || test "$MAIL_ADDR" = "null" && return
   echo -n "AUTHOR: $USER_NAME\nEMAIL: $MAIL_ADDR\nに書き換えますがよろしいですか？(y/N) > "
   read isOK
@@ -852,7 +852,7 @@ _fzf_selenium() {
       ;;
     'up' )
       local LOG_DIR=~/.selenium-log
-      if [ ! -e $LOG_DIR ]; then 
+      if [ ! -e $LOG_DIR ]; then
         mkdir $LOG_DIR
       fi
       local is_run=`ps aux | grep -v grep | grep -c selenium`
@@ -903,9 +903,9 @@ _fzf_vagrant() {
   local arg=`echo $select_command | sed "s/vagrant //g"`
   case "${arg}" in
     'ssh' )
-      vagrant ssh 
+      vagrant ssh
       ;;
-    'up' ) 
+    'up' )
       vagrant up
       ;;
     'provision' )
@@ -964,8 +964,8 @@ _create_bg_img() {
 # gmailを既読を付けずにタイトルだけ表示
 alias gmail='_gmail'
 _gmail() {
-  local USER_ID=`cat ~/account.json | jq -r '.gmail.user_id'` 
-  local PASS=`cat ~/account.json | jq -r '.gmail.pass'` 
+  local USER_ID=`cat ~/account.json | jq -r '.gmail.user_id'`
+  local PASS=`cat ~/account.json | jq -r '.gmail.pass'`
   curl -u ${USER_ID}:${PASS} --silent "https://mail.google.com/mail/feed/atom" \
     | tr -d '\n' \
     | awk -F '<entry>' '{for (i=2; i<=NF; i++) {print $i}}' \
@@ -997,7 +997,7 @@ _clear_cdr_cache() {
     local delete_line_number=1
     local delete_line_numbers=()
     while read line; do
-      ls $line >/dev/null 2>&1 
+      ls $line >/dev/null 2>&1
       if [ $? -eq 1 ]; then
         # 削除する際、上から順に削除すると行番号がずれるので逆順で配列に入れる
         delete_line_numbers=($delete_line_number "${delete_line_numbers[@]}" )
@@ -1123,7 +1123,7 @@ _fzf_phpbrew() {
 # npmコマンドをfzfで実行
 alias npp='_fzf_npm'
 _fzf_npm() {
-  if [ -f package.json ]; then 
+  if [ -f package.json ]; then
     local action=$(cat package.json | jq -r '.scripts | keys | .[]' \
       | fzf-tmux -p80% --preview "cat package.json | jq -r '.scripts[\"{}\"]'" --preview-window=up:1)
     [ -z "$action" ] && return
@@ -1162,7 +1162,7 @@ _rmm() {
 alias yy='_fzf_yarn'
 _fzf_yarn() {
   local packageJson=$(find ./ -maxdepth 1  -name 'package.json')
-  if [ -z "$packageJson" ]; then 
+  if [ -z "$packageJson" ]; then
     local gitRoot=$(git rev-parse --show-cdup)
     packageJson=$(find ${gitRoot}. -maxdepth 2  -name 'package.json')
   fi
@@ -1317,17 +1317,18 @@ EOS
 # Dock非表示、Desktopアイコン非表示、itermの大きさ変更
 alias goyo='_goyo'
 _goyo() {
-  . ~/Documents/github/mac-scripts/menu_bar 1
+  . ~/documents/github/mac-scripts/desktop_background "/System/Library/Desktop Pictures/Solid Colors/Black.png"
+  . ~/documents/github/mac-scripts/menu_bar 0
   . ~/Documents/github/mac-scripts/dock
-  . ~/Documents/github/mac-scripts/desktop_icon 1
-  . ~/Documents/github/iterm-scripts/iterm.sh window large
+  . ~/Documents/github/mac-scripts/desktop_icon 0
+  sh ~/Documents/github/iterm-scripts/iterm.sh window large
 }
 
 alias goyo!='_goyo!'
 _goyo!() {
-  . ~/Documents/github/mac-scripts/menu_bar 0
+  . ~/Documents/github/mac-scripts/menu_bar 1
   . ~/Documents/github/mac-scripts/dock
-  . ~/Documents/github/mac-scripts/desktop_icon 0
+  . ~/Documents/github/mac-scripts/desktop_icon 1
 }
 
 # ブログ用のkeynoteファイルを開く
