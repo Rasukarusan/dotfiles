@@ -55,3 +55,4 @@ packages:
   - name: cocoapods
   - name: chromedriver
   - name: tokei
+  - name: ffmpeg
