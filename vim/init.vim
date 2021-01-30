@@ -102,6 +102,14 @@ augroup IndentSettings
     autocmd FileType yaml            setlocal sw=2 sts=2 ts=2 et
 augroup END
 
+augroup GoDebug
+  autocmd!
+  au FileType go nmap <F12> :GoDebugStart<CR>
+  au FileType go nmap <F12><F12> :GoDebugStop<CR>
+  au FileType go nmap <F11> :GoDebugStep<CR>
+  au FileType go nmap <F9> :GoDebugBreakpoint<CR>
+augroup END
+
 " ==============================
 "       Floating Windows
 " ==============================
