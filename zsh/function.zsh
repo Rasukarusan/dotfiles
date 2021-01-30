@@ -92,7 +92,7 @@ _git_remote_open() {
 alias po='_git_push_fzf'
 _git_push_fzf() {
   local remote=`git remote | fzf --select-1`
-  git push ${remote} $(git branch | grep "*" | sed -e "s/^\*\s*//g")
+  git push $1 ${remote} $(git branch | grep "*" | sed -e "s/^\*\s*//g")
 }
 
 # git logをpreviewで差分を表示する
