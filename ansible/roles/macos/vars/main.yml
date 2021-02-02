@@ -8,7 +8,6 @@ settings:
 directories:
   - {path: ~/.zsh}
   - {path: ~/.config/nvim}
-  - {path: ~/.config/nvim/plugin}
   - {path: ~/.cache/cdr}
 
 modes:
