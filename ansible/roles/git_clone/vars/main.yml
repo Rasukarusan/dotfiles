@@ -1,5 +1,7 @@
 repositories:
   - {repo: https://github.com/Rasukarusan/nvim.git , dest: ~/.config/nvim}
+  - {repo: https://github.com/Rasukarusan/nvim-block-paste.git , dest: ~/.config/nvim/plugin}
+  - {repo: https://github.com/Rasukarusan/nvim-popup-message.git , dest: ~/.config/nvim/plugin}
   - {repo: https://github.com/Rasukarusan/nvim.git , dest: ~/.vim}
   - {repo: https://github.com/Rasukarusan/develop_tools.git, dest: ~/Desktop/develop_tools}
   - {repo: https://github.com/Rasukarusan/chrome-extension-packs.git, dest: ~/Documents/chrome-extension-packs}
