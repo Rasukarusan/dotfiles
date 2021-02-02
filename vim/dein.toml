@@ -269,29 +269,18 @@ repo = 'AndrewRadev/splitjoin.vim'
 hook_add = 'source ~/.config/nvim/plugin_settings/splitjoin.vim'
 
 # --------------------------------------------
-# 指定したメッセージをFloatingWindowで表示する
-# --------------------------------------------
-[[plugins]]
-repo = 'Rasukarusan/vim-popup-message'
-
-# --------------------------------------------
 # 翻訳
 # --------------------------------------------
 [[plugins]]
 repo = 'skanehira/translate.vim'
 
 # --------------------------------------------
-# Visual-Block-Visibilty
-# --------------------------------------------
-[[plugins]]
-repo = 'Rasukarusan/vim-block-paste'
-hook_add = 'source ~/.config/nvim/plugin_settings/vim-block-paste.vim'
-
-# --------------------------------------------
 # 置換結果をプレビュー
+# visualモードで:を押すと行選択されてしまうのでコメントアウト
+# 見た目の問題だけで機能はちゃんとする
 # --------------------------------------------
-[[plugins]]
-repo = 'markonm/traces.vim'
+# [[plugins]]
+# repo = 'markonm/traces.vim'
 
 # --------------------------------------------
 # 禅モード
