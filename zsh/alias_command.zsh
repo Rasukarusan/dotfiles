@@ -38,6 +38,7 @@ alias gst='git status'
 alias gv='git remote -v'
 # 全てのファイルをgit checkout
 alias gca='git checkout $(git diff --name-only)'
+alias gcl='git clone'
 # ctagsをbrew installしたものを使う
 alias ctags='$(brew --prefix)/bin/ctags'
 # コマンドでgoogle翻訳
