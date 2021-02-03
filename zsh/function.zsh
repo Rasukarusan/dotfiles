@@ -1350,3 +1350,11 @@ tell application "Keynote"
 end tell
 EOS
 }
+
+alias gif_to_mp4='_gif_to_mp4'
+_gif_to_mp4() {
+  local gif=${1}
+  local mp4=${2:-video.mp4}
+  [ -z "$gif" ] && return
+  ffmpeg -i $gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" $mp4
+}
