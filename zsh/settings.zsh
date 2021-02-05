@@ -76,3 +76,7 @@ edit_current_line() {
 }
 zle -N edit_current_line
 bindkey '^w' edit_current_line
+
+# terraform補完
+autoload -U +X bashcompinit && bashcompinit
+complete -o nospace -C /usr/local/bin/terraform terraform
