@@ -3,3 +3,42 @@ function! s:$1() abort
 	$0
 endfunction
 endsnippet
+
+snippet fw "Insert floating window"
+$1
+let row = 10
+let col = 20
+let width = 20
+let height = 10
+
+let config = {
+	\'relative': 'editor',
+	\ 'row': row,
+	\ 'col': col,
+	\ 'width': width,
+	\ 'height': height,
+	\ 'anchor': 'NW',
+	\ 'style': 'minimal',
+	\\}
+let buf = nvim_create_buf(v:false, v:true)
+let win = nvim_open_win(buf, v:true, config)
+
+hi winColor guibg=#07343b
+setlocal winhighlight=Normal:winColor
+call nvim_win_set_config(win, config)
+endsnippet
+
+snippet focus_to_main_window "execute '0windo :'"
+$1
+function! s:focus_to_main_window()
+	execute "0windo :"
+endfunction
+endsnippet
+
+snippet align_center "Align center"
+function! s:align_center(str)
+	let width = nvim_win_get_width(0)
+	let shift = floor(width/2) - floor(strlen(a:str)/2)
+	return repeat(' ', float2nr(shift)) . a:str
+endfunction
+endsnippet
