@@ -239,11 +239,12 @@ nnoremap _D "_D
 nnoremap _dd "_dd
 vnoremap _d "_d
 " 現在ヤンクしているもので置き換える
-nnoremap ri" di""0P
-nnoremap ri' di'"0P
-nnoremap ri( di("0P
-nnoremap ri[ di["0P
-nnoremap rit dit"0P
+nnoremap ri" "_di"P
+nnoremap ri' "_di'P
+nnoremap ri( "_di(P
+nnoremap ri[ "_di[P
+nnoremap ri] "_di]P
+nnoremap rit "_ditP
 " Exモードの際単語移動をVimライクにする
 cnoremap <C-h> <Left>
 cnoremap <C-l> <Right>
