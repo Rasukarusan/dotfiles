@@ -1358,3 +1358,10 @@ _gif_to_mp4() {
   [ -z "$gif" ] && return
   ffmpeg -i $gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" $mp4
 }
+
+alias terr="_terraform_execute"
+_terraform_execute() {
+  local cmd=$(terraform -help | grep '^  \S' | sed 's/  //' | fzf --with-nth=1 --preview='echo {2..}' --preview-window=up:1  | awk '{print \$1}')
+  [ -z "$cmd" ] && return
+  terraform $cmd $1
+}
