@@ -301,3 +301,9 @@ repo = 'junegunn/limelight.vim'
 [[plugins]]
 repo = 'hashivim/vim-terraform'
 hook_add = 'source ~/.config/nvim/plugin_settings/terraform.vim'
+
+# --------------------------------------------
+# terraform-completion
+# --------------------------------------------
+[[plugins]]
+repo = 'juliosueiras/vim-terraform-completion'
