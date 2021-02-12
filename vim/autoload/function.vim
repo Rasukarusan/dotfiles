@@ -222,6 +222,14 @@ endfunction
 command! Testshell call s:open_test_shell()
 
 " =============================================
+" テスト用のvimを新規タブで開く
+" =============================================
+function! s:open_test_vim()
+    execute ':tabnew ~/test.vim'
+endfunction
+command! Testvim call s:open_test_vim()
+
+" =============================================
 " Terminalを開く
 " =============================================
 function! s:open_terminal_by_floating_window()
@@ -561,7 +569,6 @@ function! s:hatena_embed_cite()
 endfunction
 command! HatenaEmbedCite call s:hatena_embed_cite()
 
-
 " =============================================
 " 背景色を黒に変更
 " =============================================
@@ -573,3 +580,21 @@ function! s:change_background_black()
 endfunction
 
 command! Black call s:change_background_black()
+
+" =============================================
+" はてぶに下書き投稿
+" =============================================
+function! s:hatena_post_entry() abort
+  let title = substitute(getline(1), '^# ', '', '')
+  let content = join(getline(3, '$'), "\n")
+  " '&'を一番最初に変換する必要がある。後の変換と競合してしまうため。
+  let content = substitute(content, "\&", "\&amp;", 'g')
+  let content = substitute(content, '`', '\\`', 'g')
+  let content = substitute(content, '"', '\\"', 'g')
+  let content = substitute(content, '<', '\&lt;', 'g')
+  let content = substitute(content, '>', '\&gt;', 'g')
+  let content = substitute(content, '\$', '\\$', 'g')
+  call system('sh -x ~/Documents/github/hatena-scripts/post_entry.sh "' . title .'" "' . content . '"')
+  echo 'posted!'
+endfunction
+command! HatenaPostEntry call s:hatena_post_entry()
