@@ -42,3 +42,7 @@ function! s:align_center(str)
 	return repeat(' ', float2nr(shift)) . a:str
 endfunction
 endsnippet
+
+snippet timer "timer_start({time}, {callback} [, {options}])" b
+	call timer_start(1000, function('s:$1', []), { 'repeat' : 1})
+endsnippet
