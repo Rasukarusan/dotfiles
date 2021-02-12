@@ -1,4 +1,3 @@
-let g:ale_set_highlights = 0
 if executable('eslint_d')
   let g:ale_javascript_eslint_use_global = 1
   let g:ale_javascript_eslint_executable = 'eslint_d'
@@ -16,3 +15,8 @@ nmap <silent> <C-a><C-n> <Plug>(ale_next_wrap)
 nmap <silent> <C-a><C-p> <Plug>(ale_previous_wrap)
 let g:ale_virtualtext_cursor = 1
 let g:ale_virtualtext_prefix = ' --> '
+
+let g:ale_set_highlights = 0
+" @See https://github.com/dense-analysis/ale/issues/249
+autocmd VimEnter,SourcePost * :highlight! ALEError guifg=#C30500 guibg=#151515
+autocmd VimEnter,SourcePost * :highlight! ALEWarning  guifg=#ffd300 guibg=#333333
