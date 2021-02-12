@@ -56,3 +56,6 @@ packages:
   - name: chromedriver
   - name: tokei
   - name: ffmpeg
+  - name: rga
+  - name: pastel
+
