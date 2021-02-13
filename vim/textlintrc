@@ -5,7 +5,8 @@
         "max": 200
       },
       "no-exclamation-question-mark": false,
-       "no-hankaku-kana": false
+      "no-hankaku-kana": false,
+      "ja-no-mixed-period": false
     },
     "spellcheck-tech-word": true
   }
