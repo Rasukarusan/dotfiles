@@ -1,0 +1,79 @@
+snippet "imm" "import '@material-ui/core'" b
+import { ${1:TextField} } from '@material-ui/core'
+endsnippet
+
+snippet imms "import '@material-ui/core/styles'" b
+import { ${1:makeStyles} } from '@material-ui/core/styles'
+endsnippet
+
+snippet immi "import '@material-ui/icons'" b
+import { ${1:ExpandMore} } from '@material-ui/icons'
+endsnippet
+
+snippet textbox "<TextField rows={4} multiline /> " b
+<TextField
+	label="Multiline"
+	defaultValue="Default Value"
+	multiline
+	fillWidth
+	rows={4}
+	variant="outlined"
+/>
+endsnippet
+
+snippet us "const useStyles = makeStyles({})" b
+const useStyles = makeStyles({
+	container: {
+		minHeight: '100vh',
+	}
+})
+endsnippet
+
+snippet cons "const Hoge = () => { return (<div>hoge</div>) }" b
+const $1 = () => {
+	return (
+		<div>hoge</div>
+	)
+}
+endsnippet
+
+snippet typo "<Typography variant='h2' gutterBottom>" b
+<Typography variant="h2" gutterBottom>
+$1
+</Typography>
+endsnippet
+
+snippet tool "<Tooltip title='' placement='top'></Tooltip>" b
+<Tooltip title="$1" placement="top">
+$2
+</Tooltip>
+endsnippet
+
+snippet snack "<Snackbar><Alert></Alert></Snackbar>" b
+import MuiAlert, { AlertProps } from '@material-ui/lab/Alert'
+
+function Alert(props: AlertProps) {
+	return <MuiAlert elevation={6} variant="filled" {...props} />
+}
+
+<Snackbar open={open} autoHideDuration={1000} onClose={handleClose}>
+	<Alert onClose={handleClose} severity="success">
+		This is a success message!
+	</Alert>
+</Snackbar>
+endsnippet
+
+snippet grid "<Grid></Grid>" b
+<Grid container spacing={3}>
+	<Grid item xs={12}>
+		<div>hoge</div>
+	</Grid>
+	<Grid item xs={12} sm={6}>
+		<div>hoge</div>
+	</Grid>
+	<Grid item xs={12} sm={6}>
+		<div>hoge</div>
+	</Grid>
+</Grid>
+
+endsnippet
