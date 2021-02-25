@@ -316,7 +316,7 @@ _write_article() {
     vim $targetFile
     return
   fi
-  local article=`ls ${ARTICLE_DIR}/*.md | xargs basename | fzf-tmux -p80% --preview "bat --color=always ${ARTICLE_DIR}/{}"`
+  local article=`ls ${ARTICLE_DIR}/*.md | xargs -I {} basename {} | fzf-tmux -p80% --preview "bat --color=always ${ARTICLE_DIR}/{}"`
 
   # 何も選択しなかった場合は終了
   if [ -z "$article" ]; then
@@ -1221,7 +1221,7 @@ _popuptmux() {
   fi
 }
 
-alias imgcat='_imgcat_for_tmux'
+alias imgcatt='_imgcat_for_tmux'
 _imgcat_for_tmux() {
   # @See: https://qastack.jp/unix/88296/get-vertical-cursor-position
   get_cursor_position() {
