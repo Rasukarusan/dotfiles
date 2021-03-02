@@ -65,9 +65,6 @@ endsnippet
 
 snippet grid "<Grid></Grid>" b
 <Grid container spacing={3}>
-	<Grid item xs={12}>
-		<div>hoge</div>
-	</Grid>
 	<Grid item xs={12} sm={6}>
 		<div>hoge</div>
 	</Grid>
@@ -75,5 +72,11 @@ snippet grid "<Grid></Grid>" b
 		<div>hoge</div>
 	</Grid>
 </Grid>
-
+endsnippet
+snippet center "上下中央左右のCSS" b
+container: {
+	display: 'flex',
+	justifyContent: 'center' /* 左右中央 */,
+	alignItems: 'center' /* 上下中央 */,
+},
 endsnippet
