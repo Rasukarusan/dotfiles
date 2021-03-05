@@ -43,3 +43,7 @@ nmap <SPACE>c :History:<CR>
 nmap <SPACE>/ :History/<CR>
 " Window移動
 nmap <SPACE>w :Windows<CR>
+" Map系(leaderがspaceだと普段の入力で待ち時間が発生してしまうため却下)
+" nmap <SPACE><TAB> <plug>(fzf-maps-n)
+" xmap <SPACE><TAB> <plug>(fzf-maps-x)
+" imap <SPACE><TAB> <plug>(fzf-maps-i)
