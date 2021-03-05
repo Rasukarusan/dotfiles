@@ -775,11 +775,21 @@ _fzf_git_stash_apply() {
 }
 
 _fzf_git_stash_drop() {
-  local stashNos=($(git stash list | fzf --preview 'echo {} | awk "{print \$1}" | tr -d ":" | xargs git stash show --color=always -p' | awk '{print $1}' | tr -d ':' ))
+  local stashNos=($(git stash list | fzf --preview 'echo {} | awk "{print \$1}" | tr -d ":" | xargs git stash show --color=always -p' | awk '{print $1}' | tr -d ':'  | tac))
   test -z "${stashNos}" && return
+  printf "\e[36m======削除するstash一覧=====\e[m\n"
   for stashNo in ${stashNos[@]}; do
-    git stash drop "${stashNo}"
+    /bin/echo -n "${stashNo} "
+    git log --color=always --oneline ${stashNo} | head -n 1
   done
+  printf "\e[36m============================\e[m\n"
+  printf "\e[36m本当に削除してよろしいですか？(y/n)\e[m"
+  read answer
+  if [ "$answer" = 'y' ];then
+    for stashNo in ${stashNos[@]}; do
+      git stash drop "${stashNo}"
+    done
+  fi
 }
 
 alias cld='_clipboard_diff'
