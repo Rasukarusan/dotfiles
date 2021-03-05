@@ -25,7 +25,8 @@ function! s:alias_Gtabedit(...)
     else
         let branch_name = a:1
     endif
-    execute ':Gtabedit '.branch_name.':%'
+    execute ':Gvsplit '.branch_name.':%'
+    call feedkeys("\<C-w>\<S-l>")
 endfunction
 
 function! s:fzf_alias_Gtabedit()
@@ -48,7 +49,6 @@ function! s:open_php_manual(cursor_word)
 endfunction
 command! PhpManual call s:open_php_manual(expand('<cword>'))
 nmap <Space>k :PhpManual<CR>
-
 
 " =============================================
 " ファイル内検索
