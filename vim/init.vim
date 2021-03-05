@@ -319,3 +319,5 @@ nnoremap <expr> gp '`[' . strpart(getregtype(), 0, 1) . '`]'
 cnoremap <C-p> <Up>
 " :messagesの短縮
 cabbrev ms messages
+" vsplitで右側に空バッファを作る
+cabbrev vs vertical rightbelow new
