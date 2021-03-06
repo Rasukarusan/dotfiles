@@ -65,7 +65,8 @@ let g:markdown_fenced_languages = [
     \ 'ruby',
     \ 'sql',
     \ 'html',
-    \ 'yaml'
+    \ 'yaml',
+    \ 'rust'
     \]
 
 " ==============================
