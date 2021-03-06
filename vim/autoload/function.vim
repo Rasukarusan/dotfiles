@@ -42,7 +42,6 @@ command! Co call s:fzf_alias_Gtabedit()
 " カーソル下の単語をPHPManualで開く
 " =============================================
 function! s:open_php_manual(cursor_word)
-  echo a:cursor_word
   let search_word = substitute(a:cursor_word,'_','-','g')
   let url = 'http://php.net/manual/ja/function.' . search_word  . '.php'
   execute 'r! open ' . url
