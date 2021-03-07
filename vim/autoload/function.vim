@@ -16,27 +16,39 @@ endfunction
 command! -range Clog <line1>,<line2> call s:clog_convert()
 
 " =============================================
-" Gtabeditを簡単に実行できるようにした関数
-" :Co [branch_name] でそのブランチのソースをタブ表示
+" 現在開いているファイルを指定のブランチで開く
 " =============================================
-function! s:alias_Gtabedit(...)
-    if a:0 == 0
-        let branch_name = 'master'
-    else
-        let branch_name = a:1
-    endif
-    execute ':Gvsplit '.branch_name.':%'
+function! s:open_file_on_branch(...)
+    let branch_name = get(a:, 1, 'master')
+    let file_path = get(a:, 2, '%')
+    execute ':Gvsplit '.branch_name.':'.file_path
     call feedkeys("\<C-w>\<S-l>")
 endfunction
 
-function! s:fzf_alias_Gtabedit()
-  call fzf#run({
-    \ 'source': 'git branch -a',
-    \ 'sink': function('s:alias_Gtabedit'),
-    \ 'down': '40%'
-    \ })
+" =============================================
+" fzfでブランチを指定してファイルを開く
+" 引数: ブランチ名もしくはブランチ名+ファイルパス
+"   :Co [branch_name]
+"   :Co [branch_name] [filepath]
+" =============================================
+function! s:fzf_open_file_on_branch(...)
+  let branch_name = get(a:, 1, '')
+  let file_path = get(a:, 2, '')
+  if branch_name != '' && file_path != ''
+    call s:open_file_on_branch(branch_name, file_path)
+    return
+  endif
+  if branch_name != ''
+    call s:open_file_on_branch(branch_name)
+    return
+  endif
+  call fzf#run(fzf#wrap({
+    \ 'source': 'git branch -a | tr -d " "',
+    \ 'sink': function('s:open_file_on_branch'),
+    \ 'options': '--preview "git show {}:' . expand('%') .' | bat --color always -l '. &filetype .'"'
+    \ }))
 endfunction
-command! Co call s:fzf_alias_Gtabedit()
+command! -nargs=* Co call s:fzf_open_file_on_branch(<f-args>)
 
 " =============================================
 " カーソル下の単語をPHPManualで開く
