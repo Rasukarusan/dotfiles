@@ -5,7 +5,8 @@
 	excludesfile = ~/.gitignore_global
 	quotepath = false
 	editor = nvim
-	pager = diff-so-fancy | less --tabs=4 -R
+	# pager = diff-so-fancy | less --tabs=4 -F -S -R -M -i
+        # pager = delta --diff-so-fancy --line-numbers 
 [init]
 	templatedir = ~/.git_template
 [color]
@@ -22,3 +23,8 @@
 	old = red 
 	new = green 
 	whitespace = red reverse
+# [delta]
+    # diff-so-fancy = true
+    # line-numbers = true
+    # features = side-by-side line-numbers decorations
+    # syntax-theme = Dracula
