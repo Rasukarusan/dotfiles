@@ -1387,3 +1387,11 @@ _open_localhost() {
   [ -z "$port" ] && return
   open http://localhost:$port
 }
+
+alias gbd='_git_branch_diff'
+_git_branch_diff() {
+  local current=$(git branch --show-current)
+  local target=$(git branch -a | tr -d ' ' | fzf --preview="git diff --color=always {} ${current}")
+  [ -z "$target" ] && return
+  git diff $target $current | delta --side-by-side
+}
