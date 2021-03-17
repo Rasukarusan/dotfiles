@@ -1374,3 +1374,16 @@ _terraform_execute() {
   print -s "terraform $cmd $1"
   terraform $cmd $1
 }
+
+alias opp="_open_localhost"
+_open_localhost() {
+  local ports=(
+    9999
+    8080
+    8081
+    9000
+  )
+  local port=$(echo "${ports[@]}" | tr ' ' '\n' | fzf --prompt="http://localhost:" --preview="curl -I http://localhost:{}")
+  [ -z "$port" ] && return
+  open http://localhost:$port
+}
