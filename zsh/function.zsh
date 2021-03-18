@@ -1377,15 +1377,9 @@ _terraform_execute() {
 
 alias opp="_open_localhost"
 _open_localhost() {
-  local ports=(
-    9999
-    8080
-    8081
-    9000
-    3000
-    3001
-  )
-  local port=$(echo "${ports[@]}" | tr ' ' '\n' | fzf --prompt="http://localhost:" --preview="curl -I http://localhost:{}")
+  local port=$(netstat -Watnlv | grep 'LISTEN' | awk '{"ps -ww -o args= -p" $9 | getline procname; print $4 "||" procname}' | column -t -s '||' \
+  | fzf --with-nth 1.. --preview="echo {1} | awk -F '.' '{print \$NF}' | xargs -I{} curl -I http://localhost:{}"  --preview-window=up:10 \
+  | awk '{print $1}' | awk -F '.' '{print $NF}')
   [ -z "$port" ] && return
   open http://localhost:$port
 }
