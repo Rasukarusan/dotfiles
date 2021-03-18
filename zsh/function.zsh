@@ -1382,6 +1382,8 @@ _open_localhost() {
     8080
     8081
     9000
+    3000
+    3001
   )
   local port=$(echo "${ports[@]}" | tr ' ' '\n' | fzf --prompt="http://localhost:" --preview="curl -I http://localhost:{}")
   [ -z "$port" ] && return
