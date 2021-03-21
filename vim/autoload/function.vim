@@ -153,15 +153,19 @@ function! s:search_by_google(...)
     let searchWord = expand("<cword>")
     if a:0 >= 1
         let searchWord = join(split(a:1))
-        " let searchWord = printf('%s',a:1)
     end
     if searchWord  != ''
-        execute 'read !open https://www.google.co.jp/search\?q\=' . searchWord
+        execute 'read !open "https://www.google.co.jp/search?q=' . searchWord . '"'
         execute 'call cursor(' . line . ',' . col . ')'
     endif
 endfunction
 command! -nargs=? SearchByGoogle call s:search_by_google(<f-args>)
 nnoremap <silent> <Space>g :SearchByGoogle<CR>
+
+" =============================================
+" :messagesの最後の行をGoogleで検索する
+" =============================================
+nnoremap <silent> MG :call <SID>search_by_google(<SID>get_last_message())<CR>
 
 " =============================================
 " カーソル下コードのカラー名を出力
