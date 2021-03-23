@@ -76,7 +76,13 @@ endsnippet
 snippet center "上下中央左右のCSS" b
 container: {
 	display: 'flex',
+	flexDirection: 'column',
 	justifyContent: 'center' /* 左右中央 */,
 	alignItems: 'center' /* 上下中央 */,
 },
+endsnippet
+
+snippet centerBox "左右中央のBOX" b
+<Box display="flex" flexDirection="column" p={2} justifyContent="center">
+</Box>
 endsnippet
