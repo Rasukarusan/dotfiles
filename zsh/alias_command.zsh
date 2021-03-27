@@ -24,24 +24,19 @@ alias grepr='grep -r'
 alias phpS='php -S localhost:9000'
 alias phps='hyper-run -s localhost:9000 -t .'
 alias js='osascript -l JavaScript'
-# terminalの描画がおかしいときにそれも直してclearする
 alias clear='stty sane;clear'
 alias gd='git diff -b'
 alias gdc='git diff -b --cached'
-# 現在のブランチをpullする
 alias -g gpl='git pull --rebase origin $(git branch | grep "*" | sed -e "s/^\*\s*//g")'
 alias repoo='vim `ls ~/Documents/github/develop_tools/DayReport/*.md | fzf`'
-# git checkout branchをfzfで選択
 alias co='git checkout $(git branch -a | tr -d " " |fzf-tmux -p80% --prompt "CHECKOUT BRANCH>" --preview "git log --color=always {}" | head -n 1 | sed -e "s/^\*\s*//g" | perl -pe "s/remotes\/origin\///g")'
 alias co-='git checkout -'
 alias gst='git status'
 alias gv='git remote -v'
-# 全てのファイルをgit checkout
 alias gca='git checkout $(git diff --name-only)'
 alias gcl='git clone'
 # ctagsをbrew installしたものを使う
 alias ctags='$(brew --prefix)/bin/ctags'
-# コマンドでgoogle翻訳
 alias trans='trans -b en:ja'
 alias transj='trans -b ja:en'
 # ブラウザからコピーした時など、プレーンテキストに戻したい時に使用
@@ -70,11 +65,11 @@ alias p2e='vim ~/p2'
 alias pd='vimdiff ~/p1 ~/p2'
 alias pst='pstree | less -S'
 alias oo='open .'
+alias of='ls -1F | grep -v "/" | fzf --preview "bat --color=always {}" | xargs open'
 alias hosts='sudo vim /etc/hosts'
 alias chen='afplay ~/Music/iTunes/iTunes\ Media/Music/Unknown\ Artist/Unknown\ Album/jacky_chen.mp3'
 alias mailque='postqueue -p'
 alias maildel='sudo postsuper -d ALL deferred'
-# YYYY/mm/dd(曜日)形式で本日を出力
 alias today="date '+%Y/%m/%d(%a)'"
 # クリップボードの行数を出力
 alias wcc='pbpaste | grep -c ^'
@@ -105,3 +100,4 @@ alias fa='find ./ -name'
 alias hankaku="LANG=C grep '^[[:cntrl:][:print:]]*$'"
 # gitで変更があったファイルのみ対象にagをかける
 alias mag='git ls-files -m -o --exclude-standard  | xargs ag'
+alias man='env LANG=C man'
