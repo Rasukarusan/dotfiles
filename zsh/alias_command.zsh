@@ -101,3 +101,4 @@ alias hankaku="LANG=C grep '^[[:cntrl:][:print:]]*$'"
 # gitで変更があったファイルのみ対象にagをかける
 alias mag='git ls-files -m -o --exclude-standard  | xargs ag'
 alias man='env LANG=C man'
+alias ce="find . -maxdepth 3 -type d | fzf --bind 'tab:reload(find {} -maxdepth 3 -type d) --preview 'tree -L 3 {}' | xargs cd"
