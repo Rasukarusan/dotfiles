@@ -401,9 +401,11 @@ _show_alias() {
   [ -z "$cmd" ] && return
 
   if $(echo $cmd | grep "'" > /dev/null) ; then # コマンドaliasの場合
-    echo $cmd
+    local cmdName=$(echo $cmd | grep -oP '.*=')
+    local filePath lineNumber
+    read filePath lineNumber <<< $(ag "alias $cmdName" ~/dotfiles/zsh | awk -F ':' '{print $1,$2}')
+    vim $filePath +$lineNumber
   else # 関数aliasの場合
-    ag $cmd ~/dotfiles/zsh
     local functionName=$(echo $cmd | awk -F '=' '{print $2}')
     [ -z "$functionName" ] && return
 
