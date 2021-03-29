@@ -30,6 +30,14 @@ _fzf-cdr() {
   fi
 }
 
+alias cee='_easy_change_dir'
+function _easy_change_dir() {
+  local findOptions="-maxdepth 3 -type d -not -path './.git/*'"
+  local targetDir=$(eval "find . $findOptions" | fzf --bind "tab:reload(find {} $findOptions),ctrl-p:reload(find `dirname {}` $findOptions)" --preview 'tree -L 3 {}')
+  [ -z "$targetDir" ] && return
+  cd $targetDir
+}
+
 # ag & view
 alias jump='_jump'
 _jump(){
