@@ -613,3 +613,13 @@ function! s:hatena_post_entry() abort
   echo 'posted!'
 endfunction
 command! HatenaPostEntry call s:hatena_post_entry()
+
+" =============================================
+" 選択した行をキャメルケースに変換
+" 区切りもいい感じに判定してくれる
+" @see https://vim-jp.org/vim-users-jp/2010/08/08/Hack-166.html
+" =============================================
+function! s:convert_camel_case() abort
+    :'<,'>s/\w\+/\u\0/g"
+endfunction
+command! -nargs=0 -range=% ToCamelCase call s:convert_camel_case()
