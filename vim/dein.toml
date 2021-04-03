@@ -18,6 +18,8 @@ hook_add = 'source ~/.config/nvim/plugin_settings/nerdtree.vim'
 # fzf-vim
 # --------------------------------------------
 [[plugins]]
+repo = 'junegunn/fzf'
+[[plugins]]
 repo = 'junegunn/fzf.vim'
 hook_add = 'source ~/.config/nvim/plugin_settings/fzf.vim'
 
