@@ -142,12 +142,20 @@ function! s:insert_shebang()
         :execute ':s/^/#!\/usr\/bin\/env bash\r/g'
     endif
 endfunction
+" =============================================
+" php-cs-formatterによる自動整形
+" =============================================
+function! s:format_php() abort
+  :r! php-cs-fixer -q fix % --config=$HOME/.php_cs
+  :e! " 再読み込み
+endfunction
 " 拡張子別のファイル設定
 augroup vimrc
     autocmd!
     autocmd BufRead,BufNewFile *.sh :call s:insert_shebang() " shファイルを開いたときに自動でシェバン挿入
     autocmd InsertLeave * set nopaste
-    autocmd FileType markdown colorscheme jellybeans " markdownを開くときはmolokaiテーマ
+    " php-cs-fixerで自動フォーマット。aleでできなかったのでコマンド実行している。
+    autocmd BufWritePost *.php :call s:format_php()
 augroup END
 
 set mouse=a
