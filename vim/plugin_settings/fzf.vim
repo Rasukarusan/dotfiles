@@ -1,4 +1,8 @@
+" 実行ファイルのfzfではなくfzfのディレクトリの場所を指定する。
+" これを指定しないとVimのPluginとしてfzfをいれなければならない、
+" かつ、:Windowsなど様々なfzf.vimのコマンドが使用不可能になる。
 set rtp+=/usr/local/opt/fzf
+set rtp+=/opt/homebrew/opt/fzf
 
 " fzf実行時はステータスバーを非表示に
 autocmd! FileType fzf set laststatus=0 noshowmode noruler
