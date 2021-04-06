@@ -1249,10 +1249,10 @@ _memo() {
 
 alias pmux='_popuptmux'
 _popuptmux() {
-  if [ "$(tmux display-message -p -F "#{session_name}")" = "popup" ];then
+  if [ "$(\tmux display-message -p -F "#{session_name}")" = "popup" ];then
     tmux detach-client
   else
-    tmux popup -KER "tmux attach -t popup || tmux new -s popup"
+    tmux popup -E "\tmux attach -t popup || \tmux new -s popup"
   fi
 }
 
