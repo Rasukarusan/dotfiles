@@ -306,7 +306,7 @@ alias goo='_search_by_google'
 _search_by_google() {
   # 第一引数がない場合はpbpasteの中身を検索単語とする
   [ -z "$1" ] && searchWord=`pbpaste` || searchWord=$1
-  open https://www.google.co.jp/search\?q\=$searchWord
+  open "https://google.co.jp/search?q=`echo "$searchWord" | nkf -WwMQ | sed 's/=$//g' | tr = % | tr -d '\n'`"
 }
 
 alias maillog='_show_mail_log'
