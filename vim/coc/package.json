@@ -6,6 +6,7 @@
     "coc-phpls": ">=2.2.0",
     "coc-snippets": ">=2.4.1",
     "coc-tsserver": ">=1.6.8",
-    "coc-ultisnips": ">=1.2.3"
+    "coc-ultisnips": ">=1.2.3",
+    "coc-word": ">=1.2.2"
   }
 }
