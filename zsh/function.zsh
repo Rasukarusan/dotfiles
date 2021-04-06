@@ -1194,6 +1194,23 @@ _fzf_yarn() {
   print -s "yarn $action"
 }
 
+# fzfでcomposer
+alias coo='_fzf_composer'
+_fzf_composer() {
+  local composerJson=$(find ./ -maxdepth 1  -name 'composer.json')
+  if [ -z "$composerJson" ]; then
+    local gitRoot=$(git rev-parse --show-cdup)
+    composerJson=$(find ${gitRoot}. -maxdepth 2  -name 'composer.json')
+  fi
+  [ -z "$composerJson" ] && return
+  local action=$(cat ${composerJson} | jq -r '.scripts | keys | .[]' \
+    | fzf-tmux -p --preview "cat ${composerJson} | jq -r '.scripts[\"{}\"]'" --preview-window=up:3)
+  [ -z "$action" ] && return
+  composer $action
+  print -s "composer $action"
+}
+
+
 # fzfでcarthage
 alias car='_fzf_carthage'
 _fzf_carthage() {
