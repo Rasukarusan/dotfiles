@@ -42,6 +42,7 @@ export MY_TARGET_GIT_DIR=(
 )
 # ggrepをgrepにするため
 export PATH="/usr/local/opt/grep/libexec/gnubin:$PATH"
+export PATH="/opt/homebrew/opt/grep/libexec/gnubin:$PATH"
 export PATH="/usr/local/opt/python@2/bin:$PATH"
 # gemでインストールしたものにPATHを通す
 export PATH="/usr/local/lib/ruby/gems/2.5.0/bin:$PATH"
