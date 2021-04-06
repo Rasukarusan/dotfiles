@@ -18,8 +18,6 @@ hook_add = 'source ~/.config/nvim/plugin_settings/nerdtree.vim'
 # fzf-vim
 # --------------------------------------------
 [[plugins]]
-repo = 'junegunn/fzf'
-[[plugins]]
 repo = 'junegunn/fzf.vim'
 hook_add = 'source ~/.config/nvim/plugin_settings/fzf.vim'
 
@@ -136,10 +134,10 @@ build =  'cd app & yarn install'
 # --------------------------------------------
 # PHPコードチェック、未使用変数のハイライト
 # --------------------------------------------
-[[plugins]]
-repo = 'flyinshadow/php_localvarcheck.vim'
-hook_add = 'source ~/.config/nvim/plugin_settings/php_localvarcheck.vim'
-
+# [[plugins]]
+# repo = 'flyinshadow/php_localvarcheck.vim'
+# hook_add = 'source ~/.config/nvim/plugin_settings/php_localvarcheck.vim'
+#
 # --------------------------------------------
 # Typscript IDE
 # filetypeを勝手に変えてしまい、vim-fzfでtsxを開くとtypescriptreactで
