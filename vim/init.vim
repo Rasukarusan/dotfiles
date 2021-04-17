@@ -338,3 +338,9 @@ cnoremap <C-p> <Up>
 cabbrev ms messages
 " vsplitで右側に空バッファを作る
 cabbrev vs vertical rightbelow new
+
+" smlの設定
+" https://github.com/Rasukarusan/nvim-select-multi-line
+let g:sml#echo_yank_str = 0
+nnoremap <Space>v :call sml#mode_on()<CR>
+
