@@ -155,8 +155,8 @@ function! s:search_by_google(...)
         let searchWord = join(split(a:1))
     end
     if searchWord  != ''
-        execute 'read !open "https://www.google.co.jp/search?q=' . searchWord . '"'
-        execute 'call cursor(' . line . ',' . col . ')'
+        " /usr/local/bin/search_by_googleがある前提
+        call system('search_by_google "' . searchWord . '"')
     endif
 endfunction
 command! -nargs=? SearchByGoogle call s:search_by_google(<f-args>)
