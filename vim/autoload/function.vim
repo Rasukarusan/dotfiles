@@ -148,19 +148,23 @@ command! -nargs=+ -range InTH <line1>,<line2> call s:insert_head_and_tail(<f-arg
 " カーソル下の単語をGoogleで検索する
 " =============================================
 function! s:search_by_google(...)
-    let line = line(".")
-    let col  = col(".")
-    let searchWord = expand("<cword>")
-    if a:0 >= 1
-        let searchWord = join(split(a:1))
-    end
-    if searchWord  != ''
-        " /usr/local/bin/search_by_googleがある前提
-        call system('search_by_google "' . searchWord . '"')
-    endif
+  let searchWord = expand("<cword>")
+  if a:1 == 'v' " visualモード時
+    " 選択した文字列を取得
+    let tmp = @@
+    silent normal gvy
+    let searchWord = @@
+    let @@ = tmp
+  endif
+
+  if searchWord  != ''
+    " /usr/local/bin/search_by_googleがある前提
+    call system('search_by_google "' . searchWord . '"')
+  endif
 endfunction
-command! -nargs=? SearchByGoogle call s:search_by_google(<f-args>)
-nnoremap <silent> <Space>g :SearchByGoogle<CR>
+command! -nargs=1 -range Goo <line1>,<line2> call s:search_by_google(<f-args>)
+nnoremap <silent> <Space>g :Goo n<CR>
+vnoremap <silent> <Space>g :Goo v<CR>
 
 " =============================================
 " :messagesの最後の行をGoogleで検索する
