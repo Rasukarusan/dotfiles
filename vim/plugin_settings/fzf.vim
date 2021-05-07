@@ -40,7 +40,7 @@ nmap <C-p> :GFiles<CR>
 " カレントディレクトリ配下のファイル検索
 nmap <Space>f :Files<CR>
 " 以前開いたことのあるファイルを開く
-nmap <SPACE>o :History<CR>
+" nmap <SPACE>o :History<CR>
 " コマンド履歴
 nmap <SPACE>c :History:<CR>
 " 検索単語履歴
