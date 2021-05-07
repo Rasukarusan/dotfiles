@@ -627,3 +627,14 @@ function! s:convert_camel_case() abort
     :'<,'>s/\w\+/\u\0/g"
 endfunction
 command! -nargs=0 -range=% ToCamelCase call s:convert_camel_case()
+
+" =============================================
+" 現在開いているファイルのディレクトリをtmuxのpaneで開く
+" =============================================
+function! s:open_current_dir_pane() abort
+  let current = expand("%:p:h")
+  if current == '' | return | endif
+  execute 'r !tmux popup -E -d ' . current
+endfunction
+command! OpenCurrentDirPane call s:open_current_dir_pane()
+nnoremap <silent> <Space>o :OpenCurrentDirPane<CR>
