@@ -892,11 +892,9 @@ _update_master() {
 # お天気情報を出力する
 alias tenki='_tenki'
 _tenki() {
-  case "$1" in
-    "-c") curl -4 http://wttr.in/$2 ;;
-      "") finger Tokyo@graph.no ;;
-       *) finger $1@graph.no ;;
-  esac
+  local place=${1:-tokyo}
+  curl -4 http://wttr.in/${place}
+  # finger ${place}@graph.no
 }
 
 # vagrantのコマンドをfzfで選択
