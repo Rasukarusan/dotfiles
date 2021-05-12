@@ -16,6 +16,8 @@
 
     - name: Set pyenv python3 for neovim
       shell: pyenv install 3.5.3 && pyenv virtualenv 3.5.3 neovim3 && pyenv activate neovim3 && pip install neovim
+      # @see https://qiita.com/hisa_shim/items/abb4936f1f676fe6a7b8
+      # CFLAGS="-I$(brew --prefix openssl)/include -I$(brew --prefix bzip2)/include -I$(brew --prefix readline)/include -I$(xcrun --show-sdk-path)/usr/include" LDFLAGS="-L$(brew --prefix openssl)/lib -L$(brew --prefix readline)/lib -L$(brew --prefix zlib)/lib -L$(brew --prefix bzip2)/lib" pyenv install --patch 3.6.0 < <(curl -sSL https://github.com/python/cpython/commit/8ea6353.patch\?full_index\=1)
       become: yes
       changed_when: false
 
