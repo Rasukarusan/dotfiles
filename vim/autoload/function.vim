@@ -638,3 +638,18 @@ function! s:open_current_dir_pane() abort
 endfunction
 command! OpenCurrentDirPane call s:open_current_dir_pane()
 nnoremap <silent> <Space>o :OpenCurrentDirPane<CR>
+
+" =============================================
+" 分割ウインドウのスクロールを同期
+" =============================================
+function! s:sync_scroll() abort
+  if &scb == 0
+    windo set scb
+    windo set scrollopt=ver,hor,jump
+    echo 1
+  else
+    windo set noscb
+    echo 0
+  endif
+endfunction
+command! SyncScroll call s:sync_scroll()
