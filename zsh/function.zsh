@@ -758,7 +758,7 @@ _git_stash_with_name() {
   echo "保存名を入力してくだい"
   read name
   test -z "${name}" && return
-  git stash save "${name}"
+  git stash save -u "${name}"
 }
 
 _git_stash_each_file() {
