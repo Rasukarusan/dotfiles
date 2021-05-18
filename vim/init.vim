@@ -1,3 +1,4 @@
+" local.vimにg:python_host_prog = '', g:python3_host_prog = '' と再定義することでM1に対応
 let g:python_host_prog = $PYENV_ROOT.'/versions/neovim2/bin/python'
 let g:python3_host_prog = $PYENV_ROOT.'/versions/neovim3/bin/python'
 
