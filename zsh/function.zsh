@@ -1409,3 +1409,14 @@ _git_branch_diff() {
   [ -z "$target" ] && return
   git diff $target $current | delta --side-by-side
 }
+
+# c#ファイル(.cs)をコンパイルして実行
+# ln -s /Library/Frameworks/Mono.framework/Versions/Current/bin/mono /usr/local/bin
+# ln -s /Library/Frameworks/Mono.framework/Versions/Current/bin/mcs /usr/local/bin
+# をあらかじめ実行していること。VisualStudio2019をインストールすれば入る。
+alias ms='_mcs_and_mono'
+_mcs_and_mono() {
+  local fileName=${1/\.*/}
+  mcs $1
+  mono ${fileName}.exe
+}
