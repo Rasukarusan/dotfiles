@@ -24,3 +24,16 @@ function! s:check_back_space() abort
 endfunction
 
 let g:coc_snippet_next = '<tab>'
+" 自動インストール
+let g:coc_global_extensions = [
+  \  'coc-css'
+  \, 'coc-go'
+  \, 'coc-html'
+  \, 'coc-json'
+  \, 'coc-omnisharp'
+  \, 'coc-phpls'
+  \, 'coc-snippets'
+  \, 'coc-tsserver'
+  \, 'coc-ultisnips'
+  \, 'coc-word'
+\]
