@@ -30,7 +30,6 @@ let g:coc_global_extensions = [
   \, 'coc-go'
   \, 'coc-html'
   \, 'coc-json'
-  \, 'coc-omnisharp'
   \, 'coc-phpls'
   \, 'coc-snippets'
   \, 'coc-tsserver'
