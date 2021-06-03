@@ -103,7 +103,9 @@ augroup IndentSettings
     autocmd BufEnter *.mdx set filetype=markdown
     autocmd FileType markdown        setlocal sw=4 sts=4 ts=4 et
     autocmd FileType html            setlocal sw=2 sts=2 ts=2 et
+    autocmd FileType htmldjango      setlocal sw=2 sts=2 ts=2 et " twigのhtml
     autocmd FileType css             setlocal sw=2 sts=2 ts=2 et
+    autocmd FileType scss            setlocal sw=2 sts=2 ts=2 et
     autocmd FileType json            setlocal sw=4 sts=4 ts=4 et
     autocmd FileType yaml            setlocal sw=2 sts=2 ts=2 et
 augroup END
