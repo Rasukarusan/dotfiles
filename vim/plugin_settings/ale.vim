@@ -1,7 +1,8 @@
-if executable('eslint_d')
-  let g:ale_javascript_eslint_use_global = 1
-  let g:ale_javascript_eslint_executable = 'eslint_d'
-endif
+" Warningが表示されなくなってしまうのでコメントアウト
+" if executable('eslint_d')
+"   let g:ale_javascript_eslint_use_global = 1
+"   let g:ale_javascript_eslint_executable = 'eslint_d'
+" endif
 let g:ale_fixers = {
 \   '*': ['remove_trailing_lines', 'trim_whitespace'],
 \   'javascript': ['eslint'],
