@@ -169,7 +169,7 @@ vnoremap <silent> <Space>g :Goo v<CR>
 " =============================================
 " :messagesの最後の行をGoogleで検索する
 " =============================================
-nnoremap <silent> MG :call <SID>search_by_google(<SID>get_last_message())<CR>
+nnoremap <silent> MG :call system('search_by_google "' . <SID>get_last_message() . '"')<CR>
 
 " =============================================
 " カーソル下コードのカラー名を出力
