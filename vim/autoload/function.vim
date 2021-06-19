@@ -653,3 +653,56 @@ function! s:sync_scroll() abort
   endif
 endfunction
 command! SyncScroll call s:sync_scroll()
+
+" =============================================
+" カーソル下の関数を実行
+" 関数ブロック内で実行も可能
+" =============================================
+function! s:exec_this_method() abort
+  let allowFileType = ['sh', 'bash', 'zsh']
+  if match(allowFileType, &ft) == -1 | return | endif
+
+  let targetScript = expand('%:p')
+  let targetMethod = expand('<cword>')
+
+  " スクリプト内の関数を全て取得
+  let methods = split(system('grep -oP ".*().{" ' . targetScript . ' | tr -d "() {"'), '\n')
+
+  " カーソル下の文字列が関数であるかを判定
+  let index = match(methods, targetMethod)
+  if index == -1 " 関数ではない場合(関数ブロック内で実行した場合)
+    let line = line('.')
+    while line > 0
+      let line -= 1
+      let matchLine = matchstr(getline(line), '.*() {')
+      if matchLine != ''
+        let targetMethod = substitute(matchLine, '() {', '', 'g')
+        let index = match(methods, targetMethod)
+        break
+      endif
+    endwhile
+  endif
+  " 探索しても見つからなかった場合、終了
+  if targetMethod == ''
+    echo 'target not found'
+    return
+  endif
+
+  " 対象メソッドの実行のみを残したスクリプト文字列を生成
+  call remove(methods, index)
+  " 対象メソッド以外を除外するためのsed文を作成
+  let sed = 'sed'
+  for method in methods
+    let sed = sed . ' -e "/^' . method . '$/d"'
+  endfor
+
+  " 生成した文字列をスクリプトとして実行できるよう一時ファイルに保存
+  let tempfile = tempname()
+  call system(sed . ' ' . targetScript . ' > ' . tempfile)
+
+  " 一時ファイルを実行
+  execute ':QuickRun ' . &ft . ' -srcfile ' . tempfile
+  echo 'exec ' . targetMethod
+  call system('rm ' . tempfile)
+endfunction
+nnoremap <silent><nowait><C-j> :call <sid>exec_this_method()<CR>
