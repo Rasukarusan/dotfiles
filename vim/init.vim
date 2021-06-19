@@ -222,8 +222,6 @@ inoremap <C-j> <Down>
 inoremap <C-k> <Up>
 inoremap <C-h> <Left>
 inoremap <C-l> <Right>
-nnoremap <C-e> <Esc>$a
-inoremap <C-e> <Esc>$a
 nnoremap H 10h
 nnoremap L 10l
 nnoremap sa ^
@@ -272,9 +270,6 @@ cnoremap <C-a> <Home>
 " タブ移動のショートカット
 nnoremap <C-l> <ESC>gt
 nnoremap <C-h> <ESC>g<S-t>
-" 画面分割時の移動のショートカット
-nnoremap <C-k> <ESC><C-w>k
-nnoremap <C-j> <ESC><C-w>j
 " 現在のタブを右へ移動
 nnoremap <Tab>n :tabmove +<CR>
 " 現在のタブを左へ移動
