@@ -140,9 +140,9 @@ _git_add(){
   [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
   local files=($(eval git -C $path_working_tree_root ls-files --modified \
     | fzf-tmux -p80% --prompt 'modified' \
-      --multi --bind "ctrl-u:reload(git ls-files --others --exclude-standard)+change-prompt(untracked)" \
-      --bind "ctrl-m:reload(git ls-files --modified)+change-prompt(modified)" \
-      --bind "ctrl-a:reload(git ls-files --modified --others --exclude-standard)+change-prompt(all)" \
+      --bind "U:reload(git ls-files --others --exclude-standard)+change-prompt(untracked)" \
+      --bind "M:reload(git ls-files --modified)+change-prompt(modified)" \
+      --bind "A:reload(git ls-files --modified --others --exclude-standard)+change-prompt(all)" \
       --preview "git diff --exit-code {} >/dev/null && bat --color always {} || git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy" \
       --preview-window=right:50% \
     ))
