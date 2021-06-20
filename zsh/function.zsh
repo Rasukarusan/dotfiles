@@ -476,7 +476,9 @@ _docker_commands() {
       containers=($(docker ps --format "{{.Names}}" | sort | fzf-tmux -p80% ))
       [ "${#containers[@]}" -eq 0 ] && return
       for container in ${containers[@]}; do
-        docker stop $container
+        execCommand="docker stop $container"
+        echo $execCommand && eval $execCommand
+        print -s "$execCommand"
       done
       ;;
     'rm' )
@@ -486,16 +488,20 @@ _docker_commands() {
         | awk '{print $2}' \
       ))
       for container in ${containers[@]}; do
-        docker rm $container
+        execCommand="docker rm $container"
+        echo $execCommand && eval $execCommand
+        print -s "$execCommand"
       done
       ;;
     'rmi' )
-      images=($(docker images \
-        | fzf-tmux -p80% \
+      images=($(docker images | tail -n +2 \
+        | fzf-tmux -p80% --header "$(echo 'REPOSITORY\tTAG\tIMAGE_ID\tCREATED\tSIZE' | column -t)"\
         | awk '{print $3}' \
       ))
       for image in ${images[@]}; do
-        docker rmi -f $image
+        execCommand="docker rmi -f $image"
+        echo $execCommand && eval $execCommand
+        print -s "$execCommand"
       done
       ;;
     'cp' )
@@ -512,7 +518,9 @@ _docker_commands() {
 
         for targetFile in "${targetFiles[@]}";do
           echo "$targetFile =====> ${container}(${containerId})"
-          docker cp ${targetFile} ${containerId}:/root/
+          execCommand="docker cp ${targetFile} ${containerId}:/root/"
+          echo $execCommand && eval $execCommand
+          print -s "$execCommand"
         done
       done
       ;;
