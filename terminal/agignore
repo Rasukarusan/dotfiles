@@ -21,3 +21,6 @@ sample/data/
 skills/
 reports/
 **.worker.js
+
+libs/simplesamlphp/
+tmp/phpcs
