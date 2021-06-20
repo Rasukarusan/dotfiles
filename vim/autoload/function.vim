@@ -663,10 +663,12 @@ function! s:exec_this_method() abort
   if match(allowFileType, &ft) == -1 | return | endif
 
   let targetScript = expand('%:p')
-  let targetMethod = expand('<cword>')
-
   " スクリプト内の関数を全て取得
-  let methods = split(system('grep -oP ".*().{" ' . targetScript . ' | tr -d "() {"'), '\n')
+  let methods = split(system('grep -P "\(\) {" ' . targetScript . ' | tr -d "() {"'), '\n')
+
+  " 引数ありの場合に対応するため、<cword>ではなく現在行を取得して対象の関数を抽出する
+  let currentLine = split(getline('.'), ' ')
+  let targetMethod = len(currentLine) > 0 ? currentLine[0] : '' 
 
   " カーソル下の文字列が関数であるかを判定
   let index = match(methods, targetMethod)
@@ -690,10 +692,10 @@ function! s:exec_this_method() abort
 
   " 対象メソッドの実行のみを残したスクリプト文字列を生成
   call remove(methods, index)
-  " 対象メソッド以外を除外するためのsed文を作成
+  " 対象メソッド以外を除外するためのsed文を作成 ex) sed -e '/^main$/d' -e '/^main /d'
   let sed = 'sed'
   for method in methods
-    let sed = sed . ' -e "/^' . method . '$/d"'
+    let sed = sed . ' -e "/^' . method . '$/d"' . ' -e "/^' . method . ' /d"'
   endfor
 
   " 生成した文字列をスクリプトとして実行できるよう一時ファイルに保存
