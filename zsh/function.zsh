@@ -136,24 +136,13 @@ _process_kill(){
 # git add をfzfでdiffを見ながら選択
 alias gadd='_git_add'
 _git_add(){
-  if [ "$1" = '-A' ]; then
-    git add -A
-    return
-  fi
   local path_working_tree_root=$(git rev-parse --show-cdup)
-  local option='--modified --others --exclude-standard'
-  # modifiedのみ表示
-  if [ "$1" = '-m' ]; then
-    option='--modified --exclude-standard'
-  fi
-  # Untracked fileのみ表示する
-  if [ "$1" = '-u' ]; then
-    option='--others --exclude-standard'
-  fi
   [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
-  local files=($(eval git -C $path_working_tree_root ls-files $option \
-    | fzf-tmux -p80% \
-      --prompt "ADD FILES>" \
+  local files=($(eval git -C $path_working_tree_root ls-files --modified \
+    | fzf-tmux -p80% --prompt 'modified' \
+      --multi --bind "ctrl-u:reload(git ls-files --others --exclude-standard)+change-prompt(untracked)" \
+      --bind "ctrl-m:reload(git ls-files --modified)+change-prompt(modified)" \
+      --bind "ctrl-a:reload(git ls-files --modified --others --exclude-standard)+change-prompt(all)" \
       --preview "git diff --exit-code {} >/dev/null && bat --color always {} || git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy" \
       --preview-window=right:50% \
     ))
