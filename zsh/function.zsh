@@ -218,21 +218,21 @@ _fgg() {
 # あらかじめ指定したGitディレクトリを全て最新にする
 alias upd='_update_dotfile'
 _update_dotfile() {
-  for targetDir in ${MY_TARGET_GIT_DIR[@]}; do
-    printf "\e[33m`basename ${targetDir}`\e[m\n"
-    git -C ${targetDir} pull origin master
-    echo ""
+  ls -1 ~/Documents/github | while read dir; do
+    local dir=~/Documents/github/${dir}
+    printf "\e[33m${dir}\e[m\n"
+    git -C ${dir} pull --rebase origin master
   done
 }
 # あらかじめ指定したGitディレクトリを全てpushする
 alias psd='_push_dotfile'
 _push_dotfile() {
-  for targetDir in ${MY_TARGET_GIT_DIR[@]}; do
-    printf "\e[33m`basename ${targetDir}`\e[m\n"
-    git -C ${targetDir} add -A
-    git -C ${targetDir} commit -v
-    git -C ${targetDir} push origin master
-    echo ""
+  ls -1 ~/Documents/github | while read dir; do
+    local dir=~/Documents/github/${dir}
+    printf "\e[33m${dir}\e[m\n"
+    git -C ${dir} add -A
+    git -C ${dir} commit -v
+    git -C ${dir} push origin master
   done
 }
 # あらかじめ指定したGitディレクトリのgit statusを表示
@@ -254,6 +254,7 @@ _preview_my_git_diff() {
   git -C $target_dir add -p && git -C $target_dir commit
 }
 
+# git管理しているディレクトリすべてでgit statusを実行
 alias sgs='_show_git_status'
 _show_git_status() {
   ls -1 ~/Documents/github | while read dir; do
@@ -264,7 +265,6 @@ _show_git_status() {
     fi
   done
 }
-
 
 # bcコマンドを簡単にかつ小数点時に.3333となるのを0.3333に直す(0を付け足す)
 alias bcc='_bcc'
