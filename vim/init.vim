@@ -343,3 +343,5 @@ cabbrev vs vertical rightbelow new
 let g:sml#echo_yank_str = 0
 nnoremap <Space>v :call sml#mode_on()<CR>
 
+" local.vimで上書き
+runtime! myautoload/local.vim
