@@ -138,7 +138,7 @@ alias gadd='_git_add'
 _git_add(){
   local path_working_tree_root=$(git rev-parse --show-cdup)
   [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
-  local files=($(eval git -C $path_working_tree_root ls-files --modified \
+  local files=($(eval git -C $path_working_tree_root ls-files --modified --others --exclude-standard\
     | fzf-tmux -p80% --prompt 'modified' \
       --bind "U:reload(git ls-files --others --exclude-standard)+change-prompt(untracked)" \
       --bind "M:reload(git ls-files --modified)+change-prompt(modified)" \
