@@ -1156,9 +1156,16 @@ _replace_all() {
 # fzfでrm
 alias rmm='_rmm'
 _rmm() {
-  for removeFile in $(find . -type d \( -name node_modules -o -name .git \) -prune -o -type f \
+  for removeFile in $(find . -maxdepth 1 -type d \( -name node_modules -o -name .git \) -prune -o -type f \
     | sort \
-    |  fzf-tmux -p80% --preview='bat --color=always {}'); do
+    |  fzf-tmux -p80% \
+    --bind "f1:reload(find . -maxdepth 1 -type d \( -name node_modules -o -name .git \) -prune -o -type f | sort)" \
+    --bind "f2:reload(find . -maxdepth 2 -type d \( -name node_modules -o -name .git \) -prune -o -type f | sort)" \
+    --bind "f3:reload(find . -maxdepth 3 -type d \( -name node_modules -o -name .git \) -prune -o -type f | sort)" \
+    --bind "f5:reload(find . -type d \( -name node_modules -o -name .git \) -prune -o -type f | sort)" \
+    --preview='bat --color=always {}' 
+  )
+  do
     echo "$removeFile"
     rm "$removeFile"
   done
