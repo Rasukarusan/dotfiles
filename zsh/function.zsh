@@ -430,7 +430,7 @@ _set_badge() {
 # Dockerコマンドをfzfで選択
 alias dcc='_docker_commands'
 _docker_commands() {
-  local select_command=`cat <<- EOF | fzf-tmux -p80%
+  local selectCommand=`cat <<- EOF | fzf-tmux -p80%
 		docker exec
 		docker logs
 		docker ps
@@ -451,7 +451,7 @@ _docker_commands() {
 		docker rmi
 		docker cp
 	EOF`
-  local arg=`echo $select_command | sed "s/docker //g"`
+  local arg=`echo $selectCommand | sed "s/docker //g"`
   local execCommand
   case "${arg}" in
     'exec' )
@@ -464,20 +464,17 @@ _docker_commands() {
       else
         execCommand="docker exec -it $container $(echo "$availableShells" | tail -n 1 | tr -d '\r')"
       fi
-      printf "\e[33m${execCommand}\e[m\n" && eval $execCommand
       ;;
     'logs' )
       container=$(docker ps --format "{{.Names}}" | sort | fzf-tmux -p80%)
       test -z "$container" && return
       execCommand="docker logs -f --tail=100 $container"
-      printf "\e[33m${execCommand}\e[m\n" && eval $execCommand
       ;;
     'stop' )
       containers=($(docker ps --format "{{.Names}}" | sort | fzf-tmux -p80% ))
       [ "${#containers[@]}" -eq 0 ] && return
       for container in ${containers[@]}; do
         execCommand="docker stop $container"
-        printf "\e[33m${execCommand}\e[m\n" && eval $execCommand
       done
       ;;
     'rm' )
@@ -488,7 +485,6 @@ _docker_commands() {
       ))
       for container in ${containers[@]}; do
         execCommand="docker rm $container"
-        printf "\e[33m${execCommand}\e[m\n" && eval $execCommand
       done
       ;;
     'rmi' )
@@ -498,7 +494,6 @@ _docker_commands() {
       ))
       for image in ${images[@]}; do
         execCommand="docker rmi -f $image"
-        printf "\e[33m${execCommand}\e[m\n" && eval $execCommand
       done
       ;;
     'cp' )
@@ -521,9 +516,20 @@ _docker_commands() {
         done
       done
       ;;
-    *) print -s "$select_command" && printf "\e[33m${select_command}\e[m\n" && eval $select_command ;;
+    *) 
+      local strLength=$(expr ${#selectCommand} + 4)
+      local separateStr=$(for i in `seq 1 $strLength`;do /bin/echo -n '=' ; done)
+      printf "\e[33m${separateStr}\n  ${selectCommand}  \n${separateStr}\e[m\n"
+      eval $selectCommand
+      ;;
   esac
-  [ -n "$execCommand" ] && print -s "$execCommand"
+  if [ -n "$execCommand" ];then
+    print -s "$execCommand"
+    local strLength=$(expr ${#execCommand} + 4)
+    local separateStr=$(for i in `seq 1 $strLength`;do /bin/echo -n '=' ; done)
+    printf "\e[33m${separateStr}\n  ${execCommand}  \n${separateStr}\e[m\n"
+    eval $execCommand
+  fi
 }
 
 # 自作スクリプト編集時、fzfで選択できるようにする
@@ -893,7 +899,7 @@ _tenki() {
 # vagrantのコマンドをfzfで選択
 alias vgg='_fzf_vagrant'
 _fzf_vagrant() {
-  local select_command=`cat <<- EOF | fzf-tmux -p
+  local selectCommand=`cat <<- EOF | fzf-tmux -p
 		vagrant ssh
 		vagrant up
 		vagrant provision
@@ -902,8 +908,8 @@ _fzf_vagrant() {
 		vagrant reload&provision
 		vagrant global-status
 	EOF`
-  test -z "$select_command" && return
-  local arg=`echo $select_command | sed "s/vagrant //g"`
+  test -z "$selectCommand" && return
+  local arg=`echo $selectCommand | sed "s/vagrant //g"`
   case "${arg}" in
     'ssh' )
       vagrant ssh
