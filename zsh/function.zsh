@@ -457,28 +457,27 @@ _docker_commands() {
     'exec' )
       container=$(docker ps --format "{{.Names}}" | sort | fzf-tmux -p80%)
       test -z "$container" && return
-      # bashが使えるなら選択の余地なしにbashでログインする
       availableShells=$(docker exec -it $container cat /etc/shells)
+      # bashが使えるならbashでログインする
       if  echo "$availableShells" | grep bash >/dev/null ; then
         execCommand="docker exec -it $container bash"
       else
-        execCommand="docker exec -it $container $(echo "$availableShells" | tail +2 | fzf-tmux -p80% | tr -d '\r')"
+        execCommand="docker exec -it $container $(echo "$availableShells" | tail -n 1 | tr -d '\r')"
       fi
-      echo $execCommand && eval $execCommand
+      printf "\e[33m${execCommand}\e[m\n" && eval $execCommand
       ;;
     'logs' )
       container=$(docker ps --format "{{.Names}}" | sort | fzf-tmux -p80%)
       test -z "$container" && return
       execCommand="docker logs -f --tail=100 $container"
-      echo $execCommand && eval $execCommand
+      printf "\e[33m${execCommand}\e[m\n" && eval $execCommand
       ;;
     'stop' )
       containers=($(docker ps --format "{{.Names}}" | sort | fzf-tmux -p80% ))
       [ "${#containers[@]}" -eq 0 ] && return
       for container in ${containers[@]}; do
         execCommand="docker stop $container"
-        echo $execCommand && eval $execCommand
-        print -s "$execCommand"
+        printf "\e[33m${execCommand}\e[m\n" && eval $execCommand
       done
       ;;
     'rm' )
@@ -489,8 +488,7 @@ _docker_commands() {
       ))
       for container in ${containers[@]}; do
         execCommand="docker rm $container"
-        echo $execCommand && eval $execCommand
-        print -s "$execCommand"
+        printf "\e[33m${execCommand}\e[m\n" && eval $execCommand
       done
       ;;
     'rmi' )
@@ -500,8 +498,7 @@ _docker_commands() {
       ))
       for image in ${images[@]}; do
         execCommand="docker rmi -f $image"
-        echo $execCommand && eval $execCommand
-        print -s "$execCommand"
+        printf "\e[33m${execCommand}\e[m\n" && eval $execCommand
       done
       ;;
     'cp' )
@@ -519,15 +516,14 @@ _docker_commands() {
         for targetFile in "${targetFiles[@]}";do
           echo "$targetFile =====> ${container}(${containerId})"
           execCommand="docker cp ${targetFile} ${containerId}:/root/"
-          echo $execCommand && eval $execCommand
+          printf "\e[33m${execCommand}\e[m\n" && eval $execCommand
           print -s "$execCommand"
         done
       done
       ;;
-    *) echo $select_command && eval $select_command ;;
+    *) print -s "$select_command" && printf "\e[33m${select_command}\e[m\n" && eval $select_command ;;
   esac
   [ -n "$execCommand" ] && print -s "$execCommand"
-  [ -n "$select_command" ] && print -s "$select_command"
 }
 
 # 自作スクリプト編集時、fzfで選択できるようにする
