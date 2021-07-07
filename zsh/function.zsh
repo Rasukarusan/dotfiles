@@ -1426,3 +1426,16 @@ _mcs_and_mono() {
   mcs $1
   mono ${fileName}.exe
 }
+
+# 画像に枠線を追加
+alias imgBorder='_add_border_to_image'
+_add_border_to_image() {
+  local image=$1
+  local color=${2:-a0a8a9}
+  local borderWeight=${3:-10}
+  local width=$(sips -g pixelWidth $1 | awk -F ' ' '{print $2}')
+  local height=$(sips -g pixelHeight $1 | awk -F ' ' '{print $2}')
+  local borderWidth=$(expr $width + $borderWeight)
+  local borderHeight=$(expr $height + $borderWeight) 
+  sips -p $borderHeight $borderWidth --padColor $color $image -o border_${image}
+}
