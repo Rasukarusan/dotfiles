@@ -314,3 +314,9 @@ repo = 'juliosueiras/vim-terraform-completion'
 [[plugins]]
 repo = 'segeljakt/vim-silicon'
 hook_add = 'source ~/.config/nvim/plugin_settings/silicon.vim'
+
+# --------------------------------------------
+# GraphQL - シンタックスハイライト
+# --------------------------------------------
+[[plugins]]
+repo = 'jparise/vim-graphql'
