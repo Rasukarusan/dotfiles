@@ -431,7 +431,8 @@ _set_badge() {
 alias dcc='_docker_commands'
 _docker_commands() {
   local selectCommand=`cat <<- EOF | fzf-tmux -p80%
-		docker exec
+		docker exec -it
+		docker exec -it --user root
 		docker logs
 		docker ps
 		docker ps -a
@@ -454,15 +455,15 @@ _docker_commands() {
   local arg=`echo $selectCommand | sed "s/docker //g"`
   local execCommand
   case "${arg}" in
-    'exec' )
+    'exec -it' | 'exec -it --user root' )
       container=$(docker ps --format "{{.Names}}" | sort | fzf-tmux -p80%)
       test -z "$container" && return
       availableShells=$(docker exec -it $container cat /etc/shells)
       # bashが使えるならbashでログインする
       if  echo "$availableShells" | grep bash >/dev/null ; then
-        execCommand="docker exec -it $container bash"
+        execCommand="$selectCommand $container bash"
       else
-        execCommand="docker exec -it $container $(echo "$availableShells" | tail -n 1 | tr -d '\r')"
+        execCommand="$selectCommand $container $(echo "$availableShells" | tail -n 1 | tr -d '\r')"
       fi
       ;;
     'logs' )
