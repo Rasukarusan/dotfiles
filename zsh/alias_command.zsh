@@ -103,3 +103,5 @@ alias mag='git ls-files -m -o --exclude-standard  | xargs ag'
 alias man='env LANG=C man'
 # terminal上からGoogle検索
 alias goo='search_by_google'
+alias pj='pbpaste | jq'
+alias vi='vim'
