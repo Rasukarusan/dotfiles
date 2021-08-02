@@ -1227,7 +1227,7 @@ _fzf_carthage() {
 # modifiedとuntrachedのファイルをfzfで選択して開く
 alias vimg='_fzf_vim_git_modified_untracked'
 _fzf_vim_git_modified_untracked() {
-  local files=($(git ls-files -m -o --exclude-standard | sort | fzf-tmux -p80% --preview='bat --color=always {}') )
+  local files=($(git ls-files -m -o --exclude-standard | sort | fzf-tmux -p80% --preview='git diff --exit-code {} >/dev/null && bat --color always {} || git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy') )
   [ -z "$files" ] && return
   vim -p "${files[@]}"
 }
