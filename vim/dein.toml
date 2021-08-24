@@ -22,12 +22,6 @@ repo = 'junegunn/fzf.vim'
 hook_add = 'source ~/.config/nvim/plugin_settings/fzf.vim'
 
 # --------------------------------------------
-# tomlファイルをハイライト
-# --------------------------------------------
-[[plugins]]
-repo = 'cespare/vim-toml'
-
-# --------------------------------------------
 # ctrl+-でコメントアウト
 # --------------------------------------------
 [[plugins]]
@@ -138,32 +132,6 @@ build =  'cd app & yarn install'
 # repo = 'flyinshadow/php_localvarcheck.vim'
 # hook_add = 'source ~/.config/nvim/plugin_settings/php_localvarcheck.vim'
 #
-# --------------------------------------------
-# Typscript IDE
-# filetypeを勝手に変えてしまい、vim-fzfでtsxを開くとtypescriptreactで
-# 認識されてハイライトが効かなくなってしまうため、コメントアウト
-# --------------------------------------------
-# [[plugins]]
-# repo = 'Quramy/tsuquyomi'
-
-# --------------------------------------------
-# Typscriptシンタックスハイライト
-# --------------------------------------------
-[[plugins]]
-repo = 'leafgarland/typescript-vim'
-hook_add = 'source ~/.config/nvim/plugin_settings/typescript-vim.vim'
-
-# --------------------------------------------
-# TypscriptReactシンタックスハイライト
-# --------------------------------------------
-[[plugins]]
-repo = 'peitalin/vim-jsx-typescript'
-
-# --------------------------------------------
-# JavaScriptハイライト
-# --------------------------------------------
-[[plugins]]
-repo = 'pangloss/vim-javascript'
 
 # --------------------------------------------
 # JS/TSインデント
@@ -314,12 +282,6 @@ repo = 'juliosueiras/vim-terraform-completion'
 [[plugins]]
 repo = 'segeljakt/vim-silicon'
 hook_add = 'source ~/.config/nvim/plugin_settings/silicon.vim'
-
-# --------------------------------------------
-# GraphQL - シンタックスハイライト
-# --------------------------------------------
-[[plugins]]
-repo = 'jparise/vim-graphql'
 
 # --------------------------------------------
 # tree-sitter
