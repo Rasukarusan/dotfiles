@@ -134,9 +134,9 @@ build =  'cd app & yarn install'
 # --------------------------------------------
 # PHPコードチェック、未使用変数のハイライト
 # --------------------------------------------
-[[plugins]]
-repo = 'flyinshadow/php_localvarcheck.vim'
-hook_add = 'source ~/.config/nvim/plugin_settings/php_localvarcheck.vim'
+# [[plugins]]
+# repo = 'flyinshadow/php_localvarcheck.vim'
+# hook_add = 'source ~/.config/nvim/plugin_settings/php_localvarcheck.vim'
 #
 # --------------------------------------------
 # Typscript IDE
@@ -320,3 +320,11 @@ hook_add = 'source ~/.config/nvim/plugin_settings/silicon.vim'
 # --------------------------------------------
 [[plugins]]
 repo = 'jparise/vim-graphql'
+
+# --------------------------------------------
+# tree-sitter
+# --------------------------------------------
+[[plugins]]
+repo = 'nvim-treesitter/nvim-treesitter'
+hook_post_update = 'TSUpdate'
+hook_add = 'source ~/.config/nvim/plugin_settings/tree-sitter.vim'
