@@ -1,13 +1,3 @@
-lua <<EOF
-require'nvim-treesitter.configs'.setup {
-  ensure_installed = "maintained",
-  highlight = {
-    enable = true,
-    disable = {}, -- :TSModuleInfo で言語一覧表示
-  },
-}
-EOF
-
 "：TSBufEnable {module} "現在のバッファでモジュールを有効にする
 "：TSBufDisable {module} "現在のバッファでモジュールを無効にする
 "：TSEnableAll {module} [{ ft }] "すべてのバッファでモジュールを有効にする。filetypeが指定されている場合は、このファイルタイプに対してのみ有効にします。 
