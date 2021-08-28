@@ -345,3 +345,16 @@ nnoremap <Space>v :call sml#mode_on()<CR>
 
 " local.vimで上書き
 runtime! myautoload/local.vim
+
+" tree-sitter
+" Vim(lua):E5108: Error executing lua [string ":lua"]:1: module 'nvim-treesitter.configs' not found: のエラー対策のためhook_addではなくinit.vimに記載
+lua <<EOF
+require'nvim-treesitter.configs'.setup {
+  ensure_installed = "maintained",
+  highlight = {
+    enable = true,
+    disable = {}, -- :TSModuleInfo で言語一覧表示
+  },
+}
+EOF
+
