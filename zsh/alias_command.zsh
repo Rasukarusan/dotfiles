@@ -1,6 +1,9 @@
 # ============================== #
 #         alias-Command          #
 # ============================== #
+alias vim='~/neovim/nvim/bin/nvim'
+alias nvim='~/neovim/nvim/bin/nvim'
+alias vi='~/neovim/nvim/bin/nvim'
 alias l='ls -1'
 alias la='ls -laG'
 alias laa='ls -ld .*'
@@ -104,4 +107,3 @@ alias man='env LANG=C man'
 # terminal上からGoogle検索
 alias goo='search_by_google'
 alias pj='pbpaste | jq'
-alias vi='vim'
