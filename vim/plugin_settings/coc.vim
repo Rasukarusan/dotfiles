@@ -36,3 +36,5 @@ let g:coc_global_extensions = [
   \, 'coc-ultisnips'
   \, 'coc-word'
 \]
+" CocConfigのdiagnostic.enableが効かなくなってしまったのでこちらで対応
+let b:coc_diagnostic_disable=1
