@@ -355,6 +355,9 @@ require'nvim-treesitter.configs'.setup {
     enable = true,
     disable = {}, -- :TSModuleInfo で言語一覧表示
   },
+  indent = {
+    enable = true
+  },
 }
 EOF
 
