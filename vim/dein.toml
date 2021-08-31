@@ -243,14 +243,6 @@ hook_add = 'source ~/.config/nvim/plugin_settings/splitjoin.vim'
 repo = 'skanehira/translate.vim'
 
 # --------------------------------------------
-# 置換結果をプレビュー
-# visualモードで:を押すと行選択されてしまうのでコメントアウト
-# 見た目の問題だけで機能はちゃんとする
-# --------------------------------------------
-# [[plugins]]
-# repo = 'markonm/traces.vim'
-
-# --------------------------------------------
 # 禅モード
 # --------------------------------------------
 [[plugins]]
@@ -290,3 +282,4 @@ hook_add = 'source ~/.config/nvim/plugin_settings/silicon.vim'
 repo = 'nvim-treesitter/nvim-treesitter'
 hook_post_update = 'TSUpdate'
 hook_add = 'source ~/.config/nvim/plugin_settings/tree-sitter.vim'
+
