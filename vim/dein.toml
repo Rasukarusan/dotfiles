@@ -281,5 +281,4 @@ hook_add = 'source ~/.config/nvim/plugin_settings/silicon.vim'
 [[plugins]]
 repo = 'nvim-treesitter/nvim-treesitter'
 hook_post_update = 'TSUpdate'
-hook_add = 'source ~/.config/nvim/plugin_settings/tree-sitter.vim'
-
+hook_source = 'source ~/.config/nvim/plugin_settings/tree-sitter.vim'
