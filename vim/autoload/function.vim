@@ -69,7 +69,7 @@ function! s:fzf_BLines(file_path)
   call fzf#run({
     \ 'source': 'cat -n '.a:file_path,
     \ 'sink': function('s:jump_to_line'),
-    \ 'down': '40%'
+    \ 'tmux': '-p80%,80%',
     \ })
 endfunction
 function! s:jump_to_line(value)
@@ -87,7 +87,7 @@ function! s:fzf_ShowFunction(file_path)
   call fzf#run({
     \ 'source': 'global -f '.a:file_path. ' | awk '. "'{print $1." . '"\t"$2}' . "'",
     \ 'sink': function('s:jump_to_function'),
-    \ 'down': '40%'
+    \ 'tmux': '-p80%,80%',
     \ })
 endfunction
 function! s:jump_to_function(value)
@@ -360,8 +360,8 @@ function! s:fzf_vimrc()
   call fzf#run({
     \ 'source': "find ~/dotfiles ${XDG_CONFIG_HOME}/nvim/myautoload -follow -name '*.vim' -o -name 'dein.toml' -o -name 'xvimrc' | awk '{ print length, $0 }' | sort -n -s | cut -d' ' -f2- ",
     \ 'sink': 'tabe',
-    \ 'down': '40%',
-    \ 'options': '--preview "bat --color always {} --style=plain | head -n 100"'
+    \ 'options': '--preview "bat --color always {} --style=plain | head -n 100"',
+    \ 'tmux': '-p80%,80%',
     \ })
 endfunction
 command! Vimrc call s:fzf_vimrc()
@@ -374,8 +374,8 @@ function! s:fzf_zshrc()
   call fzf#run({
     \ 'source': "find ~/dotfiles/zsh -type f | awk '{ print length, $0 }' | sort -n -s | cut -d' ' -f2- ",
     \ 'sink': 'tabe',
-    \ 'down': '40%',
-    \ 'options': '--preview "bat --color always {} --style=plain | head -n 100"'
+    \ 'options': '--preview "bat --color always {} --style=plain | head -n 100"',
+    \ 'tmux': '-p80%,80%',
     \ })
 endfunction
 command! Zshrc call s:fzf_zshrc()
