@@ -4,29 +4,15 @@
 set rtp+=/usr/local/opt/fzf
 set rtp+=/opt/homebrew/opt/fzf
 
+if exists('$TMUX')
+  let g:fzf_layout = { 'tmux': '-p80%,80%' }
+else
+  let g:fzf_layout = { 'window': { 'width': 0.8, 'height': 0.8 } }
+endif
+
 " fzf実行時はステータスバーを非表示に
 autocmd! FileType fzf set laststatus=0 noshowmode noruler
   \| autocmd BufLeave <buffer> set laststatus=2 showmode ruler
-
-" 候補表示のwindow設定
-if has('nvim')
-    let g:fzf_layout = { 'window': 'call FloatingFZF()' }
-endif
-function! FloatingFZF()
-    let buf = nvim_create_buf(v:false, v:true)
-    let height = float2nr(&lines * 0.5)
-    let width = float2nr(&columns * 1.0)
-    let horizontal = float2nr((&columns - width) / 2)
-    let vertical = float2nr((&columns - height) / 2)
-    let opts = {
-        \ 'relative': 'editor',
-        \ 'row': vertical,
-        \ 'col': horizontal,
-        \ 'width': width,
-        \ 'height': height
-        \ }
-    call nvim_open_win(buf, v:true, opts)
-endfunction
 
 command! -bang -nargs=? -complete=dir Files
     \ call fzf#vim#files(<q-args>, {'options': [ '--preview', 'bat --color always {}']}, <bang>0)
