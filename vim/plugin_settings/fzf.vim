@@ -23,17 +23,13 @@ command! -bang Colors
 
 " Git管理下ファイル検索
 nmap <C-p> :GFiles<CR>
+" ファイル内検索
+nmap <C-f> :BLines<CR>
 " カレントディレクトリ配下のファイル検索
 nmap <Space>f :Files<CR>
-" 以前開いたことのあるファイルを開く
-" nmap <SPACE>o :History<CR>
 " コマンド履歴
 nmap <SPACE>c :History:<CR>
 " 検索単語履歴
 nmap <SPACE>/ :History/<CR>
 " Window移動
 nmap <SPACE>w :Windows<CR>
-" Map系(leaderがspaceだと普段の入力で待ち時間が発生してしまうため却下)
-" nmap <SPACE><TAB> <plug>(fzf-maps-n)
-" xmap <SPACE><TAB> <plug>(fzf-maps-x)
-" imap <SPACE><TAB> <plug>(fzf-maps-i)

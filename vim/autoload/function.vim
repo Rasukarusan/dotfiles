@@ -62,42 +62,6 @@ command! PhpManual call s:open_php_manual(expand('<cword>'))
 nmap <Space>k :PhpManual<CR>
 
 " =============================================
-" ファイル内検索
-" fzfの標準関数BLinesでエラーが出るので自作
-" =============================================
-function! s:fzf_BLines(file_path)
-  call fzf#run({
-    \ 'source': 'cat -n '.a:file_path,
-    \ 'sink': function('s:jump_to_line'),
-    \ 'tmux': '-p80%,80%',
-    \ })
-endfunction
-function! s:jump_to_line(value)
-    let lines = split(a:value, '\t')
-    let line  = substitute(lines[0], ' ','','g')
-    execute ':' . line
-endfunction
-nmap <C-f> :call <SID>fzf_BLines(expand('%:p'))<CR>
-
-" =============================================
-" ファイル内関数検索
-" gtags_filesでエラーが出るので自作
-" =============================================
-function! s:fzf_ShowFunction(file_path)
-  call fzf#run({
-    \ 'source': 'global -f '.a:file_path. ' | awk '. "'{print $1." . '"\t"$2}' . "'",
-    \ 'sink': function('s:jump_to_function'),
-    \ 'tmux': '-p80%,80%',
-    \ })
-endfunction
-function! s:jump_to_function(value)
-    let lines = split(a:value, '\t')
-    execute ':' . lines[1]
-endfunction
-command! ShowFunction call s:fzf_ShowFunction(expand('%:p'))
-nmap <Space>F :ShowFunction<CR>
-
-" =============================================
 " grepの結果からvimで開く
 " スプレッドシートからコピーした場合を想定
 " =============================================
@@ -126,23 +90,6 @@ function! s:copy_html() abort
     w !textutil -format html -convert rtf -stdin -stdout | pbcopy
     bdelete!
 endfunction
-
-" =============================================
-" 行頭と行末に文字列を挿入
-" ex.) InTH <div> <\/div>
-" =============================================
-function! s:insert_head_and_tail(...) range
-    let head = a:1 " 行頭に入れたい文字列
-    let tail = a:2 " 行末に入れたい文字列
-    " 範囲選択中かで実行するコマンドが違うので分岐
-    if a:firstline == a:lastline
-        execute ':%s/^/'.head.'/g | %s/$/'.tail.'/g'
-    else
-        execute ':'.a:firstline.','.a:lastline.'s/^/'.head.'/g | '.a:firstline.','.a:lastline."s/$/".tail.'/g'
-    endif
-endfunction
-command! -nargs=+ -range InTH <line1>,<line2> call s:insert_head_and_tail(<f-args>)
-
 
 " =============================================
 " カーソル下の単語をGoogleで検索する
@@ -282,27 +229,6 @@ function! s:insert_template_github_readme()
     execute ':normal i' . template
 endfunction
 command! Readme call s:insert_template_github_readme()
-
-" =============================================
-" 英語のcommitメッセージ例文集を表示
-" =============================================
-function! s:show_commit_messages(str)
-    call setline('.', a:str)
-    " let command = 'cat ~/commit_messages_en.txt | grep ' . a:str
-    " call fzf#run({
-    " \ 'source': command,
-    " \ 'sink'  : function('<SID>categorize_commit_messages'),
-    " \ 'down'  : '40%'
-    " \ })
-endfunction
-function! s:categorize_commit_messages(category)
-    call setline('.', a:category)
-endfunction
-command! CommitMessages call fzf#run({
-    \ 'source': 'cat ~/commit_messages_en.txt',
-    \ 'sink'  : function('<SID>show_commit_messages'),
-    \ 'down'  : '40%'
-    \ })
 
 " =============================================
 " 選択範囲内の空行を削除
@@ -446,7 +372,6 @@ endfunction
 command! -range CommentOut <line1>,<line2>call s:comment_out_jsx()
 nnoremap Com :CommentOut<CR>
 vnoremap Com :CommentOut<CR>
-
 
 " =============================================
 " shellコマンドを実行
@@ -668,7 +593,7 @@ function! s:exec_this_method() abort
 
   " 引数ありの場合に対応するため、<cword>ではなく現在行を取得して対象の関数を抽出する
   let currentLine = split(getline('.'), ' ')
-  let targetMethod = len(currentLine) > 0 ? currentLine[0] : '' 
+  let targetMethod = len(currentLine) > 0 ? currentLine[0] : ''
 
   " カーソル下の文字列が関数であるかを判定
   let index = match(methods, targetMethod)
