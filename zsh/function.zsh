@@ -1451,3 +1451,11 @@ _add_border_to_image() {
   local borderHeight=$(expr $height + $borderWeight) 
   sips -p $borderHeight $borderWidth --padColor $color $image -o border_${image}
 }
+
+# neovimを更新
+alias neovim_update='_neovim_nightly_update'
+function _neovim_nightly_update() {
+  cd ~/neovim
+  git fetch --tags -f
+  sudo make CMAKE_INSTALL_PREFIX=$HOME/neovim/nvim install
+}
