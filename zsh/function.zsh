@@ -1233,6 +1233,16 @@ _fzf_vim_git_modified_untracked() {
   vim -p "${files[@]}"
 }
 
+# ブランチ間の差分ファイルをfzfで選択して開く
+alias vimd='_fzf_vim_git_diff_branch'
+_fzf_vim_git_diff_branch(){
+  local parent=$(git show-branch | grep '*' | grep -v "$(git rev-parse --abbrev-ref HEAD)" | head -1 | awk -F'[]~^[]' '{print $2}')
+  local current=$(git branch --show-current)
+  local targets=($(git diff --name-only $parent $current | fzf-tmux -p80% --preview='git diff --exit-code {} >/dev/null && bat --color always {} || git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy'))
+  [ -z "$targets" ] && return
+  vim -p "${targets[@]}"
+}
+
 # vimメモ帳
 alias memo='_memo'
 _memo() {
