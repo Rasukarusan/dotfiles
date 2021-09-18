@@ -67,11 +67,30 @@ bindkey '^o' show_snippets
 # 現在行をvimで編集して実行する
 edit_current_line() {
   local tmpfile=$(mktemp)
+  local tmpVimCursor=~/tmp_vim_cursor
   echo "$BUFFER" > $tmpfile
-  vim $tmpfile -c "normal $" -c "set filetype=zsh"
+  touch $tmpVimCursor
+
+  # terminalでのカーソル位置をvimに反映
+  local currentCursorLine=$(echo $LBUFFER | wc -l | tr -d ' ')
+  local currentCursorCol=$(echo $LBUFFER | sed -n ${currentCursorLine}p | wc -m | tr -d ' ')
+  vim $tmpfile \
+    -c "call cursor($currentCursorLine, $currentCursorCol)" \
+    -c 'set filetype=zsh' \
+    -c 'autocmd BufWritePost * :execute ":r! echo " . col(".") . "\t" . line(".") . "  > '${tmpVimCursor}'"'
   BUFFER="$(cat $tmpfile)"
-  CURSOR=${#BUFFER}
+
+  # vimでのカーソル位置をterminalに反映
+  local x=$(expr $(awk '{print $1}' $tmpVimCursor) - 1)
+  local y=$(awk '{print $2}' $tmpVimCursor)
+  local strlen=0
+  if [ $y -gt 1 ];then
+    strlen=$(head -n $(expr $y - 1) $tmpfile | wc -m | tr -d ' ')
+  fi
+  CURSOR=$(expr $x + $strlen)
+
   rm $tmpfile
+  rm $tmpVimCursor
   zle reset-prompt
 }
 zle -N edit_current_line
