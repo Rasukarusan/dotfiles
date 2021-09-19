@@ -283,11 +283,6 @@ nmap <silent> <Esc><Esc> :nohlsearch<CR>
 nnoremap <S-y> y$
 " syで単語コピー
 nnoremap sy byw
-" インデントショートカット
-nnoremap th <<
-nnoremap tl >>
-vnoremap th <
-vnoremap tl >
 " source ~/.vimrcを簡略化
 nnoremap rr :source ~/.config/nvim/init.vim<CR>
 " ファイル再読み込み
@@ -325,11 +320,6 @@ nnoremap Mf ^i- [<ESC>A]<ESC>Js(<ESC>A)<ESC>^
 nnoremap <S-x> :tabe #<CR>
 " 検索時のfoo/hogeなどの/を自動でエスケープして挿入する
 cnoremap <expr> / (getcmdtype() == '/') ? '\/' : '/'
-" ペースト時にインデントを合わせる
-" nnoremap p ]p
-" nnoremap P ]P
-" nnoremap ]p p
-" nnoremap ]P P
 "pで貼り付けたテキストの選択
 nnoremap <expr> gp '`[' . strpart(getregtype(), 0, 1) . '`]'
 " ctrl-pでコマンド履歴を入力中の文字で遡る
