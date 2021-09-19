@@ -263,6 +263,7 @@ command! Memo :tabe ~/memo.md
 
 " =============================================
 " Exコマンドの結果を別タブで開いて表示
+" nmapやmessageなどを出力するときに便利
 " =============================================
 function! s:show_ex_result(cmd)
   redir => message
@@ -274,6 +275,7 @@ function! s:show_ex_result(cmd)
     tabnew
     setlocal buftype=nofile bufhidden=wipe noswapfile nobuflisted nomodified
     silent put=message
+    normal gg
   endif
 endfunction
 command! -nargs=+ -complete=command ShowExResult call s:show_ex_result(<q-args>)
@@ -330,7 +332,7 @@ function! s:get_last_message() abort
   end
   return lines[len(lines) - 1 :][0]
 endfunction
-command! MessageLast call s:get_last_message()
+command! MessageLast echo s:get_last_message()
 
 " Rasukarusan/popup_message.nvimの関数
 nnoremap <silent> MM :call popup_message#open(<SID>get_last_message())<CR>
