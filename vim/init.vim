@@ -265,6 +265,7 @@ nnoremap ri( "_di(P
 nnoremap ri[ "_di[P
 nnoremap ri] "_di]P
 nnoremap rit "_ditP
+nnoremap riw "_diwP
 " Exモードの際単語移動をVimライクにする
 cnoremap <C-h> <Left>
 cnoremap <C-l> <Right>
