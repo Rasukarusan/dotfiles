@@ -39,6 +39,7 @@ export FZF_DEFAULT_OPTS='
 export MY_TARGET_GIT_DIR=(
   ~/dotfiles
   ~/scripts
+  ~/Documents/github/*
 )
 # ggrepをgrepにするため
 export PATH="/usr/local/opt/grep/libexec/gnubin:$PATH"
