@@ -226,9 +226,11 @@ inoremap <C-h> <Left>
 inoremap <C-l> <Right>
 nnoremap H 10h
 nnoremap L 10l
-nnoremap sa ^
+" nnoremap sa ^
+nnoremap 0 ^
 nnoremap se $
-vnoremap sa ^
+" vnoremap sa ^
+vnoremap 0 ^
 vnoremap se $
 nnoremap sl <C-w>l
 nnoremap sh <C-w>h
