@@ -267,3 +267,24 @@ hook_add = 'source ~/.config/nvim/plugin_settings/silicon.vim'
 repo = 'nvim-treesitter/nvim-treesitter'
 hook_post_update = 'TSUpdate'
 hook_source = 'source ~/.config/nvim/plugin_settings/tree-sitter.vim'
+
+# --------------------------------------------
+# vim-sandwich
+# --------------------------------------------
+[[plugins]]
+repo = 'machakann/vim-sandwich'
+# hook_add = 'source ~/.config/nvim/plugin_settings/sandwich.vim'
+
+# --------------------------------------------
+# fern - ファイルツリー
+# --------------------------------------------
+[[plugins]]
+repo = 'lambdalisue/fern.vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/fern.vim'
+
+# --------------------------------------------
+# fern preview
+# --------------------------------------------
+[[plugins]]
+repo = 'yuki-yano/fern-preview.vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/fern-preview.vim'
