@@ -1362,18 +1362,18 @@ EOS
 # Dock非表示、Desktopアイコン非表示、itermの大きさ変更
 alias goyo='_goyo'
 _goyo() {
-  . ~/documents/github/mac-scripts/desktop_background "/System/Library/Desktop Pictures/Solid Colors/Black.png"
-  . ~/documents/github/mac-scripts/menu_bar 0
-  . ~/Documents/github/mac-scripts/dock
-  . ~/Documents/github/mac-scripts/desktop_icon 0
+  . ~/Documents/github/macos-scripts/desktop_background "/System/Library/Desktop Pictures/Solid Colors/Black.png"
+  . ~/Documents/github/macos-scripts/menu_bar 0
+  . ~/Documents/github/macos-scripts/dock
+  . ~/Documents/github/macos-scripts/desktop_icon 0
   sh ~/Documents/github/iterm-scripts/iterm.sh window large
 }
 
 alias goyo!='_goyo!'
 _goyo!() {
-  . ~/Documents/github/mac-scripts/menu_bar 1
-  . ~/Documents/github/mac-scripts/dock
-  . ~/Documents/github/mac-scripts/desktop_icon 1
+  . ~/Documents/github/macos-scripts/menu_bar 1
+  . ~/Documents/github/macos-scripts/dock
+  . ~/Documents/github/macos-scripts/desktop_icon 1
 }
 
 # ブログ用のkeynoteファイルを開く
