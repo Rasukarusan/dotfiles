@@ -9,8 +9,13 @@ let g:ale_fixers = {
 \   'markdown': ['textlint'],
 \}
 let g:ale_fix_on_save = 1
+
 " vimrcを再読込みしないとfixersが未定義になってしまうため、autocmdで設定した
 autocmd VimEnter,SourcePost * :let b:ale_fixers = ['prettier', 'eslint']
+
+let g:ale_pattern_options = {
+\   '.*\.html$': {'ale_fix_on_save': 0},
+\}
 
 " エラー箇所に飛ぶ
 nmap <silent> <C-a><C-n> <Plug>(ale_next_wrap)
