@@ -717,7 +717,7 @@ _edit_vim_files() {
 # zshrc関連ファイルをfzfで選択しvimで開く
 alias zshrc='_edit_zsh_files'
 _edit_zsh_files() {
-  local zshFiles=$(find ~/dotfiles/zsh -type f)
+  local zshFiles=$(find ~/dotfiles/zsh -type f && echo ~/.zshrc.local)
   # 文字数でソートする
   local editFiles=($(echo "$zshFiles" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf-tmux -p80% --preview "bat --color always {}"))
   test -z "$editFiles" && return
