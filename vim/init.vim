@@ -227,9 +227,9 @@ inoremap <C-l> <Right>
 nnoremap H 10h
 nnoremap L 10l
 nnoremap fa ^
-nnoremap se $
+nnoremap fe $
 vnoremap fa ^
-vnoremap se $
+vnoremap fe $
 nnoremap sl <C-w>l
 nnoremap sh <C-w>h
 nnoremap sj <C-w>j
