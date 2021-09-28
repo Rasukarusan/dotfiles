@@ -5,16 +5,6 @@
 repo = 'Shougo/dein.vim'
 
 # --------------------------------------------
-# ディレクトリをTreeで表示
-# --------------------------------------------
-[[plugins]]
-repo = 'scrooloose/nerdtree'
-hook_add = 'source ~/.config/nvim/plugin_settings/nerdtree.vim'
-# [[plugins]]
-# repo = 'jistr/vim-nerdtree-tabs'
-# hook_add = 'source ~/.config/nvim/plugin_settings/nerdtree-tabs.vim'
-
-# --------------------------------------------
 # fzf-vim
 # --------------------------------------------
 [[plugins]]
