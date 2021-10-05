@@ -15,3 +15,4 @@ packages:
   - name: ngrok
   - name: java11
   - name: couleurs
+  - name: keycastr
