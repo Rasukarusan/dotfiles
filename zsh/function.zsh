@@ -480,9 +480,9 @@ _docker_commands() {
       done
       ;;
     'rm' )
-      containers=($(docker ps -a --format "{{.Names}}\t{{.ID}}\t{{.RunningFor}}\t{{.Status}}" \
+      containers=($(docker ps -a --format "{{.Names}}\t{{.ID}}\t{{.RunningFor}}\t{{.Status}}\t{{.Networks}}" \
         | column -t -s "`printf '\t'`" \
-        | fzf-tmux -p80% --header "$(echo 'NAME\tCONTAINER_ID\tCREATED\tSTATUS' | column -t)" \
+        | fzf-tmux -p80% --header "$(echo 'NAME\tCONTAINER_ID\tCREATED\tSTATUS\tNETWORK' | column -t)" \
         | awk '{print $2}' \
       ))
       for container in ${containers[@]}; do
