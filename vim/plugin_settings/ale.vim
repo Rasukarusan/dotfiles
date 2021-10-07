@@ -1,8 +1,7 @@
-" Warningが表示されなくなってしまうのでコメントアウト
-" if executable('eslint_d')
-"   let g:ale_javascript_eslint_use_global = 1
-"   let g:ale_javascript_eslint_executable = 'eslint_d'
-" endif
+if executable('eslint_d')
+  let g:ale_javascript_eslint_use_global = 1
+  let g:ale_javascript_eslint_executable = 'eslint_d'
+endif
 let g:ale_fixers = {
 \   '*': ['remove_trailing_lines', 'trim_whitespace'],
 \   'javascript': ['eslint'],
@@ -25,5 +24,5 @@ let g:ale_virtualtext_prefix = ' --> '
 
 let g:ale_set_highlights = 0
 " @See https://github.com/dense-analysis/ale/issues/249
-autocmd VimEnter,SourcePost * :highlight! ALEError guifg=#C30500 guibg=#151515
-autocmd VimEnter,SourcePost * :highlight! ALEWarning  guifg=#ffd300 guibg=#333333
+" autocmd VimEnter,SourcePost * :highlight! ALEError guifg=#C30500 guibg=#151515
+" autocmd VimEnter,SourcePost * :highlight! ALEWarning  guifg=#ffd300 guibg=#333333
