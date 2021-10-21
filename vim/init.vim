@@ -217,6 +217,8 @@ set belloff=all
 set backupskip=/tmp/*,/private/tmp/*
 " 行末の1文字先までカーソル移動を可
 set virtualedit=onemore
+" コメント文中の改行でコメントを継続しない
+" set formatoptions-=ro
 
 " ===============キーマップ関連===================== "
 " 入力モードでのカーソル移動
@@ -243,6 +245,8 @@ onoremap k gk
 xnoremap k gk
 nnoremap <down> gj
 nnoremap <up> gk
+nnoremap <C-j> 5j
+nnoremap <C-k> 5k
 " jjでエスケープ
 inoremap <silent> jj <ESC>
 " 日本語入力で”っj”と入力してもEnterキーで確定させればインサートモードを抜ける
