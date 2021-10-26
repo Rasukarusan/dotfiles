@@ -108,3 +108,8 @@ alias man='env LANG=C man'
 # terminal上からGoogle検索
 alias goo='search_by_google'
 alias pj='pbpaste | jq'
+alias ch='chrome_history'
+alias gg='github'
+alias cw='chatwork'
+alias sqq='sequel_ace'
+alias itt='sh ~/Documents/github/iterm-scripts/iterm.sh'

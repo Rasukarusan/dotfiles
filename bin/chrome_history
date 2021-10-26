@@ -1,0 +1,91 @@
+#!/bin/sh
+
+#
+# Chromeの閲覧履歴をfzfで絞り込んで選択したURLをChromeで開くスクリプト
+#
+# [使い方]
+# ▶sh chromeHistory.sh [PATTERN]
+# 第一引数にgrepしたい単語を入力することが可能。grep時はURL、タイトル、日付込の出力からgrepする。
+#
+# 例：Redmineの閲覧履歴だけ抽出したい場合
+# ▶sh chromeHistory.sh neprj
+#
+# [実行結果] (fzfで絞り込む画面)
+#   個人裁量作業 #45062: 検索対象を指定時に入力要素にフォーカスを当てる - @メイン機能 - Hameeプロジェクト管理	2018-09-15 08:39:44
+#   個人裁量作業 #43947: 画面 - @メイン機能 - Hameeプロジェクト管理	2018-09-15 08:27:25
+#   Hameeプロジェクト管理	2018-09-15 07:49:20
+#
+# [注意点]
+# csvをエクスポートされるのは一度ページを開いて閉じたもののみになります。
+# 今すぐ特定のページをcsvでエクスポートしたい場合、タブで開く→タブ閉じる→シェル実行 ならばエクスポートされます。
+#
+# [思想]
+# sqliteで絞れるところは絞る。絞りきれなかった部分をshellコマンドで整形する。
+#
+
+function export_chrome_history() {
+    # Chromeを開いているとdbがロック状態で参照できないので、コピーしたものを参照する
+    cp ~/Library/Application\ Support/Google/Chrome/Default/History ~/
+    local SQL="
+    SELECT
+        url,
+        title,
+        DATETIME(last_visit_time / 1000000 + (strftime('%s', '1601-01-01') ), 'unixepoch', '+9 hours') AS date
+    FROM
+        urls
+    GROUP BY
+        title
+    ORDER BY
+        date DESC
+    LIMIT
+        10000 ;
+    "
+    sqlite3 ~/History -cmd '.mode tabs' "$SQL"
+}
+
+function show_chrome_history() {
+    local filter=${1:-""}
+    local chrome_history=$(export_chrome_history)
+    local selected=$(
+        echo "\texport\n$chrome_history" \
+        | grep -P "(\texport|$filter)" \
+        | awk '!title[$2]++' \
+        | fzf-tmux -p80% --delimiter $'\t' --with-nth 2,3 --preview 'echo {1}' --preview-window up:1\
+        | tr -d '\n'
+    )
+    # | fzf --delimiter $'\t' --with-nth 2,3 --preview 'w3m -dump {1}'\
+
+    [ -z "$selected" ] && return
+    # 'export'を選択した場合、全て出力する
+    if [ "$(/bin/echo -n "$selected" | tr -d '\t')" = 'export' ]; then
+        echo "$chrome_history" | grep "$filter" | awk -F '\t' '{print $3"\t"$2}'
+        return
+    fi
+    open $(echo $selected | awk '{print $1}')
+}
+
+function show_by_date() {
+    local chrome_history=$(export_chrome_history)
+    # 表示したい日付を選択する
+    local select_date=$(
+        echo "$chrome_history" \
+        | awk -F '\t' '{print $3}' \
+        | awk -F ' ' '{print $1}' \
+        | grep -P '^[0-9]{4}-.*' \
+        | sort -ur \
+        | xargs -I {} gdate '+%Y-%m-%d (%a)' -d {} \
+        | fzf-tmux -p80%
+    )
+    [ -z "$select_date" ] && return
+    show_chrome_history $select_date
+}
+
+function main() {
+    if [ "$1" = '-d' ]; then
+        show_by_date
+    else
+        show_chrome_history $1
+    fi
+}
+
+main $1
