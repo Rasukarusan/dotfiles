@@ -1,0 +1,151 @@
+#!/bin/sh
+TOKEN=$(cat ~/account.json | jq -r '.github.api_key')
+BASEURL=https://api.github.com
+USERNAME=$(cat ~/account.json | jq -r '.github.user_id')
+CACHE_PATH=~/cache_github_repositories.txt
+
+TMP_INPUT_FILE=~/tmp_input_file
+
+printYellow() {
+    printf "\e[33m$1\e[m\n"
+}
+
+openGithub() {
+    open https://github.com/$USERNAME
+}
+
+openGist() {
+  open https://gist.github.com/$USERNAME
+}
+
+_getRepos() {
+    # Githubは1ページ100件まで取得可能
+    # 100件以上は?page=2のように指定して取得していく
+    local last=$(curl -sI -H "Authorization: token ${TOKEN}" "${BASEURL}/user/repos?per_page=100&page=1" \
+      | tr "," "\n" \
+      | grep 'last' \
+      | grep -oP "(?<=&page\=).*(?=\>)"
+    )
+    for page in $(seq 1 $last); do
+        curl -s -H "Authorization: token ${TOKEN}" "${BASEURL}/user/repos?per_page=100&page=${page}" \
+          | jq -r '.[]
+          | select(.owner.login == "'${USERNAME}'")
+          | select(.private == true or .private == false)
+          | .name
+          '
+    done
+}
+
+_repositories() {
+    if [ ! -e $CACHE_PATH ];then
+        _getRepos > $CACHE_PATH
+    fi
+    cat $CACHE_PATH
+}
+
+cacheUpdate() {
+    _getRepos > $CACHE_PATH
+}
+
+openRepo() {
+    targetRepo=$( _repositories | fzf)
+    test -z "$targetRepo" && return
+    open https://github.com/$USERNAME/$targetRepo
+}
+
+createRepo() {
+    /bin/echo -n 'リポジトリ名を入力 > '
+    read repo_name
+    test -z $repo_name && return
+
+    /bin/echo -n 'プライベートリポジトリにする(y/N) > '
+    read is_private
+    case "${is_private}" in
+        y|Y|yes)
+            private=true
+            ;;
+        *)
+            private=false
+    esac
+
+    local result=$(curl -s -X POST -H "Authorization: token ${TOKEN}" \
+                    ${BASEURL}/user/repos \
+                    -d '{"name":"'${repo_name}'","private":'${private}'}'
+                  )
+    if [ $(echo "${result}" | jq -r '.ssh_url') = 'null' ];then
+        echo "${result}" | jq 
+    else 
+        local url=$(echo "${result}" | jq -r '.ssh_url')
+        echo ''
+        echo "git remote add origin $url" | tr -d "\n" | pbcopy
+        printf "\e[92m\e[1m`pbpaste`\e[m\n" 
+        echo 'copied!'
+    fi
+}
+
+deleteRepo() {
+    local repo_names=$( _repositories | fzf)
+    test -z "$repo_names" && return
+    for repo_name in ${repo_names[@]};do 
+        /bin/echo -n "${repo_name} を本当に削除しますか(y/N) > " 
+        read is_ok
+        case "${is_ok}" in
+            y|Y|yes)
+                ok=true
+                ;;
+            *)
+                ok=false
+        esac
+        test ${ok} = 'false' && return
+        curl -X DELETE -H "Authorization: token ${TOKEN}" ${BASEURL}/repos/${USERNAME}/${repo_name}
+        echo "${repo_name} is deleted"
+    done
+}
+
+cloneRepo() {
+    local repo_names=$( _repositories | fzf)
+    test -z "$repo_names" && return
+    for repo_name in ${repo_names[@]};do 
+        printYellow $repo_name
+        git clone git@github.com:${USERNAME}/${repo_name}.git $1
+    done
+}
+
+createGist() {
+  /bin/echo -n 'ファイル名を入力'
+  read fileName
+  test -z $fileName && return
+
+  /bin/echo -n '説明を入力 > '
+  read description
+  test -z $description && return
+
+  nvim $TMP_INPUT_FILE
+  [ ! -e $TMP_INPUT_FILE ] && return
+  local content=$(cat $TMP_INPUT_FILE | jq -aRsr)
+  rm $TMP_INPUT_FILE
+
+  curl -s -X POST -H "Authorization: token ${TOKEN}" ${BASEURL}/gists \
+  -d "{\"public\": false, \"description\": \"$description\", \"files\":{\"$fileName\": {\"content\": $content }}}" \
+  | jq
+}
+
+
+function main() {
+    local actions=(
+        'GitHubを開く(openGithub)'
+        'Gistを開く(openGist)'
+        'Gistを作成(createGist)'
+        'リポジトリを開く(openRepo)'
+        'リポジトリ作成(createRepo)'
+        'リポジトリ削除(deleteRepo)'
+        'リポジトリをclone(cloneRepo)'
+        'キャッシュ更新(cacheUpdate)'
+    )
+
+    local action=$(echo "${actions[@]}" | tr ' ' '\n' | awk -F ':' '{print $1}' | fzf)
+    test -z "$action" && return
+    eval $(echo $action | grep -oP "(?<=\().*(?=\))") $@
+}
+
+main $@

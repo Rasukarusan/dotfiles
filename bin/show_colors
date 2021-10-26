@@ -1,0 +1,69 @@
+#!/bin/sh
+
+colors=(
+    red 
+    green 
+    yellow 
+    blue 
+    magenta 
+    cyan 
+    gray
+)
+
+function selectColor() {
+    local color=`echo ${colors[@]} | tr " " "\n"  | fzf`
+
+    if [ "$color" = "" ]; then 
+        exit
+    fi
+
+    case "${color}" in
+        red)
+            color_no=31
+            ;;
+        green)
+            color_no=32
+            ;;
+        yellow)
+            color_no=33
+            ;;
+        blue)
+            color_no=34
+            ;;
+        magenta)
+            color_no=35
+            ;;
+        cyan)
+            color_no=36
+            ;;
+        gray)
+            color_no=37
+            ;;
+        *)
+            echo "${name} Didn't match anything"
+    esac
+
+    echo "printf \"\e[${color_no}m\$1\e[m\""
+    echo "printf \"\e[${color_no};1m\$1\e[m\""
+    printf "\e[${color_no}mThis is test string.\e[m\n"
+    printf "\e[${color_no};1mThis is test string.\e[m\n\n"
+}
+
+function main() {
+    if [ "$1" = "-s" ]; then 
+        selectColor
+    else
+        local color_no=31
+        for color in ${colors[@]}; do
+            echo "[$color]"
+            echo "printf \"\e[${color_no}m\$1\e[m\""
+            echo "printf \"\e[${color_no};1m\$1\e[m\""
+            printf "\e[${color_no}mThis is test string.\e[m\n"
+            printf "\e[${color_no};1mThis is test string.\e[m\n\n"
+            color_no=`expr $color_no + 1`
+        done
+        exit
+    fi
+}
+
+main $1
