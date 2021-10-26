@@ -1,0 +1,54 @@
+#!/bin/sh
+API_TOKEN=`cat ~/account.json | jq -r '.chatwork.api_key'` 
+ROOM_ID_MY_CHAT=`cat ~/account.json | jq -r '.chatwork.room_id'`
+SHEET_ID=`cat ~/account.json | jq -r '.chatwork.sheet_id'`
+BASE_URL=https://api.chatwork.com/v2
+VIM() {
+  if type nvim >/dev/null 2>&1; then
+    nvim "$@"
+  else
+    vim "$@"
+  fi
+}
+
+# マイチャットにメッセージを投稿する
+function postMyChat() {
+    local tmpInputFile=~/tmp_input_file
+    local actions=(
+        'やりたいこと'
+        '通常入力'
+        'Chatworkを開く'
+        'シートを開く'
+    )
+    local action=$(echo "${actions[@]}" | tr ' ' '\n' | fzf)
+    test -z "$action" && return
+
+    case "$action" in
+      'やりたいこと' )
+        VIM $tmpInputFile -c ":1s/^/【やりたいこと】/ | nohlsearch"
+        ;;
+      'Chatworkを開く' )
+        open "https://www.chatwork.com/#!rid${ROOM_ID_MY_CHAT}"
+        return
+        ;;
+      'シートを開く' )
+        open "https://docs.google.com/spreadsheets/d/${SHEET_ID}"
+        return
+        ;;
+      * )
+        VIM $tmpInputFile
+        ;;
+
+    esac
+
+    [ ! -e $tmpInputFile ] && return
+
+    local body=$(cat $tmpInputFile)
+
+    rm $tmpInputFile
+    echo "$body"
+
+    curl -s -X POST -H "X-ChatWorkToken: $API_TOKEN" -d "body=$body" "${BASE_URL}/rooms/${ROOM_ID_MY_CHAT}/messages" | jq
+}
+
+postMyChat
