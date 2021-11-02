@@ -5,13 +5,13 @@ alias dot='cd ~/dotfiles'
 alias vim='~/neovim/nvim/bin/nvim'
 alias nvim='~/neovim/nvim/bin/nvim'
 alias vi='~/neovim/nvim/bin/nvim'
-alias ls='gls -G'
+alias ls='ls -G'
 alias l='ls -1'
 alias la='ls -laG'
 alias laa='ls -ld .*'
 alias ll='ls -lG'
 alias lh='ls -lh'
-alias lt='ls --full-time --time-style="+%Y-%m-%d %H:%M:%S" | grep `date "+%F"`'
+alias lt='gls --full-time --time-style="+%Y-%m-%d %H:%M:%S" | grep `date "+%F"`'
 alias grep='grep --color=auto'
 alias ...='cd ../../'
 alias ....='cd ../../../'
@@ -72,7 +72,6 @@ alias pst='pstree | less -S'
 alias oo='open .'
 alias of='ls -1F | grep -v "/" | fzf --preview "bat --color=always {}" | xargs open'
 alias hosts='sudo vim /etc/hosts'
-alias chen='afplay ~/Music/iTunes/iTunes\ Media/Music/Unknown\ Artist/Unknown\ Album/jacky_chen.mp3'
 alias mailque='postqueue -p'
 alias maildel='sudo postsuper -d ALL deferred'
 alias today="date '+%Y/%m/%d(%a)'"
@@ -92,12 +91,6 @@ alias wifiConnect='networksetup -setairportpower en0 off && networksetup -setair
 # printfの色出力を一覧表示
 alias printColors='for fore in `seq 30 37`; do printf "\e[${fore}m \\\e[${fore}m \e[m\n"; for mode in 1 4 5; do printf "\e[${fore};${mode}m \\\e[${fore};${mode}m \e[m"; for back in `seq 40 47`; do printf "\e[${fore};${back};${mode}m \\\e[${fore};${back};${mode}m \e[m"; done; echo; done; echo; done; printf " \\\e[m\n"'
 alias sshadd='ssh-add ~/.ssh/id_rsa'
-# FortClientはMacの上部バーから終了する際、一々パスワードを求めてくるのでkillが楽
-alias fortKill="ps aux | grep 'Fort' | awk '{print \$2}' | xargs kill"
-# metabase起動。起動後しばらくしたらhttp://localhost:3300でアクセスできる
-alias metabase-run='docker run -d -p 3300:3000 -v /tmp:/tmp -e "MB_DB_FILE=/tmp/metabase.db" --name metabase metabase/metabase'
-# Redemineのテンプレート文言をvimで開く
-alias redmine_template='vim $(mktemp XXXXXXXXXX) -c ":read! cat ~/redmine_template.txt"'
 alias ts='ts-node'
 alias bll='bluetooth-fzf'
 alias fa='find ./ -name'
