@@ -446,6 +446,7 @@ _docker_commands() {
 		docker-compose up --build
 		docker-compose up -d
 		docker-compose up --build -d
+		docker-compose up --build -d <service>
 		docker-compose --compatibility up -d
 		docker-compose up --force-recreate
 		docker-compose stop
@@ -477,7 +478,10 @@ _docker_commands() {
       [ "${#containers[@]}" -eq 0 ] && return
       for container in ${containers[@]}; do
         execCommand="docker stop $container"
+        printf "\e[33m${execCommand}\e[m\n" && eval $execCommand
+        print -s "$execCommand"
       done
+      return
       ;;
     'rm' )
       containers=($(docker ps -a --format "{{.Names}}\t{{.ID}}\t{{.RunningFor}}\t{{.Status}}\t{{.Networks}}" \
@@ -487,7 +491,10 @@ _docker_commands() {
       ))
       for container in ${containers[@]}; do
         execCommand="docker rm $container"
+        printf "\e[33m${execCommand}\e[m\n" && eval $execCommand
+        print -s "$execCommand"
       done
+      return
       ;;
     'rmi' )
       images=($(docker images | tail -n +2 \
@@ -496,7 +503,10 @@ _docker_commands() {
       ))
       for image in ${images[@]}; do
         execCommand="docker rmi -f $image"
+        printf "\e[33m${execCommand}\e[m\n" && eval $execCommand
+        print -s "$execCommand"
       done
+      return
       ;;
     'cp' )
       local targetFiles=($(find . -maxdepth 1 \
@@ -517,6 +527,13 @@ _docker_commands() {
           print -s "$execCommand"
         done
       done
+      ;;
+    'docker-compose up --build -d <service>' )
+      local service=$(cat docker-compose.yml | yq --yaml-roundtrip ".services|keys" | sed 's/^- //g' | fzf)
+      test -z "$service" && return
+      execCommand="docker-compose up --build -d $service"
+      printf "\e[33m${execCommand}\e[m\n"
+      print -s "$execCommand"
       ;;
     *) 
       local strLength=$(expr ${#selectCommand} + 4)
