@@ -61,3 +61,4 @@ packages:
   - name: git-ftp
   - name: silicon
   - name: git-delta
+  - name: python-yq
