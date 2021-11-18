@@ -43,7 +43,7 @@ function export_chrome_history() {
     sqlite3 ~/History -cmd '.mode tabs' "$SQL"
 }
 
-function show_chrome_history() {
+function show() {
     local filter=${1:-""}
     local chrome_history=$(export_chrome_history)
     local selected=$(
@@ -77,15 +77,18 @@ function show_by_date() {
         | fzf-tmux -p80%
     )
     [ -z "$select_date" ] && return
-    show_chrome_history $select_date
+    show $select_date
 }
 
 function main() {
-    if [ "$1" = '-d' ]; then
-        show_by_date
-    else
-        show_chrome_history $1
+    if [ "$1" = '-d' ]; then # 日付ごと
+      show_by_date
+    elif [ "$1" = '-a' ]; then # 全日付
+      show
+    elif [ -z "$1" ]; then # 本日
+      show $(gdate '+%Y-%m-%d')
+    else 
+      show "$1"
     fi
 }
-
 main $1
