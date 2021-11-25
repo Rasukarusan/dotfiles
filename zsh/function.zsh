@@ -2,7 +2,6 @@
 #           Functions           #
 # ==============================#
 #
-alias vim='nvim'
 # fgを使わずctrl+zで行ったり来たりする
 fancy-ctrl-z () {
   if [[ $#BUFFER -eq 0 ]]; then
