@@ -112,9 +112,9 @@ build =  'cd app & yarn install'
 # --------------------------------------------
 # PHPコードチェック、未使用変数のハイライト
 # --------------------------------------------
-[[plugins]]
-repo = 'flyinshadow/php_localvarcheck.vim'
-hook_add = 'source ~/.config/nvim/plugin_settings/php_localvarcheck.vim'
+# [[plugins]]
+# repo = 'flyinshadow/php_localvarcheck.vim'
+# hook_add = 'source ~/.config/nvim/plugin_settings/php_localvarcheck.vim'
 
 # --------------------------------------------
 # JavaScript整形
@@ -143,9 +143,9 @@ hook_add = 'source ~/.config/nvim/plugin_settings/coc.vim'
 # Snipetsを使うためのプラグイン
 # 独自のsnippetsファイルはvim-snippetsではなくここで記述する
 # --------------------------------------------
-[[plugins]]
-repo = 'SirVer/ultisnips'
-hook_add = 'source ~/.config/nvim/plugin_settings/ultisnips.vim'
+# [[plugins]]
+# repo = 'SirVer/ultisnips'
+# hook_add = 'source ~/.config/nvim/plugin_settings/ultisnips.vim'
 
 # --------------------------------------------
 # vim-snippets - Snipets定義ファイル
@@ -272,3 +272,9 @@ hook_add = 'source ~/.config/nvim/plugin_settings/fern.vim'
 [[plugins]]
 repo = 'yuki-yano/fern-preview.vim'
 hook_add = 'source ~/.config/nvim/plugin_settings/fern-preview.vim'
+
+# --------------------------------------------
+# vim-swap
+# --------------------------------------------
+[[plugins]]
+repo = 'machakann/vim-swap'
