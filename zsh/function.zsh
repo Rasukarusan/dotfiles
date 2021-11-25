@@ -1474,5 +1474,6 @@ alias neovim_update='_neovim_nightly_update'
 function _neovim_nightly_update() {
   cd ~/neovim
   git fetch --tags -f
+  git checkout nightly
   sudo make CMAKE_INSTALL_PREFIX=$HOME/neovim/nvim install
 }
