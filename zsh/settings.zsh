@@ -74,7 +74,7 @@ edit_current_line() {
   # terminalでのカーソル位置をvimに反映
   local currentCursorLine=$(echo $LBUFFER | wc -l | tr -d ' ')
   local currentCursorCol=$(echo $LBUFFER | sed -n ${currentCursorLine}p | wc -m | tr -d ' ')
-  vim $tmpfile \
+  nvim $tmpfile \
     -c "call cursor($currentCursorLine, $currentCursorCol)" \
     -c 'set filetype=zsh' \
     -c 'autocmd BufWritePost * :execute ":r! echo " . col(".") . "\t" . line(".") . "  > '${tmpVimCursor}'"'
