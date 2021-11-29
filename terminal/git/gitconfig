@@ -5,10 +5,9 @@
 	excludesfile = ~/.gitignore_global
 	quotepath = false
 	editor = nvim
+	hooksPath = ~/dotfiles/terminal/git/hooks
 	# pager = diff-so-fancy | less --tabs=4 -F -S -R -M -i
         # pager = delta --diff-so-fancy --line-numbers 
-[init]
-	templatedir = ~/.git_template
 [color]
 	ui = true
 [color "diff-highlight"]

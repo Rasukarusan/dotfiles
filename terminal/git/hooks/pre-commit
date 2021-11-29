@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 words=(
-    'console.log'
-    'var_dump'
+    console.log
+    var_dump
+    outer_log
 )
 files=($(git diff --cached --name-only HEAD))
 error=0
