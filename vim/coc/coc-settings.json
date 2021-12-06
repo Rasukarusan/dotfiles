@@ -1,28 +1,30 @@
 {
-    "diagnostic.enable": false,
-    "coc.preferences.jumpCommand": "tabe",
-    "list.autoResize":false,
-    "list.normalMappings": {
-        "<C-t>": "action:tabe",
-        "<C-c>": "do:exit"
+  "diagnostic.enable": false,
+  "coc.preferences.jumpCommand": "tabe",
+  "list.autoResize": false,
+  "list.normalMappings": {
+    "<C-t>": "action:tabe",
+    "<C-c>": "do:exit"
+  },
+  "list.insertMappings": {
+    "<C-c>": "do:exit"
+  },
+  "languageserver": {
+    "dockerfile": {
+      "command": "docker-langserver",
+      "filetypes": ["dockerfile"],
+      "args": ["--stdio"]
     },
-    "list.insertMappings": {
-        "<C-c>": "do:exit"
+    "swift": {
+      "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp",
+      "filetypes": ["swift"]
     },
-    "languageserver": {
-        "dockerfile": {
-            "command": "docker-langserver",
-            "filetypes": ["dockerfile"],
-            "args": ["--stdio"]
-        },
-        "swift": {
-          "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp",
-          "filetypes": ["swift"]
-        },
-        "golang": {
-          "command": "gopls",
-          "rootPatterns": ["go.mod", ".vim/", ".git/", ".hg/"],
-          "filetypes": ["go"]
-        }
+    "golang": {
+      "command": "gopls",
+      "rootPatterns": ["go.mod", ".vim/", ".git/", ".hg/"],
+      "filetypes": ["go"]
     }
+  },
+  "tailwindCSS.headwind.runOnSave": false,
+  "tailwindCSS.htmlLanguages": ["typescriptreact"]
 }
