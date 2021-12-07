@@ -33,6 +33,7 @@ alias clear='stty sane;clear'
 alias gd='git diff -b'
 alias gdc='git diff -b --cached'
 alias gpl='git pull --rebase origin $(git branch | grep "*" | sed -e "s/^\*\s*//g")'
+alias gcf='git clean -df'
 alias repoo='vim `ls ~/Documents/github/develop_tools/DayReport/*.md | fzf`'
 alias co='git checkout $(git branch -a | tr -d " " |fzf-tmux -p80% --prompt "CHECKOUT BRANCH>" --preview "git log --color=always {}" | head -n 1 | sed -e "s/^\*\s*//g" | perl -pe "s/remotes\/origin\///g")'
 alias co-='git checkout -'
@@ -80,8 +81,8 @@ alias wcc='pbpaste | grep -c ^'
 # vimをvimrcなし, プラグインなしで起動する
 # NONEにvimrcのPATHを入れれば読み込むことができる
 alias vimn='vim -u NONE -N'
-alias pbp='pbpaste'
-alias pbc='pbcopy'
+alias pp='pbpaste'
+alias pc='pbcopy'
 # グローバルIPを確認
 alias myip='curl ifconfig.io'
 alias xcode-restore='update_xcode_plugins --restore'
