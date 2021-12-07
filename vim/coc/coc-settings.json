@@ -26,5 +26,9 @@
     }
   },
   "tailwindCSS.headwind.runOnSave": false,
-  "tailwindCSS.htmlLanguages": ["typescriptreact"]
+  "tailwindCSS.htmlLanguages": ["typescriptreact"],
+  "snippets.extends": {
+    "typescriptreact": ["typescript"]
+  },
+  "snippets.userSnippetsDirectory": "~/dotfiles/vim/UltiSnips"
 }

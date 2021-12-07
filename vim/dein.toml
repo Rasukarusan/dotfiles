@@ -139,15 +139,6 @@ rev = 'release'
 hook_add = 'source ~/.config/nvim/plugin_settings/coc.vim'
 
 # --------------------------------------------
-# ultisnips - Snipets
-# Snipetsを使うためのプラグイン
-# 独自のsnippetsファイルはvim-snippetsではなくここで記述する
-# --------------------------------------------
-# [[plugins]]
-# repo = 'SirVer/ultisnips'
-# hook_add = 'source ~/.config/nvim/plugin_settings/ultisnips.vim'
-
-# --------------------------------------------
 # vim-snippets - Snipets定義ファイル
 # 様々なsnippetsファイルが用意されているプラグイン
 # ~/.config/nvim/dein/repos/github.com/honza/vim-snippets/で参照可能

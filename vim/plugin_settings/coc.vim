@@ -33,7 +33,6 @@ let g:coc_global_extensions = [
   \, 'coc-phpls'
   \, 'coc-snippets'
   \, 'coc-tsserver'
-  \, 'coc-ultisnips'
   \, 'coc-word'
   \, 'coc-tailwindcss'
 \]
