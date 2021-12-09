@@ -1,6 +1,8 @@
 jiraNo=$(git branch --show-current | grep -oP '[0-9]*')
 firstLine=$(head -n1 $1)  # git commit --amendとの区別のために最初の一行を取得
 
+test -z "$jiraNo" && reeturn
+
 if [ -z "$firstLine" ] ;then  # 一行目が空行であれば（--amendでなければ）以下を実行
   gsed -i "1s/^/${jiraNo} /" $1
 fi
