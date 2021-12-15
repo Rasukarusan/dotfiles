@@ -1476,3 +1476,9 @@ function _neovim_nightly_update() {
   git checkout nightly
   sudo make CMAKE_INSTALL_PREFIX=$HOME/neovim/nvim install
 }
+
+# 本日変更があったファイルのみをls
+alias lt=_ls_today
+function _ls_today() {
+  gls --full-time --time-style="+%Y-%m-%d %H:%M:%S" $1 | grep `date "+%F"`
+}
