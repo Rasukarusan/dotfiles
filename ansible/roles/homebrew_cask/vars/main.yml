@@ -16,3 +16,4 @@ packages:
   - name: java11
   - name: couleurs
   - name: keycastr
+  - name: another-redis-desktop-manager
