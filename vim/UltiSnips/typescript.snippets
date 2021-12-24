@@ -35,10 +35,9 @@ const useStyles = makeStyles({
 })
 endsnippet
 
-snippet cons "const Hoge = () => { return (<div>hoge</div>) }" b
-const $1 = () => {
+snippet cons "export const Hoge: React.FC = () => { return () }" b
+export const $1: React.FC = () => {
 	return (
-		<div>hoge</div>
 	)
 }
 endsnippet
