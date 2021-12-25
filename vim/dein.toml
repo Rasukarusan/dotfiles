@@ -72,6 +72,7 @@ hook_add = 'source ~/.config/nvim/plugin_settings/denite-gtags.vim'
 # --------------------------------------------
 [[plugins]]
 repo = 'w0rp/ale'
+on_event = 'BufRead'
 hook_add = 'source ~/.config/nvim/plugin_settings/ale.vim'
 
 # --------------------------------------------
@@ -240,6 +241,7 @@ hook_add = 'source ~/.config/nvim/plugin_settings/silicon.vim'
 # --------------------------------------------
 [[plugins]]
 repo = 'nvim-treesitter/nvim-treesitter'
+on_event = 'BufRead'
 hook_post_update = 'TSUpdate'
 hook_source = 'source ~/.config/nvim/plugin_settings/tree-sitter.vim'
 
