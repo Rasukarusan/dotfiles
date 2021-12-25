@@ -227,6 +227,7 @@ set virtualedit=onemore
 " set formatoptions-=ro
 
 " ===============キーマップ関連===================== "
+nnoremap <C-j> J
 " 入力モードでのカーソル移動
 inoremap <C-j> <Down>
 inoremap <C-k> <Up>
@@ -234,6 +235,8 @@ inoremap <C-h> <Left>
 inoremap <C-l> <Right>
 nnoremap H 10h
 nnoremap L 10l
+nnoremap J 5j
+nnoremap K 5k
 nnoremap sa ^
 nnoremap se $
 vnoremap sa ^
@@ -251,8 +254,6 @@ onoremap k gk
 xnoremap k gk
 nnoremap <down> gj
 nnoremap <up> gk
-nnoremap <C-j> 5j
-nnoremap <C-k> 5k
 " jjでエスケープ
 inoremap <silent> jj <ESC>
 " 日本語入力で”っj”と入力してもEnterキーで確定させればインサートモードを抜ける
