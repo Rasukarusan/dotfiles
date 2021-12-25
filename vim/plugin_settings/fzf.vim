@@ -33,3 +33,5 @@ nmap <SPACE>c :History:<CR>
 nmap <SPACE>/ :History/<CR>
 " Window移動
 nmap <SPACE>w :Windows<CR>
+" バッファ全体から行を選択して挿入
+imap <C-x><C-l> <Plug>(fzf-complete-line)
