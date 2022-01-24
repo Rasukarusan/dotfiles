@@ -22,7 +22,10 @@ function! s:open_file_on_branch(...)
     let branch_name = get(a:, 1, 'master')
     let file_path = get(a:, 2, '%')
     execute ':Gvsplit '.branch_name.':'.file_path
-    call feedkeys("\<C-w>\<S-l>")
+    " スクロール同期
+    execute 'windo :set scb'
+    " windowを右に入れ替える
+    call feedkeys("\<C-w>\<S-l>") 
 endfunction
 
 " =============================================
