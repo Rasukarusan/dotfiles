@@ -42,6 +42,17 @@ export const $1: React.FC = () => {
 }
 endsnippet
 
+snippet consp "export const Hoge: React.FC<Props> = () => { return () }" b
+interface Props {
+
+}
+
+export const $1: React.FC<Props> = ({}) => {
+	return (
+	)
+}
+endsnippet
+
 snippet typo "<Typography variant='h2' gutterBottom>" b
 <Typography variant="h2" gutterBottom>
 $1
@@ -110,3 +121,8 @@ endsnippet
 snippet clmagenta "console.log(red + '' + reset)" b
 console.log('\u001b[35m' + '$1' + '\u001b[0m')
 endsnippet
+
+snippet cn "className=''" b
+className="$1"
+endsnippet
+
