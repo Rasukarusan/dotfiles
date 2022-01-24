@@ -1,4 +1,4 @@
-nnoremap <silent> <C-k> :call <SID>show_documentation()<CR>
+nnoremap <silent> K :call <SID>show_documentation()<CR>
 nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gr <Plug>(coc-references)
 nmap <silent> gf <Plug>(coc-format)
