@@ -235,8 +235,8 @@ inoremap <C-h> <Left>
 inoremap <C-l> <Right>
 nnoremap H 10h
 nnoremap L 10l
-nnoremap J 5j
-nnoremap K 5k
+nnoremap <C-j> 5j
+nnoremap <C-k> 5k
 nnoremap sa ^
 nnoremap se $
 vnoremap sa ^
