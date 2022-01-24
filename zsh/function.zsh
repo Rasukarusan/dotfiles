@@ -632,6 +632,7 @@ _open_launched_app() {
 alias dgg='_danger_git_commands'
 _danger_git_commands() {
   local actions=(
+    'n個前のコミットに遡って書き換えるコマンドを表示:_rebase_commit'
     '特定ファイルと関連する履歴を全て削除:_delete_all_histories_by_file'
     'masterのコミットを全て削除:_delete_all_git_log'
     'コミットのAuthorを全て書き換える:_change_author'
@@ -639,6 +640,23 @@ _danger_git_commands() {
   )
   local action=$(echo "${actions[@]}" | tr ' ' '\n' | fzf -d ':' --with-nth=1 | cut -d ':' -f 2,2)
   [ -n "$action" ] && eval "$action"
+}
+
+# 複数個前のコミットを書き換えるコマンドの流れを表示する
+_rebase_commit() {
+  cat <<EOS
+# 1. 修正したい変更をstashしておく
+`printf "\e[33mgit stash\e[m\n"`
+# 2. 遡りたい個数を指定
+`printf "\e[33mgit rebase -i HEAD~3\e[m\n"`
+# 3. 遡りたいコミットを'edit'にする
+# 4. rebaseモードに入ったらstashを戻す
+`printf "\e[33mgit stash pop\e[m\n"`
+# 5. addしてcommit --amendする
+`printf "\e[33mgit add -A\ngit commit --amend\e[m\n"`
+# 6. rebaseモードを抜ける
+`printf "\e[33mgit rebase --continue\e[m\n"`
+EOS
 }
 
 # 特定ファイルの履歴を全て削除(ファイルも削除されるので注意)
@@ -1204,8 +1222,8 @@ _fzf_yarn() {
   local action=$(cat ${packageJson} | jq -r '.scripts | keys | .[]' \
     | fzf-tmux -p --preview "cat ${packageJson} | jq -r '.scripts[\"{}\"]'" --preview-window=up:1)
   [ -z "$action" ] && return
-  yarn $action
   print -s "yarn $action"
+  yarn $action
 }
 
 # fzfでcomposer
