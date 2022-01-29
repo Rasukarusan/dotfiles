@@ -60,7 +60,6 @@ let g:markdown_fenced_languages = [
     \ 'js=javascript',
     \ 'json=javascript',
     \ 'c',
-    \ 'php',
     \ 'xml',
     \ 'erb=eruby',
     \ 'ruby',
@@ -166,6 +165,11 @@ augroup vimrc
     autocmd InsertLeave * set nopaste
     " php-cs-fixerで自動フォーマット。aleでできなかったのでコマンド実行している。
     autocmd BufWritePost *.php :call s:format_php()
+    " tree-sitterをONにするとPHPのインデントが効かなくなるのでその対応
+    " https://github.com/nvim-treesitter/nvim-treesitter/issues/462
+    autocmd BufEnter *.php set indentexpr =
+    autocmd BufEnter *.php set autoindent
+    autocmd BufEnter *.php set smartindent
 augroup END
 
 set mouse=a
