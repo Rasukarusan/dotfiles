@@ -1,6 +1,7 @@
 lua <<EOF
 require'nvim-treesitter.configs'.setup {
   ensure_installed = "maintained",
+  ignore_install = { "norg" },
   highlight = {
     enable = true,
     disable = {}, -- :TSModuleInfo で言語一覧表示
