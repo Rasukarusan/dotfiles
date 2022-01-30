@@ -67,3 +67,5 @@ eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)"
 # 自作スクリプト
 export PATH="$HOME/dotfiles/bin:$PATH"
+export PATH="/opt/homebrew/opt/php@7.4/bin:$PATH"
+export PATH="/opt/homebrew/opt/php@7.4/sbin:$PATH"
