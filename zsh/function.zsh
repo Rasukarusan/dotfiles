@@ -1219,11 +1219,20 @@ _fzf_yarn() {
     packageJson=$(find ${gitRoot}. -maxdepth 2  -name 'package.json')
   fi
   [ -z "$packageJson" ] && return
-  local action=$(cat ${packageJson} | jq -r '.scripts | keys | .[]' \
-    | fzf-tmux -p --preview "cat ${packageJson} | jq -r '.scripts[\"{}\"]'" --preview-window=up:1)
-  [ -z "$action" ] && return
-  print -s "yarn $action"
-  yarn $action
+  local actions=($(cat ${packageJson} | jq -r '.scripts | keys | .[]' \
+    | fzf-tmux -p --preview "cat ${packageJson} | jq -r '.scripts[\"{}\"]'" --preview-window=up:1))
+  [ -z "$actions" ] && return
+  local cmd=''
+  for action in "${actions[@]}"; do
+    if [ -z "$cmd" ]; then
+      cmd="yarn $action"
+    else
+      cmd="$cmd && yarn $action"
+    fi
+  done
+  printf "\e[35m$cmd\n\e[m\n"
+  print -s "$cmd"
+  eval "$cmd"
 }
 
 # fzfでcomposer
