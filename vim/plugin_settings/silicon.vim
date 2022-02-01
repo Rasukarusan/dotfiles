@@ -2,7 +2,7 @@
 let g:silicon = {
       \   'theme':              'Dracula',
       \   'font':               'Ricty Diminished Discord',
-      \   'background':         '#AAAAFF',
+      \   'background':         '#FFF0',
       \   'shadow-color':       '#555555',
       \   'line-pad':                   2,
       \   'shadow-blur-radius':         0,
