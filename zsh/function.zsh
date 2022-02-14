@@ -478,7 +478,6 @@ _docker_commands() {
       for container in ${containers[@]}; do
         execCommand="docker stop $container"
         printf "\e[33m${execCommand}\e[m\n" && eval $execCommand
-        print -s "$execCommand"
       done
       return
       ;;
@@ -491,7 +490,6 @@ _docker_commands() {
       for container in ${containers[@]}; do
         execCommand="docker rm $container"
         printf "\e[33m${execCommand}\e[m\n" && eval $execCommand
-        print -s "$execCommand"
       done
       return
       ;;
@@ -503,7 +501,6 @@ _docker_commands() {
       for image in ${images[@]}; do
         execCommand="docker rmi -f $image"
         printf "\e[33m${execCommand}\e[m\n" && eval $execCommand
-        print -s "$execCommand"
       done
       return
       ;;
@@ -523,22 +520,17 @@ _docker_commands() {
           echo "$targetFile =====> ${container}(${containerId})"
           execCommand="docker cp ${targetFile} ${containerId}:/root/"
           printf "\e[33m${execCommand}\e[m\n" && eval $execCommand
-          print -s "$execCommand"
         done
       done
+      return
       ;;
     'docker-compose up --build -d <service>' )
       local service=$(cat docker-compose.yml | yq --yaml-roundtrip ".services|keys" | sed 's/^- //g' | fzf)
       test -z "$service" && return
       execCommand="docker-compose up --build -d $service"
-      printf "\e[33m${execCommand}\e[m\n"
-      print -s "$execCommand"
       ;;
     *) 
-      local strLength=$(expr ${#selectCommand} + 4)
-      local separateStr=$(for i in `seq 1 $strLength`;do /bin/echo -n '=' ; done)
-      printf "\e[33m${separateStr}\n  ${selectCommand}  \n${separateStr}\e[m\n"
-      eval $selectCommand
+      execCommand="${selectCommand}"
       ;;
   esac
   if [ -n "$execCommand" ];then
