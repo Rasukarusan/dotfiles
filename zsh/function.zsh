@@ -1415,7 +1415,7 @@ _goyo!() {
 alias bb='_open_blog_keynote'
 _open_blog_keynote() {
   local targets=$(cat << EOS
-$HOME/Documents/github/blog-assets/blog_header_image.key
+$HOME/Documents/github/keynote-template/blog_header_image.key
 $HOME/Documents/github/keynote-template/myshape.key
 $HOME/Documents/github/keynote-template/wallpaper.key
 EOS
