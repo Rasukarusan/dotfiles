@@ -12,11 +12,11 @@ repo = 'junegunn/fzf.vim'
 hook_add = 'source ~/.config/nvim/plugin_settings/fzf.vim'
 
 # --------------------------------------------
-# ctrl+-でコメントアウト
+# コメントアウト
 # --------------------------------------------
 [[plugins]]
-repo = 'tomtom/tcomment_vim'
-hook_add = 'source ~/.config/nvim/plugin_settings/tcomment.vim'
+repo = 'scrooloose/nerdcommenter'
+hook_add = 'source ~/.config/nvim/plugin_settings/nerdcommenter.vim'
 
 # --------------------------------------------
 # GitコマンドをVim上で実行
