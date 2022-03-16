@@ -83,13 +83,6 @@ repo = 'kana/vim-submode'
 hook_add = 'source ~/.config/nvim/plugin_settings/vim-submode.vim'
 
 # --------------------------------------------
-# Golang開発環境
-# --------------------------------------------
-[[plugins]]
-repo = 'fatih/vim-go'
-hook_add = 'source ~/.config/nvim/plugin_settings/vim-go.vim'
-
-# --------------------------------------------
 # 好きな文字でインデントを揃える
 # --------------------------------------------
 [[plugins]]

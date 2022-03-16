@@ -30,5 +30,6 @@
   "snippets.extends": {
     "typescriptreact": ["typescript"]
   },
-  "snippets.userSnippetsDirectory": "~/dotfiles/vim/UltiSnips"
+  "snippets.userSnippetsDirectory": "~/dotfiles/vim/UltiSnips",
+  "coc.preferences.formatOnSaveFiletypes": ["go"]
 }
