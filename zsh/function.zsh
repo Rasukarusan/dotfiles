@@ -1010,7 +1010,7 @@ _gmail() {
 }
 
 # 定義済み関数をfzfで中身を見ながら出力する
-alias func='_show_functions'
+# alias func='_show_functions'
 _show_functions() {
   local func=$(
      typeset -f \
