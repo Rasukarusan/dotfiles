@@ -1,3 +1,21 @@
+snippet ! "template" b
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("main")
+}
+endsnippet
+
 snippet p "fmt.Println()" b
 fmt.Println($1)
 endsnippet
+
+snippet scan "bufio.NewScanner(os.Stdin)" b
+	s := bufio.NewScanner(os.Stdin)
+	for s.Scan() {
+		fmt.Println(s.Text())
+	}
+endsnippet
+
