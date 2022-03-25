@@ -8,7 +8,7 @@ func main() {
 }
 endsnippet
 
-snippet p "fmt.Println()" b
+snippet f "fmt.Println()" b
 fmt.Println($1)
 endsnippet
 
@@ -19,3 +19,31 @@ snippet scan "bufio.NewScanner(os.Stdin)" b
 	}
 endsnippet
 
+snippet filer "os.Open(file.txt)" b
+	fp, err := os.Open("file.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer fp.Close()
+	scanner := bufio.NewScanner(fp)
+	for scanner.Scan() {
+		fmt.Println(scanner.Text())
+	}
+endsnippet
+
+snippet filew "os.Create(file.txt)" b
+	file, err := os.Create("file.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	lines := []string{"hoge\n", "foo\n"}
+
+	for _, line := range lines {
+		_, err := file.WriteString(line)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+endsnippet
