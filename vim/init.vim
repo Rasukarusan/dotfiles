@@ -116,12 +116,17 @@ augroup MarkdownSyntax
   autocmd BufEnter *.mdx set filetype=markdown
 augroup END
 
-augroup GoDebug
+augroup GoSettings
   autocmd!
-  au FileType go nmap <F12> :GoDebugStart<CR>
-  au FileType go nmap <F12><F12> :GoDebugStop<CR>
-  au FileType go nmap <F11> :GoDebugStep<CR>
-  au FileType go nmap <F9> :GoDebugBreakpoint<CR>
+  autocmd BufWritePre *.go :silent call CocAction('runCommand', 'editor.action.organizeImport')
+augroup END
+
+augroup loadTemplates
+    autocmd!
+    let s:load_templates_dir='~/dotfiles/vim/templates'
+    let s:load_templates_command="0read ".s:load_templates_dir
+    autocmd BufNewFile *.go            execute s:load_templates_command."/template.go"
+    autocmd BufNewFile *.sh            execute s:load_templates_command."/template.sh"
 augroup END
 
 " 画面分割時フォーカスしていないウィンドウの色を変更
