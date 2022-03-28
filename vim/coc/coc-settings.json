@@ -31,5 +31,10 @@
     "typescriptreact": ["typescript"]
   },
   "snippets.userSnippetsDirectory": "~/dotfiles/vim/UltiSnips",
-  "coc.preferences.formatOnSaveFiletypes": ["go"]
+  "coc.preferences.formatOnSaveFiletypes": ["go"],
+  "jedi": {
+    "enable": true,
+    "startupMessage": false,
+    "executable.command": "/opt/homebrew/bin/jedi-language-server"
+  }
 }
