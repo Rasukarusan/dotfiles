@@ -15,3 +15,9 @@ if ! exists ansible ; then
     cd ansible
     ansible-playbook -i inventory/localhost localhost.yml --ask-become-pass
 fi
+
+# M1 Macの設定
+if [ "$(uname -m)" = "arm64" ]; then
+  # cocでjediを使うための設定
+  sudo ln -s /opt/homebrew/bin/jedi-language-server /usr/local/bin/jedi-language-server
+fi
