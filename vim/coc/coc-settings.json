@@ -35,6 +35,6 @@
   "jedi": {
     "enable": true,
     "startupMessage": false,
-    "executable.command": "/opt/homebrew/bin/jedi-language-server"
+    "executable.command": "/usr/local/bin/jedi-language-server"
   }
 }
