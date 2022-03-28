@@ -36,6 +36,7 @@ let g:coc_global_extensions = [
   \, 'coc-tsserver'
   \, 'coc-word'
   \, 'coc-tailwindcss'
+  \, 'coc-jedi'
 \]
 " CocConfigのdiagnostic.enableが効かなくなってしまったのでこちらで対応
 let b:coc_diagnostic_disable=1
