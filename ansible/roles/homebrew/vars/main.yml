@@ -63,3 +63,4 @@ packages:
   - name: git-delta
   - name: python-yq
   - name: st
+  - name: jc
