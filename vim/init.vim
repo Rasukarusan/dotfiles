@@ -305,7 +305,7 @@ nnoremap <S-y> y$
 " syで単語コピー
 nnoremap sy byw
 " source ~/.vimrcを簡略化
-nnoremap rr :source ~/.config/nvim/init.vim<CR>
+nnoremap rr :call dein#recache_runtimepath() \| source ~/.config/nvim/init.vim<CR>
 " ファイル再読み込み
 nnoremap re :e!<CR>
 " 現在開いているスクリプトを読み込む
