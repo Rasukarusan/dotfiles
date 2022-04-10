@@ -5,6 +5,7 @@
   roles:
     - homebrew
     - homebrew_cask
+    - yarn
     - macos
     - git_clone
     - shell_command
