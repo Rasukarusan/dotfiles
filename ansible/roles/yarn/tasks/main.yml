@@ -1,0 +1,10 @@
+- block:
+    - name: node.js packages global install
+      yarn:
+        name: '{{ item.name }}'
+        state: "{{ item.state | default('present') }}"
+        global: true
+      with_items: '{{ packages }}'
+
+  tags:
+    - yarn
