@@ -10,6 +10,7 @@ repo = 'Shougo/dein.vim'
 [[plugins]]
 repo = 'junegunn/fzf.vim'
 hook_add = 'source ~/.config/nvim/plugin_settings/fzf.vim'
+lazy = 1
 
 # --------------------------------------------
 # コメントアウト
@@ -17,6 +18,7 @@ hook_add = 'source ~/.config/nvim/plugin_settings/fzf.vim'
 [[plugins]]
 repo = 'scrooloose/nerdcommenter'
 hook_add = 'source ~/.config/nvim/plugin_settings/nerdcommenter.vim'
+lazy = 0
 
 # --------------------------------------------
 # GitコマンドをVim上で実行
@@ -24,6 +26,7 @@ hook_add = 'source ~/.config/nvim/plugin_settings/nerdcommenter.vim'
 [[plugins]]
 repo = 'tpope/vim-fugitive'
 hook_add = 'source ~/.config/nvim/plugin_settings/vim-fugitive.vim'
+lazy = 1
 
 # --------------------------------------------
 # ステータスライン
@@ -31,6 +34,7 @@ hook_add = 'source ~/.config/nvim/plugin_settings/vim-fugitive.vim'
 [[plugins]]
 repo = 'vim-airline/vim-airline'
 hook_add = 'source ~/.config/nvim/plugin_settings/vim-airline.vim'
+lazy = 0
 
 # --------------------------------------------
 # Scriptをその場で実行
@@ -38,6 +42,7 @@ hook_add = 'source ~/.config/nvim/plugin_settings/vim-airline.vim'
 [[plugins]]
 repo = 'thinca/vim-quickrun'
 hook_add = 'source ~/.config/nvim/plugin_settings/vim-quickrun.vim'
+lazy = 1
 
 # --------------------------------------------
 # Emmet
@@ -45,6 +50,7 @@ hook_add = 'source ~/.config/nvim/plugin_settings/vim-quickrun.vim'
 [[plugins]]
 repo = 'mattn/emmet-vim'
 hook_add = 'source ~/.config/nvim/plugin_settings/emmet-vim.vim'
+lazy = 1
 
 # --------------------------------------------
 # Denite
@@ -52,6 +58,7 @@ hook_add = 'source ~/.config/nvim/plugin_settings/emmet-vim.vim'
 [[plugins]]
 repo = 'Shougo/denite.nvim'
 hook_add = 'source ~/.config/nvim/plugin_settings/denite.vim'
+lazy = 1
 
 # --------------------------------------------
 # Denite-Gtags
@@ -59,6 +66,7 @@ hook_add = 'source ~/.config/nvim/plugin_settings/denite.vim'
 [[plugins]]
 repo = 'ozelentok/denite-gtags'
 hook_add = 'source ~/.config/nvim/plugin_settings/denite-gtags.vim'
+lazy = 1
 
 # --------------------------------------------
 # gtags,ctagsを自動生成
@@ -74,6 +82,7 @@ hook_add = 'source ~/.config/nvim/plugin_settings/denite-gtags.vim'
 repo = 'w0rp/ale'
 on_event = 'BufRead'
 hook_add = 'source ~/.config/nvim/plugin_settings/ale.vim'
+lazy = 1
 
 # --------------------------------------------
 # 画面分割時の画面大きさ変更キーなど連続で打つコマンドを楽にする
@@ -81,6 +90,7 @@ hook_add = 'source ~/.config/nvim/plugin_settings/ale.vim'
 [[plugins]]
 repo = 'kana/vim-submode'
 hook_add = 'source ~/.config/nvim/plugin_settings/vim-submode.vim'
+lazy = 0
 
 # --------------------------------------------
 # 好きな文字でインデントを揃える
@@ -88,12 +98,14 @@ hook_add = 'source ~/.config/nvim/plugin_settings/vim-submode.vim'
 [[plugins]]
 repo = 'junegunn/vim-easy-align'
 hook_add = 'source ~/.config/nvim/plugin_settings/vim-easy-align.vim'
+lazy = 1
 
 # --------------------------------------------
 # plantuml
 # --------------------------------------------
 [[plugins]]
 repo = 'aklt/plantuml-syntax'
+lazy = 1
 
 # --------------------------------------------
 # markdownプレビュー
@@ -102,6 +114,7 @@ repo = 'aklt/plantuml-syntax'
 repo = 'iamcco/markdown-preview.nvim'
 on_ft = ['markdown', 'pandoc.markdown', 'rmd']
 build =  'cd app & yarn install'
+lazy = 1
 
 # --------------------------------------------
 # PHPコードチェック、未使用変数のハイライト
@@ -115,6 +128,7 @@ build =  'cd app & yarn install'
 # --------------------------------------------
 [[plugins]]
 repo = 'maksimr/vim-jsbeautify'
+lazy = 1
 
 # --------------------------------------------
 # GitBlamer
@@ -122,6 +136,7 @@ repo = 'maksimr/vim-jsbeautify'
 [[plugins]]
 repo = 'rhysd/git-messenger.vim'
 hook_add = 'source ~/.config/nvim/plugin_settings/git-messenger.vim'
+lazy = 1
 
 # --------------------------------------------
 # coc - 入力補完
@@ -131,6 +146,7 @@ repo = 'neoclide/coc.nvim'
 merged = 0
 rev = 'release'
 hook_add = 'source ~/.config/nvim/plugin_settings/coc.vim'
+lazy = 1
 
 # --------------------------------------------
 # vim-snippets - Snipets定義ファイル
@@ -139,6 +155,7 @@ hook_add = 'source ~/.config/nvim/plugin_settings/coc.vim'
 # --------------------------------------------
 [[plugins]]
 repo = 'honza/vim-snippets'
+lazy = 1
 
 # --------------------------------------------
 # firenvim - ブラウザでNeoVim
@@ -155,6 +172,7 @@ repo = 'honza/vim-snippets'
 # --------------------------------------------
 [[plugins]]
 repo = 'airblade/vim-gitgutter'
+lazy = 0
 # hook_add = 'source ~/.config/nvim/plugin_settings/vim-gitgutter.vim'
 
 # --------------------------------------------
@@ -164,6 +182,7 @@ repo = 'airblade/vim-gitgutter'
 repo = 'vim-vdebug/vdebug'
 hook_add = 'source ~/.config/nvim/plugin_settings/vim-vdebug.vim'
 on_ft = ['php']
+lazy = 1
 
 # --------------------------------------------
 # Swift - シンタックスハイライト
@@ -171,12 +190,14 @@ on_ft = ['php']
 [[plugins]]
 repo = 'keith/swift.vim'
 on_ft = ['swift']
+lazy = 1
 
 # --------------------------------------------
 # カラーコードプレビュー
 # --------------------------------------------
 [[plugins]]
 repo = 'gorodinskiy/vim-coloresque'
+lazy = 1
 
 # --------------------------------------------
 # 共同編集
@@ -191,12 +212,14 @@ repo = 'gorodinskiy/vim-coloresque'
 [[plugins]]
 repo = 'AndrewRadev/splitjoin.vim'
 hook_add = 'source ~/.config/nvim/plugin_settings/splitjoin.vim'
+lazy = 1
 
 # --------------------------------------------
 # 翻訳
 # --------------------------------------------
 [[plugins]]
 repo = 'skanehira/translate.vim'
+lazy = 1
 
 # --------------------------------------------
 # 禅モード
@@ -204,12 +227,14 @@ repo = 'skanehira/translate.vim'
 [[plugins]]
 repo = 'junegunn/goyo.vim'
 hook_add = 'source ~/.config/nvim/plugin_settings/goyo.vim'
+lazy = 1
 
 # --------------------------------------------
 # 段落フォーカス
 # --------------------------------------------
 [[plugins]]
 repo = 'junegunn/limelight.vim'
+lazy = 1
 
 # --------------------------------------------
 # terraform
@@ -218,6 +243,7 @@ repo = 'junegunn/limelight.vim'
 repo = 'hashivim/vim-terraform'
 hook_add = 'source ~/.config/nvim/plugin_settings/terraform.vim'
 on_ft = ['terraform']
+lazy = 1
 
 # --------------------------------------------
 # terraform-completion
@@ -225,6 +251,7 @@ on_ft = ['terraform']
 [[plugins]]
 repo = 'juliosueiras/vim-terraform-completion'
 on_ft = ['terraform']
+lazy = 1
 
 # --------------------------------------------
 # コード画像化
@@ -232,6 +259,7 @@ on_ft = ['terraform']
 [[plugins]]
 repo = 'segeljakt/vim-silicon'
 hook_add = 'source ~/.config/nvim/plugin_settings/silicon.vim'
+lazy = 1
 
 # --------------------------------------------
 # tree-sitter
@@ -241,6 +269,7 @@ repo = 'nvim-treesitter/nvim-treesitter'
 on_event = 'BufRead'
 hook_post_update = 'TSUpdate'
 hook_source = 'source ~/.config/nvim/plugin_settings/tree-sitter.vim'
+lazy = 1
 
 # --------------------------------------------
 # vim-sandwich
@@ -248,6 +277,7 @@ hook_source = 'source ~/.config/nvim/plugin_settings/tree-sitter.vim'
 [[plugins]]
 repo = 'machakann/vim-sandwich'
 hook_add = 'source ~/.config/nvim/plugin_settings/sandwich.vim'
+lazy = 1
 
 # --------------------------------------------
 # fern - ファイルツリー
@@ -255,6 +285,7 @@ hook_add = 'source ~/.config/nvim/plugin_settings/sandwich.vim'
 [[plugins]]
 repo = 'lambdalisue/fern.vim'
 hook_add = 'source ~/.config/nvim/plugin_settings/fern.vim'
+lazy = 1
 
 # --------------------------------------------
 # fern preview
@@ -262,12 +293,14 @@ hook_add = 'source ~/.config/nvim/plugin_settings/fern.vim'
 [[plugins]]
 repo = 'yuki-yano/fern-preview.vim'
 hook_add = 'source ~/.config/nvim/plugin_settings/fern-preview.vim'
+lazy = 1
 
 # --------------------------------------------
 # vim-swap
 # --------------------------------------------
 [[plugins]]
 repo = 'machakann/vim-swap'
+lazy = 1
 
 # --------------------------------------------
 # template
@@ -275,3 +308,4 @@ repo = 'machakann/vim-swap'
 # [[plugins]]
 # repo = ''
 # hook_add = 'source ~/.config/nvim/plugin_settings/'
+# lazy = 1
