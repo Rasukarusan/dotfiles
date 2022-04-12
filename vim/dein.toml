@@ -163,12 +163,14 @@ repo = 'airblade/vim-gitgutter'
 [[plugins]]
 repo = 'vim-vdebug/vdebug'
 hook_add = 'source ~/.config/nvim/plugin_settings/vim-vdebug.vim'
+on_ft = ['php']
 
 # --------------------------------------------
 # Swift - シンタックスハイライト
 # --------------------------------------------
 [[plugins]]
 repo = 'keith/swift.vim'
+on_ft = ['swift']
 
 # --------------------------------------------
 # カラーコードプレビュー
@@ -215,12 +217,14 @@ repo = 'junegunn/limelight.vim'
 [[plugins]]
 repo = 'hashivim/vim-terraform'
 hook_add = 'source ~/.config/nvim/plugin_settings/terraform.vim'
+on_ft = ['terraform']
 
 # --------------------------------------------
 # terraform-completion
 # --------------------------------------------
 [[plugins]]
 repo = 'juliosueiras/vim-terraform-completion'
+on_ft = ['terraform']
 
 # --------------------------------------------
 # コード画像化
@@ -264,3 +268,10 @@ hook_add = 'source ~/.config/nvim/plugin_settings/fern-preview.vim'
 # --------------------------------------------
 [[plugins]]
 repo = 'machakann/vim-swap'
+
+# --------------------------------------------
+# template
+# --------------------------------------------
+# [[plugins]]
+# repo = ''
+# hook_add = 'source ~/.config/nvim/plugin_settings/'
