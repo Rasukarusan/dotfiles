@@ -26,7 +26,7 @@ lazy = 0
 [[plugins]]
 repo = 'tpope/vim-fugitive'
 hook_add = 'source ~/.config/nvim/plugin_settings/vim-fugitive.vim'
-lazy = 1
+lazy = 0
 
 # --------------------------------------------
 # ステータスライン
