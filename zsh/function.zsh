@@ -629,6 +629,7 @@ _danger_git_commands() {
     'masterのコミットを全て削除:_delete_all_git_log'
     'コミットのAuthorを全て書き換える:_change_author'
     'ローカル(特定リポジトリ)のConfigを変更:_change_config_local'
+    'git_clean_df:_git_clean_df'
   )
   local action=$(echo "${actions[@]}" | tr ' ' '\n' | fzf -d ':' --with-nth=1 | cut -d ':' -f 2,2)
   [ -n "$action" ] && eval "$action"
@@ -726,6 +727,10 @@ _change_config_local() {
     *)
       ;;
   esac
+}
+
+_git_clean_df() {
+  git clean -df
 }
 
 # vim関連ファイルをfzfで選択しvimで開く
