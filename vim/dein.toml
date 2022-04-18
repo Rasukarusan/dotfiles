@@ -10,7 +10,7 @@ repo = 'Shougo/dein.vim'
 [[plugins]]
 repo = 'junegunn/fzf.vim'
 hook_add = 'source ~/.config/nvim/plugin_settings/fzf.vim'
-lazy = 1
+lazy = 0
 
 # --------------------------------------------
 # コメントアウト
@@ -50,7 +50,7 @@ lazy = 1
 [[plugins]]
 repo = 'mattn/emmet-vim'
 hook_add = 'source ~/.config/nvim/plugin_settings/emmet-vim.vim'
-lazy = 1
+lazy = 0
 
 # --------------------------------------------
 # Denite
@@ -114,7 +114,7 @@ lazy = 1
 repo = 'iamcco/markdown-preview.nvim'
 on_ft = ['markdown', 'pandoc.markdown', 'rmd']
 build =  'cd app & yarn install'
-lazy = 1
+lazy = 0
 
 # --------------------------------------------
 # PHPコードチェック、未使用変数のハイライト
@@ -146,7 +146,7 @@ repo = 'neoclide/coc.nvim'
 merged = 0
 rev = 'release'
 hook_add = 'source ~/.config/nvim/plugin_settings/coc.vim'
-lazy = 1
+lazy = 0
 
 # --------------------------------------------
 # vim-snippets - Snipets定義ファイル
@@ -156,16 +156,6 @@ lazy = 1
 [[plugins]]
 repo = 'honza/vim-snippets'
 lazy = 1
-
-# --------------------------------------------
-# firenvim - ブラウザでNeoVim
-# --------------------------------------------
-# [[plugins]]
-# repo = 'glacambre/firenvim'
-# hook_add = 'source ~/.config/nvim/plugin_settings/firenvim.vim'
-# hook_post_update = '''
-#   call firenvim#install(0)
-# '''
 
 # --------------------------------------------
 # gitの差分を+ - で表示
@@ -197,14 +187,7 @@ lazy = 1
 # --------------------------------------------
 [[plugins]]
 repo = 'gorodinskiy/vim-coloresque'
-lazy = 1
-
-# --------------------------------------------
-# 共同編集
-# --------------------------------------------
-# [[plugins]]
-# repo = 'jbyuki/instant.nvim'
-# hook_add = 'source ~/.config/nvim/plugin_settings/instant.vim'
+lazy = 0
 
 # --------------------------------------------
 # 一行ステートメントを複数行ステートメントにする
@@ -219,21 +202,6 @@ lazy = 1
 # --------------------------------------------
 [[plugins]]
 repo = 'skanehira/translate.vim'
-lazy = 1
-
-# --------------------------------------------
-# 禅モード
-# --------------------------------------------
-[[plugins]]
-repo = 'junegunn/goyo.vim'
-hook_add = 'source ~/.config/nvim/plugin_settings/goyo.vim'
-lazy = 1
-
-# --------------------------------------------
-# 段落フォーカス
-# --------------------------------------------
-[[plugins]]
-repo = 'junegunn/limelight.vim'
 lazy = 1
 
 # --------------------------------------------
@@ -259,7 +227,7 @@ lazy = 1
 [[plugins]]
 repo = 'segeljakt/vim-silicon'
 hook_add = 'source ~/.config/nvim/plugin_settings/silicon.vim'
-lazy = 1
+lazy = 0
 
 # --------------------------------------------
 # tree-sitter
@@ -277,7 +245,7 @@ lazy = 1
 [[plugins]]
 repo = 'machakann/vim-sandwich'
 hook_add = 'source ~/.config/nvim/plugin_settings/sandwich.vim'
-lazy = 1
+lazy = 0
 
 # --------------------------------------------
 # fern - ファイルツリー
@@ -285,7 +253,7 @@ lazy = 1
 [[plugins]]
 repo = 'lambdalisue/fern.vim'
 hook_add = 'source ~/.config/nvim/plugin_settings/fern.vim'
-lazy = 1
+lazy = 0
 
 # --------------------------------------------
 # fern preview
@@ -293,14 +261,7 @@ lazy = 1
 [[plugins]]
 repo = 'yuki-yano/fern-preview.vim'
 hook_add = 'source ~/.config/nvim/plugin_settings/fern-preview.vim'
-lazy = 1
-
-# --------------------------------------------
-# vim-swap
-# --------------------------------------------
-[[plugins]]
-repo = 'machakann/vim-swap'
-lazy = 1
+lazy = 0
 
 # --------------------------------------------
 # template
