@@ -4,5 +4,5 @@ firstLine=$(head -n1 $1)  # git commit --amendとの区別のために最初の�
 test -z "$jiraNo" && exit
 
 if [ -z "$firstLine" ] ;then  # 一行目が空行であれば（--amendでなければ）以下を実行
-  gsed -i "1s/^/${jiraNo} /" $1
+  gsed -i "1s/^/${jiraNo}/" $1
 fi
