@@ -129,6 +129,13 @@ augroup loadTemplates
     autocmd BufNewFile *.sh            execute s:load_templates_command."/template.sh"
 augroup END
 
+" git commit時の挙動
+augroup gitcommit
+    autocmd!
+    " 末尾に移動
+    autocmd FileType gitcommit silent normal A
+augroup END
+
 " 画面分割時フォーカスしていないウィンドウの色を変更
 " augroup ChangeBackground
 "   autocmd!
