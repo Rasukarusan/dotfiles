@@ -452,6 +452,7 @@ _docker_commands() {
 		docker rm
 		docker rmi
 		docker cp
+		docker system prune -a
 	EOF`
   local arg=`echo $selectCommand | sed "s/docker //g"`
   local execCommand
