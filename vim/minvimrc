@@ -1,0 +1,75 @@
+" set debug
+" シンタックスハイライト
+syntax on
+" 自動でインデントを挿入
+set autoindent
+" " タブをスペースに変換
+set expandtab
+set tabstop=4
+set shiftwidth=4
+" " 検索語句のハイライト
+set hlsearch
+highlight Search guibg=orange
+set number
+" 括弧の後に自動でインデントを挿入
+set cindent
+" 検索時に大文字小文字無視
+set ignorecase
+" 検索語句を全て英小文字で入力した場合のみ区別を無視
+set smartcase
+" vimでバックスペースを有効に
+set backspace=indent,eol,start
+set clipboard=unnamed
+
+colorscheme jellybeans
+" ===============キーマップ関連===================== "
+nnoremap <C-j> J
+" 入力モードでのカーソル移動
+inoremap <C-j> <Down>
+inoremap <C-k> <Up>
+inoremap <C-h> <Left>
+inoremap <C-l> <Right>
+nnoremap H 10h
+nnoremap L 10l
+nnoremap <C-j> 5j
+nnoremap <C-k> 5k
+nnoremap sa ^
+nnoremap se $
+vnoremap sa ^
+vnoremap se $
+nnoremap sl <C-w>l
+nnoremap sh <C-w>h
+nnoremap sj <C-w>j
+nnoremap sk <C-w>k
+"表示行単位で移動(snippet展開対策済み)
+nnoremap j gj
+onoremap j gj
+xnoremap j gj
+nnoremap k gk
+onoremap k gk
+xnoremap k gk
+nnoremap <down> gj
+nnoremap <up> gk
+" jjでエスケープ
+inoremap <silent> jj <ESC>
+" 入力モード中:wqと打つとノーマルモードに戻って:wqになる
+inoremap :wq <ESC>:wq
+inoremap :w <ESC>:w
+inoremap :q <ESC>:q
+" 削除した際ヤンクしないように
+nnoremap x "_x
+nnoremap _ci "_ci
+nnoremap _D "_D
+nnoremap _dd "_dd
+vnoremap _d "_d
+" タブ移動
+nnoremap <C-l> :xccmd selectNextTab<CR>
+nnoremap <C-h> :xccmd selectPreviousTab<CR>
+autocmd InsertLeave * set nopaste
+" ESCを二回押すことでハイライトを消す
+nmap <Esc><Esc> :nohl<CR>
+" Yで末尾までコピー
+nnoremap Y y$
+" syで単語コピー
+nnoremap sy byw
+nnoremap K <nop>
