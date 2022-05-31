@@ -1186,7 +1186,7 @@ _replace_all() {
     return
   fi
 
-  find . -type f -print0 | xargs -0 gsed -i -e "s/$1/$2/"
+  ag -l -0 "$1" | xargs -0 gsed -i -e "s/$1/$2/"
 }
 
 # fzfでrm
