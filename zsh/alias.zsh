@@ -83,7 +83,7 @@ alias vimn='vim -u NONE -N'
 alias pp='pbpaste'
 alias pc='pbcopy'
 # グローバルIPを確認
-alias myip='curl ifconfig.io'
+alias myip='curl ifconfig.io -4'
 alias xcode-restore='update_xcode_plugins --restore'
 alias xcode-unsign='update_xcode_plugins --unsign'
 # wifiをON/OFFする
