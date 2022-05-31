@@ -7,3 +7,5 @@ GPATH
 GRTAGS
 GTAGS
 ChromePhp.php
+.php_cs.cache
+.nvimlog
