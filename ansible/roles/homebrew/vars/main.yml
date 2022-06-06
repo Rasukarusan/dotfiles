@@ -64,3 +64,4 @@ packages:
   - name: python-yq
   - name: st
   - name: jc
+  - name: gh
