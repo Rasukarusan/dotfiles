@@ -1515,3 +1515,18 @@ _git_checkout_from_pr() {
   [ -z "$pr" ] && return
   gh pr checkout $pr
 }
+
+# iOSシミュレータを起動
+alias ios='_open_ios_simulator'
+_open_ios_simulator() {
+  # simulatorが起動していると他のiosデバイスが起動できないのでKILL
+  killall Simulator
+  local deviceIds=(
+    'iPhone12\t940B4E26-E147-4B02-88EA-3C7958DC581B'
+    'iPadPro\t48ED061E-D78C-43C3-A8F7-33F029BC4CCC'
+    'iPadAir\t769A6774-44F2-42CF-B114-C73CA09616A0'
+  )
+  local deviceId=$(echo "$deviceIds" | tr " " "\n" | fzf --delimiter='\t' --with-nth 1 | awk '{print $2}')
+  [ -z "$deviceId" ] && return
+  open -a Simulator --args -CurrentDeviceUDID $deviceId
+}
