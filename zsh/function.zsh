@@ -1503,7 +1503,15 @@ function _neovim_nightly_update() {
 }
 
 # 本日変更があったファイルのみをls
-alias lt=_ls_today
+alias lt='_ls_today'
 function _ls_today() {
   gls --full-time --time-style="+%Y-%m-%d %H:%M:%S" $1 | grep `date "+%F"`
+}
+
+# PRのブランチへチェックアウト
+alias prr='_git_checkout_from_pr'
+_git_checkout_from_pr() {
+  local pr=$(gh pr list --search "NOT bump in:title" | fzf | awk '{print $1}')
+  [ -z "$pr" ] && return
+  gh pr checkout $pr
 }
