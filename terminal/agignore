@@ -1,6 +1,7 @@
 logs/
 *.sql
 *.css
+*.csv
 tags
 *.log
 *%*
