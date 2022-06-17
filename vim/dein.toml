@@ -53,29 +53,6 @@ hook_add = 'source ~/.config/nvim/plugin_settings/emmet-vim.vim'
 lazy = 0
 
 # --------------------------------------------
-# Denite
-# --------------------------------------------
-[[plugins]]
-repo = 'Shougo/denite.nvim'
-hook_add = 'source ~/.config/nvim/plugin_settings/denite.vim'
-lazy = 1
-
-# --------------------------------------------
-# Denite-Gtags
-# --------------------------------------------
-[[plugins]]
-repo = 'ozelentok/denite-gtags'
-hook_add = 'source ~/.config/nvim/plugin_settings/denite-gtags.vim'
-lazy = 1
-
-# --------------------------------------------
-# gtags,ctagsを自動生成
-# --------------------------------------------
-# [[plugins]]
-# repo = 'jsfaint/gen_tags.vim'
-# hook_add = 'source ~/.config/nvim/plugin_settings/gen_tags.vim'
-
-# --------------------------------------------
 # リアルタイムLinter
 # --------------------------------------------
 [[plugins]]
