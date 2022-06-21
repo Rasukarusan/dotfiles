@@ -82,18 +82,16 @@ _look_all() {
 }
 
 # remoteに設定されているURLを開く
+# PRがある場合はPRを開く
 alias gro='_git_remote_open'
 _git_remote_open() {
-  local remote=$(git remote show | fzf --select-1)
-  local url=$(git remote get-url $remote)
-  if [ "$url" = '' ]; then; return; fi
-  if ! echo $url | grep 'http' >/dev/null; then
-    # Bitbucketの場合
-    url=$(echo $url | sed 's/git@bitbucket.org:/https:\/\/bitbucket\.org\//g')
-    # GithubでSSHの場合
-    url=$(echo $url | grep -oP "(?<=@).*(?=.git)" | tr ':' '/' | sed 's/^/https:\/\//g')
+  local url=$(gh pr view --json url | jq -r ".url")
+  if [ -z "$url" ]; then
+    gh repo view --web
+  else
+    echo "open $url"
+    open $url
   fi
-  open $url
 }
 
 # 現在のブランチをoriginにpushする
