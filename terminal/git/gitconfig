@@ -22,8 +22,3 @@
 	old = red 
 	new = green 
 	whitespace = red reverse
-# [delta]
-    # diff-so-fancy = true
-    # line-numbers = true
-    # features = side-by-side line-numbers decorations
-    # syntax-theme = Dracula
