@@ -85,15 +85,6 @@ repo = 'aklt/plantuml-syntax'
 lazy = 1
 
 # --------------------------------------------
-# markdownプレビュー
-# --------------------------------------------
-[[plugins]]
-repo = 'iamcco/markdown-preview.nvim'
-on_ft = ['markdown', 'pandoc.markdown', 'rmd']
-build =  'cd app & yarn install'
-lazy = 0
-
-# --------------------------------------------
 # PHPコードチェック、未使用変数のハイライト
 # --------------------------------------------
 # [[plugins]]

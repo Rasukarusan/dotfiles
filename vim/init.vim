@@ -357,6 +357,8 @@ cnoremap <C-p> <Up>
 cabbrev ms messages
 " vsplitで右側に空バッファを作る
 cabbrev vs vertical rightbelow new
+" coc-markdown-preview-enhancedのコマンド
+command! MarkdownPreview :CocCommand markdown-preview-enhanced.openPreview
 
 " smlの設定
 " https://github.com/Rasukarusan/nvim-select-multi-line
