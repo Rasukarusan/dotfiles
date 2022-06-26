@@ -37,6 +37,8 @@ let g:coc_global_extensions = [
   \, 'coc-word'
   \, 'coc-tailwindcss'
   \, 'coc-jedi'
+  \, 'coc-webview'
+  \, 'coc-markdown-preview-enhanced'
 \]
 " CocConfigのdiagnostic.enableが効かなくなってしまったのでこちらで対応
 let b:coc_diagnostic_disable=1
