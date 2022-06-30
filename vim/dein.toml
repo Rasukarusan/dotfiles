@@ -75,7 +75,7 @@ lazy = 0
 [[plugins]]
 repo = 'junegunn/vim-easy-align'
 hook_add = 'source ~/.config/nvim/plugin_settings/vim-easy-align.vim'
-lazy = 1
+lazy = 0
 
 # --------------------------------------------
 # plantuml
