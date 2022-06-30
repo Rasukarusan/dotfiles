@@ -1,5 +1,5 @@
 snippet "vd|dump" "var_dump();" b
-var_dump(__LINE__ . ':' . $1);
+var_dump($1);
 endsnippet
 
 snippet "iniset" "ini_set('memory_limit', '256M');" b
@@ -7,7 +7,7 @@ ini_set('memory_limit', '256M');
 endsnippet
 
 snippet "ou|oo" "outer_log();" b
-outer_log(__LINE__$1, null, true);
+outer_log($1);
 endsnippet
 
 snippet "pub|func" "public function ()" b
@@ -24,4 +24,17 @@ endsnippet
 snippet "orm" "ORM::get_last_query" b
 \ORM::get_last_query();
 endsnippet
+
+snippet "mock" "$this->getMockBuilde..." b
+$mock = $this->getMockBuilder('FlierAdmin\Services\PlanUsageService')
+	->setConstructorArgs($this->service_constructors)
+	->setMethods(['sendMail'])
+	->getMock();
+
+$mock->expects($this->exactly(2))
+	->method('sendMail')
+	->withConsecutive([$arg1, $arg2], [$arg1, $arg2]);
+);
+endsnippet
+
 
