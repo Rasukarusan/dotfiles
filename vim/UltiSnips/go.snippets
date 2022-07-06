@@ -12,6 +12,25 @@ snippet f "fmt.Println()" b
 fmt.Println($1)
 endsnippet
 
+snippet er "if err != nil" b
+if err != nil {
+	$1
+}
+endsnippet
+
+# 色付きで出力
+snippet fred "log.Printf('\x1b[31m%s\x1b[0m', 'hoge')" b
+log.Printf("\x1b[31m%s\x1b[0m", $1)
+endsnippet
+
+snippet fgreen "log.Printf('\x1b[32m%s\x1b[0m', 'hoge')" b
+log.Printf("\x1b[32m%s\x1b[0m", $1)
+endsnippet
+
+snippet fyellow "log.Printf('\x1b[33m%s\x1b[0m', 'hoge')" b
+log.Printf("\x1b[33m%s\x1b[0m", $1)
+endsnippet
+
 snippet scan "bufio.NewScanner(os.Stdin)" b
 	s := bufio.NewScanner(os.Stdin)
 	for s.Scan() {
@@ -44,6 +63,19 @@ snippet filew "os.Create(file.txt)" b
 		_, err := file.WriteString(line)
 		if err != nil {
 			log.Fatal(err)
+		}
+	}
+endsnippet
+
+snippet sleep "time.Sleep(time.Second * 1)" b
+	time.Sleep(time.Second * 1)
+endsnippet
+
+snippet headers "headersの中身全部表示" b
+	for k, vals := range c.Request.Header {
+		log.Printf("\x1b[31m：%s\x1b[0m", k)
+		for _, v := range vals {
+			log.Printf("\x1b[31m：%s\x1b[0m", v)
 		}
 	}
 endsnippet
