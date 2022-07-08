@@ -79,3 +79,67 @@ snippet headers "headersの中身全部表示" b
 		}
 	}
 endsnippet
+
+
+snippet test "テストファイル" b
+package services
+
+import (
+	"errors"
+	mock_repository "flier_api4/mock/repository"
+	"flier_api4/models"
+	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/google/go-cmp/cmp"
+)
+
+func $1TestAuthService_Refresh(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUser := mock_repository.NewMockUser(ctrl)
+	s := models.Session{
+		UserID:       1,
+		AccessToken:  "test_access_token",
+		RefreshToken: "test_refresh_token",
+	}
+	mockSession := mock_repository.NewMockSession(ctrl)
+	mockSession.EXPECT().GetByRefreshToken(s.RefreshToken).Return(s, nil)
+
+	c := NewAuthService(mockUser, mockSession, logger, env)
+
+	type args struct {
+		refreshToken string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *models.AuthRefreshResponse
+		wantErr bool
+	}{
+		{
+			name: "新たなアクセストークン、リフレッシュトークンが返ること",
+			args: args{refreshToken: s.RefreshToken},
+			want: &models.AuthRefreshResponse{
+				Result:       true,
+				AccessToken:  "test_access_token",
+				RefreshToken: "test_refresh_token",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := c.Refresh(tt.args.refreshToken)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("AuthService.Refresh() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if d := cmp.Diff(got, tt.want); len(d) != 0 {
+				t.Errorf("differs: (-got +want)\n%s", d)
+			}
+		})
+	}
+}
+endsnippet
