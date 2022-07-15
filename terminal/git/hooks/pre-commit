@@ -3,6 +3,7 @@ words=(
     console.log
     var_dump
     outer_log
+    log.Printf
 )
 files=($(git diff --cached --name-only HEAD))
 error=0
