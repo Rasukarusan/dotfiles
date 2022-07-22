@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+
+# リポジトリ内の.git/hooksがある場合はそちらを優先する
+source ~/dotfiles/terminal/git/hooks/_load_local_hook
+
 words=(
     console.log
     var_dump
