@@ -19,6 +19,10 @@ if err != nil {
 endsnippet
 
 # 色付きで出力
+snippet fmage "log.Printf('\x1b[35m%s\x1b[0m', 'hoge')" b
+log.Printf("\x1b[35m%v\x1b[0m", $1)
+endsnippet
+
 snippet fred "log.Printf('\x1b[31m%s\x1b[0m', 'hoge')" b
 log.Printf("\x1b[31m%v\x1b[0m", $1)
 endsnippet
