@@ -518,6 +518,7 @@ _docker_commands() {
         for targetFile in "${targetFiles[@]}";do
           echo "$targetFile =====> ${container}(${containerId})"
           execCommand="docker cp ${targetFile} ${containerId}:/root/"
+          print -s "$execCommand"
           printf "\e[33m${execCommand}\e[m\n" && eval $execCommand
         done
       done
@@ -539,6 +540,46 @@ _docker_commands() {
     printf "\e[33m${separateStr}\n  ${execCommand}  \n${separateStr}\e[m\n"
     eval $execCommand
   fi
+}
+
+# docker危険コマンド集
+alias ddc='_danger_docker_commands'
+_danger_docker_commands() {
+  local actions=(
+    'minrc配置:_copy_minrc'
+  )
+  local action=$(echo "${actions[@]}" | tr ' ' '\n' | fzf -d ':' --with-nth=1 | cut -d ':' -f 2,2)
+  [ -n "$action" ] && eval "$action"
+}
+
+# minrc配置
+_copy_minrc() {
+  targetFile="${HOME}/dotfiles/zsh/minrc"
+
+  containers=($(docker ps --format "{{.Names}}" | fzf-tmux -p80%))
+  for container in ${containers[@]};do
+    printf "\e[35m${container}\e[m\n"
+    filename=".profile"
+    shell="ash"
+
+    # bashが使えるか判定
+    if docker exec -it $container cat /etc/shells | grep bash >/dev/null ; then
+      filename=".bashrc"
+      shell="bash"
+    fi
+
+    # コンテナにコピー
+    id=$(docker ps -aq --filter "name=$container")
+    test -z "$id" && echo "Not found $container's Container ID." && continue
+
+    # コンテナのHOMEディレクトリを取得
+    home=$(docker exec -i $container $shell -c "getent passwd | tail -n 1 | cut -d: -f6")
+
+    echo "$targetFile =====> ${container}(${id})"
+    execCommand="docker cp ${targetFile} ${id}:${home}/${filename}"
+    print -s "$execCommand"
+    printf "\e[33m${execCommand}\e[m\n\n" && eval $execCommand
+  done
 }
 
 # 自作スクリプト編集時、fzfで選択できるようにする
