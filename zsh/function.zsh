@@ -323,7 +323,7 @@ _write_article() {
   fi
 }
 # 投稿した記事を別ディレクトリに移動
-alias mpa='_move_posted_articles'
+alias post='_move_posted_articles'
 _move_posted_articles() {
   # 投稿完了を意味する目印
   local POSTED_MARK='完'
