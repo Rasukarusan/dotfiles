@@ -4,16 +4,20 @@ if executable('eslint_d')
 endif
 let g:ale_fixers = {
 \   '*': ['remove_trailing_lines', 'trim_whitespace'],
-\   'javascript': ['eslint'],
+\   'javascript': ['prettier'],
 \   'markdown': ['textlint'],
+\   'html': ['prettier'],
+\   'css': ['prettier'],
 \}
 let g:ale_fix_on_save = 1
+" ローカルの.prettierrcを優先
+let g:ale_javascript_prettier_use_local_config = 1
 
 " vimrcを再読込みしないとfixersが未定義になってしまうため、autocmdで設定した
 autocmd VimEnter,SourcePost * :let b:ale_fixers = ['prettier', 'eslint']
 
 let g:ale_pattern_options = {
-\   '.*\.html$': {'ale_fix_on_save': 0},
+\   '.*\.html$': {'ale_fix_on_save': 1},
 \}
 
 " エラー箇所に飛ぶ
