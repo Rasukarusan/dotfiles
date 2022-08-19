@@ -39,7 +39,7 @@ alias gst='git status'
 alias gv='git remote -v'
 alias gca='git checkout $(git diff --name-only)'
 alias gcl='git clone'
-alias gfa='git fetch --all'
+alias gfa='git fetch --all --prune'
 # ctagsをbrew installしたものを使う
 alias ctags='$(brew --prefix)/bin/ctags'
 alias trans='trans -b en:ja'
