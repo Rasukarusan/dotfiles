@@ -665,6 +665,7 @@ alias dgg='_danger_git_commands'
 _danger_git_commands() {
   local actions=(
     'n個前のコミットに遡って書き換えるコマンドを表示:_rebase_commit'
+    'マージ済みのブランチ削除:_delete_merged_branch'
     '特定ファイルと関連する履歴を全て削除:_delete_all_histories_by_file'
     'masterのコミットを全て削除:_delete_all_git_log'
     'コミットのAuthorを全て書き換える:_change_author'
@@ -673,6 +674,20 @@ _danger_git_commands() {
   )
   local action=$(echo "${actions[@]}" | tr ' ' '\n' | fzf -d ':' --with-nth=1 | cut -d ':' -f 2,2)
   [ -n "$action" ] && eval "$action"
+}
+
+_delete_merged_branch() {
+  git branch --merged | grep -E -v '(master|develop|stage|stg|php7.2|renewal)'
+  printf "\e[35m上記のブランチを削除して良いですか？(y/N) > \e[m\n"
+  read isOK
+  case "${isOK}" in
+    y|Y|yes)
+
+      git branch --merged | grep -E -v '(master|develop|stage|stg|php7.2|renewal)' | xargs git branch -d
+      ;;
+    *)
+      ;;
+  esac
 }
 
 # 複数個前のコミットを書き換えるコマンドの流れを表示する
