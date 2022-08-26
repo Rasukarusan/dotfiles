@@ -666,6 +666,7 @@ _danger_git_commands() {
   local actions=(
     'n個前のコミットに遡って書き換えるコマンドを表示:_rebase_commit'
     'マージ済みのブランチ削除:_delete_merged_branch'
+    'Githubでブランチ間の差分を見る:_branch_diff_on_github'
     '特定ファイルと関連する履歴を全て削除:_delete_all_histories_by_file'
     'masterのコミットを全て削除:_delete_all_git_log'
     'コミットのAuthorを全て書き換える:_change_author'
@@ -674,6 +675,15 @@ _danger_git_commands() {
   )
   local action=$(echo "${actions[@]}" | tr ' ' '\n' | fzf -d ':' --with-nth=1 | cut -d ':' -f 2,2)
   [ -n "$action" ] && eval "$action"
+}
+
+# 現在のブランチとdevelopの差分をGithub上のURLで表示する
+_branch_diff_on_github() {
+  local current=$(git branch --show-current)
+  local origin=$(git config --get remote.origin.url | sed "s/git@github://g" | sed "s/.git//g")
+  local url="https://github.com/${origin}/compare/develop...$current"
+  open $url
+  printf "\e[33m${url}\e[m\n"
 }
 
 _delete_merged_branch() {
