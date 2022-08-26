@@ -14,10 +14,15 @@ endfunction
 " SnippetsのジャンプをTabでする。デフォルトは<C-j>、<C-k>。
 " @See https://github.com/neoclide/coc-snippets
 inoremap <silent><expr> <TAB>
-      \ pumvisible() ? coc#_select_confirm() :
+      \ coc#pum#visible() ? coc#pum#confirm() :
       \ coc#expandableOrJumpable() ? "\<C-r>=coc#rpc#request('doKeymap', ['snippets-expand-jump',''])\<CR>" :
       \ <SID>check_back_space() ? "\<TAB>" :
       \ coc#refresh()
+
+" 補完メニューの移動
+inoremap <silent><expr> <C-j> coc#pum#visible() ? coc#pum#next(1) : "\<Down>"
+inoremap <silent><expr> <C-k> coc#pum#visible() ? coc#pum#prev(1) : "\<Up>"
+inoremap <silent><expr> <Enter> coc#pum#visible() ? coc#pum#confirm() : "\<Enter>"
 
 function! s:check_back_space() abort
   let col = col('.') - 1
