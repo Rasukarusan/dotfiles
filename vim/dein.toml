@@ -31,10 +31,10 @@ lazy = 0
 # --------------------------------------------
 # ステータスライン
 # --------------------------------------------
-[[plugins]]
-repo = 'vim-airline/vim-airline'
-hook_add = 'source ~/.config/nvim/plugin_settings/vim-airline.vim'
-lazy = 0
+# [[plugins]]
+# repo = 'vim-airline/vim-airline'
+# hook_add = 'source ~/.config/nvim/plugin_settings/vim-airline.vim'
+# lazy = 0
 
 # --------------------------------------------
 # Scriptをその場で実行
@@ -80,9 +80,9 @@ lazy = 0
 # --------------------------------------------
 # plantuml
 # --------------------------------------------
-[[plugins]]
-repo = 'aklt/plantuml-syntax'
-lazy = 1
+# [[plugins]]
+# repo = 'aklt/plantuml-syntax'
+# lazy = 1
 
 # --------------------------------------------
 # PHPコードチェック、未使用変数のハイライト
@@ -94,9 +94,9 @@ lazy = 1
 # --------------------------------------------
 # JavaScript整形
 # --------------------------------------------
-[[plugins]]
-repo = 'maksimr/vim-jsbeautify'
-lazy = 1
+# [[plugins]]
+# repo = 'maksimr/vim-jsbeautify'
+# lazy = 1
 
 # --------------------------------------------
 # GitBlamer
@@ -136,11 +136,11 @@ lazy = 0
 # --------------------------------------------
 # Debugger
 # --------------------------------------------
-[[plugins]]
-repo = 'vim-vdebug/vdebug'
-hook_add = 'source ~/.config/nvim/plugin_settings/vim-vdebug.vim'
-on_ft = ['php']
-lazy = 1
+# [[plugins]]
+# repo = 'vim-vdebug/vdebug'
+# hook_add = 'source ~/.config/nvim/plugin_settings/vim-vdebug.vim'
+# on_ft = ['php']
+# lazy = 1
 
 # --------------------------------------------
 # Swift - シンタックスハイライト
@@ -160,10 +160,10 @@ lazy = 0
 # --------------------------------------------
 # 一行ステートメントを複数行ステートメントにする
 # --------------------------------------------
-[[plugins]]
-repo = 'AndrewRadev/splitjoin.vim'
-hook_add = 'source ~/.config/nvim/plugin_settings/splitjoin.vim'
-lazy = 1
+# [[plugins]]
+# repo = 'AndrewRadev/splitjoin.vim'
+# hook_add = 'source ~/.config/nvim/plugin_settings/splitjoin.vim'
+# lazy = 1
 
 # --------------------------------------------
 # 翻訳
@@ -175,19 +175,19 @@ lazy = 1
 # --------------------------------------------
 # terraform
 # --------------------------------------------
-[[plugins]]
-repo = 'hashivim/vim-terraform'
-hook_add = 'source ~/.config/nvim/plugin_settings/terraform.vim'
-on_ft = ['terraform']
-lazy = 1
+# [[plugins]]
+# repo = 'hashivim/vim-terraform'
+# hook_add = 'source ~/.config/nvim/plugin_settings/terraform.vim'
+# on_ft = ['terraform']
+# lazy = 1
 
 # --------------------------------------------
 # terraform-completion
 # --------------------------------------------
-[[plugins]]
-repo = 'juliosueiras/vim-terraform-completion'
-on_ft = ['terraform']
-lazy = 1
+# [[plugins]]
+# repo = 'juliosueiras/vim-terraform-completion'
+# on_ft = ['terraform']
+# lazy = 1
 
 # --------------------------------------------
 # コード画像化
