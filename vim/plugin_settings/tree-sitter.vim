@@ -3,7 +3,7 @@ require'nvim-treesitter.configs'.setup {
   ignore_install = { "norg" },
   highlight = {
     enable = true,
-    disable = {}, -- :TSModuleInfo で言語一覧表示
+    disable = {'php', 'vim'}, -- :TSModuleInfo で言語一覧表示
   },
   indent = {
     enable = true
