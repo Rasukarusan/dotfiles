@@ -368,49 +368,17 @@ nnoremap <Space>v :call sml#mode_on()<CR>
 " local.vimで上書き
 runtime! myautoload/local.vim
 
-" Status bar
-" ---------------------------------------------------
-let g:last_mode = ""
-
-function! Mode()
-  let l:mode = mode()
-
-  if l:mode !=# g:last_mode
-    let g:last_mode = l:mode
-
-    hi User1 guifg=#005f00 guibg=#dfff00 gui=BOLD
-    hi User3 guifg=#FFFFFF guibg=#2A3D75
-    hi User4 guifg=#ffffff guibg=#2a3d4e
-    hi User5 guifg=#ffffff guibg=#333333
-
-
-    if l:mode ==# "i"
-      hi User1 guifg=#005fff guibg=#ffffff
-    elseif l:mode ==? "v" || l:mode ==# ""
-      hi User1 guifg=#4e4e4e guibg=#ffaf00
-    endif
-  endif
-
-  if l:mode ==# "n"
-    return "  NORMAL "
-  elseif l:mode ==# "i"
-    return "  INSERT "
-  elseif l:mode ==# "v"
-    return "  VISUAL "
-  elseif l:mode ==# "V"
-    return "  VISUAL "
-  else
-    return ""
-  endif
-endfunction
+" statusline
+hi User1 guifg=#FFFFFF guibg=#000000
+hi User2 guifg=#ffffff guibg=#333333
 
 " モード
-set statusline=%1*%{Mode()}%*
+" set statusline=%1*%{Mode()}%*
 " ブランチ名
-set statusline+=%5*\ %{matchstr(fugitive#statusline(),'(\\zs.*\\ze)')}
+set statusline=%2*\ %{matchstr(fugitive#statusline(),'(\\zs.*\\ze)')}
 " ファイル名
-set statusline+=\ %t
+set statusline+=%1*\ %t
 " ここから右寄せ
-set statusline+=%=%*
+set statusline+=%=
 " 現在行 / 全体行 ファイル種別
-set statusline+=%5*%l/%L\ \%y%*
+set statusline+=%l/%L\ \%y
