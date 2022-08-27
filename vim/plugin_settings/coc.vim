@@ -47,3 +47,6 @@ let g:coc_global_extensions = [
 \]
 " CocConfigのdiagnostic.enableが効かなくなってしまったのでこちらで対応
 let b:coc_diagnostic_disable=1
+
+" 補完メニューの色
+hi CocFloating guifg=#ffffff guibg=#001622
