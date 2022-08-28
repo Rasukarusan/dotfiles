@@ -73,3 +73,16 @@ nnoremap Y y$
 " syで単語コピー
 nnoremap sy byw
 nnoremap K <nop>
+
+" ==============================
+"    statusline
+" ==============================
+hi User1 guifg=#FFFFFF guibg=#000000
+hi User2 guifg=#ffffff guibg=#333333
+
+" ファイル名
+set statusline=%1*\ %{expand('%')}
+" ここから右寄せ
+set statusline+=%=
+" 現在行 / 全体行 ファイル種別
+set statusline+=%l/%L\ \%y
