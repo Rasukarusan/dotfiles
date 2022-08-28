@@ -368,16 +368,16 @@ nnoremap <Space>v :call sml#mode_on()<CR>
 " local.vimで上書き
 runtime! myautoload/local.vim
 
-" statusline
+" ==============================
+"    statusline
+" ==============================
 hi User1 guifg=#FFFFFF guibg=#000000
 hi User2 guifg=#ffffff guibg=#333333
 
-" モード
-" set statusline=%1*%{Mode()}%*
 " ブランチ名
-set statusline=%2*\ %{matchstr(fugitive#statusline(),'(\\zs.*\\ze)')}
+set statusline=%9*\ \ %2*%{matchstr(fugitive#statusline(),'(\\zs.*\\ze)')}
 " ファイル名
-set statusline+=%1*\ %t
+set statusline+=%1*\ %{expand('%')}
 " ここから右寄せ
 set statusline+=%=
 " 現在行 / 全体行 ファイル種別
