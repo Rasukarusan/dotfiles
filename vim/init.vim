@@ -20,6 +20,13 @@ if dein#check_install()
     call dein#install()
 endif
 
+if len(dein#check_clean()) > 0
+  call dein#recache_runtimepath()
+endif
+
+command! DeinClear call dein#recache_runtimepath()
+command! DeinUpdate call dein#update()
+
 
 " ===============グローバル設定関連===================== "
 " 別ファイルのvimの設定を読み込む
