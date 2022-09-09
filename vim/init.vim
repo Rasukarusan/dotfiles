@@ -390,3 +390,7 @@ set statusline+=%1*\ %{expand('%')}
 set statusline+=%=
 " 現在行 / 全体行 ファイル種別
 set statusline+=%l/%L\ \%y
+
+" init.vimを再読み込みした際にも反映されるようにcoc.vimの設定ファイルではなくここに書く
+hi CocFloating guifg=#cccccc guibg=#001622
+hi CocMenuSel guifg=#cccccc guibg=#2a3d75
