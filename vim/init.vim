@@ -368,11 +368,6 @@ cabbrev vh split
 " coc-markdown-preview-enhancedのコマンド
 command! MarkdownPreview :CocCommand markdown-preview-enhanced.openPreview
 
-" smlの設定
-" https://github.com/Rasukarusan/nvim-select-multi-line
-let g:sml#echo_yank_str = 0
-nnoremap <Space>v :call sml#mode_on()<CR>
-
 " local.vimで上書き
 runtime! myautoload/local.vim
 
