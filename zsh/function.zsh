@@ -1594,3 +1594,18 @@ _open_ios_simulator() {
   [ -z "$deviceId" ] && return
   open -a Simulator --args -CurrentDeviceUDID $deviceId
 }
+
+# 記事投稿に関するコミットをまとめてする
+alias post_all='_post_anything_artcle'
+function _post_anything_artcle() {
+  local targets=(
+    $HOME/Documents/github/keynote-template
+    $HOME/Documents/github/articles
+  )
+  for target in ${targets[@]}; do
+    printf "\e[33m${target}\e[m\n"
+    git -C $target add -A
+    git -C $target commit -m "posted"
+    git -C $target push origin master
+  done
+}
