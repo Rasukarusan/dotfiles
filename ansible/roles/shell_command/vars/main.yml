@@ -8,3 +8,4 @@ npm_packages:
   - textlint-rule-preset-jtf-style
   - textlint-rule-preset-ja-technical-writing
   - textlint-rule-spellcheck-tech-word
+  - chokidar-cli
