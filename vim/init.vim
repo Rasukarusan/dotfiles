@@ -143,6 +143,11 @@ augroup gitcommit
     autocmd FileType gitcommit silent normal A
 augroup END
 
+" filetype設定し直し
+augroup myFileType
+  autocmd FileType htmldjango set filetype=html
+augroup END
+
 " 画面分割時フォーカスしていないウィンドウの色を変更
 " augroup ChangeBackground
 "   autocmd!
