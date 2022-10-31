@@ -89,6 +89,8 @@ filetype plugin indent on
 syntax enable
 set t_Co=256
 colorscheme jellybeans
+" カーソルの形。下記は`h: gcr`に載っているデフォルト
+set gcr=n-v-c-sm:block,i-ci-ve:ver25,r-cr-o:hor20
 " QuickFixで選択した行をわかりやすくするための設定
 hi QuickFixLine ctermbg=242 guibg=#a2227d
 " Cocのlistでカーソル行をわかりやすくするための設定
