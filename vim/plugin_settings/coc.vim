@@ -44,6 +44,7 @@ let g:coc_global_extensions = [
   \, 'coc-jedi'
   \, 'coc-webview'
   \, 'coc-markdown-preview-enhanced'
+  \, 'coc-rust-analyzer'
 \]
 " CocConfigのdiagnostic.enableが効かなくなってしまったのでこちらで対応
 let b:coc_diagnostic_disable=1
