@@ -241,6 +241,14 @@ hook_add = 'source ~/.config/nvim/plugin_settings/nvim-select-multi-line.vim'
 lazy = 0
 
 # --------------------------------------------
+# rust
+# --------------------------------------------
+[[plugins]]
+repo = 'rust-lang/rust.vim'
+hook_add = 'source ~/.config/nvim/plugin_settings/rust.vim'
+lazy = 0
+
+# --------------------------------------------
 # template
 # --------------------------------------------
 # [[plugins]]
