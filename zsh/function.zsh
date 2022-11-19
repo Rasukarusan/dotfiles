@@ -665,6 +665,7 @@ alias dgg='_danger_git_commands'
 _danger_git_commands() {
   local actions=(
     'n個前のコミットに遡って書き換えるコマンドを表示:_rebase_commit'
+    'ブランチ削除:_delete_branch'
     'マージ済みのブランチ削除:_delete_merged_branch'
     'Githubでブランチ間の差分を見る:_branch_diff_on_github'
     '特定ファイルと関連する履歴を全て削除:_delete_all_histories_by_file'
@@ -686,13 +687,31 @@ _branch_diff_on_github() {
   printf "\e[33m${url}\e[m\n"
 }
 
+# ブランチをfzfで選択して削除
+_delete_branch() {
+  local targets=($(git branch | grep -E -v '(master|develop|stage|stg|php7.2|renewal)' | fzf --preview 'git show --color=always {1}' --preview-window=right:50%))
+  test -z "$targets" && return
+  echo "${targets[@]}" | tr ' ' '\n'
+  printf "\e[35m上記のブランチを削除して良いですか？(y/N) > \e[m\n"
+  read ok
+  case "${ok}" in
+    y|Y|yes)
+      for target in ${targets[@]}; do
+        git branch -D $target
+      done
+      ;;
+    *)
+      ;;
+  esac
+}
+
+# 現在のブランチにマージされているブランチを削除する
 _delete_merged_branch() {
   git branch --merged | grep -E -v '(master|develop|stage|stg|php7.2|renewal)'
   printf "\e[35m上記のブランチを削除して良いですか？(y/N) > \e[m\n"
   read isOK
   case "${isOK}" in
     y|Y|yes)
-
       git branch --merged | grep -E -v '(master|develop|stage|stg|php7.2|renewal)' | xargs git branch -d
       ;;
     *)
@@ -1608,4 +1627,17 @@ function _post_anything_artcle() {
     git -C $target commit -m "posted"
     git -C $target push origin master
   done
+}
+
+# 指定サイズのダミー画像を生成する
+function create_dummy_image() {
+  # 1MB
+  local byte=2948218
+  local tmpText=~/Desktop/dummy.txt
+  local target=~/Desktop/dummy.png
+
+  convert -size 640x640 xc:#FF6600 $target
+  cat /dev/urandom | LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w $byte | head -n 1 > $tmpText
+  exiftool -m $target -comment\<=$tmpText
+  rm ${target}_original $tmpText
 }
