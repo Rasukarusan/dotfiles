@@ -147,3 +147,11 @@ func $1TestAuthService_Refresh(t *testing.T) {
 	}
 }
 endsnippet
+
+snippet dump "gin dump headers" b
+	requestDump, err := httputil.DumpRequest(g.Request, true)
+	if err != nil {
+		log.Printf("\x1b[35m%v\x1b[0m", err)
+	}
+	log.Printf("\x1b[35m%v\x1b[0m", string(requestDump))
+endsnippet
