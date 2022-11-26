@@ -1603,13 +1603,12 @@ _git_checkout_from_pr() {
 alias ios='_open_ios_simulator'
 _open_ios_simulator() {
   local identifier=$(xcrun simctl list runtimes -j | jq -r '.runtimes[] | select(.platform == "iOS") | .identifier')
-  local devices=$(xcrun simctl list devices -j | jq -r ".devices[\"${identifier}\"][] | select(.isAvailable == true) | [.name,.udid] | @tsv")
-  local target=$(echo "$devices" | fzf --delimiter='\t' --with-nth 1 | awk -F '\t' '{print $2}')
-  echo $target
-  [ -z "$target" ] && return
-  # simulatorが起動していると他のiosデバイスが起動できないのでKILL
-  killall Simulator
-  open -a Simulator --args -CurrentDeviceUDID $target
+  local devices=$(xcrun simctl list devices -j | jq -r ".devices[\"${identifier}\"][] | select(.isAvailable == true) | .name" | fzf)
+  [ -z "$devices" ] && return
+  echo "$devices" | while read device; do
+    xcrun simctl boot "$device"
+    open -a Simulator
+  done
 }
 
 # 記事投稿に関するコミットをまとめてする
