@@ -293,8 +293,20 @@ _show_mail_log() {
   log stream --predicate '(process == "smtpd") || (process == "smtp")' --info
 }
 
-# 記事メモコマンド
-alias art='_write_article'
+# 記事に関するコマンド集
+alias art='_article_commands'
+_article_commands() {
+  local actions=(
+    '記事を書く:_write_article'
+    'articlesに移動:_cd_articles'
+    'pushする:_push_article'
+    'pullする:_pull_article'
+  )
+  local action=$(echo "${actions[@]}" | tr ' ' '\n' | fzf -d ':' --with-nth=1 | cut -d ':' -f 2,2)
+  [ -n "$action" ] && eval "$action"
+}
+
+# 記事を書く
 _write_article() {
   local ARTICLE_DIR=/Users/`whoami`/Documents/github/articles
   if [ "$1" = '-a' ];then
@@ -322,8 +334,13 @@ _write_article() {
     vim ${ARTICLE_DIR}/${article}
   fi
 }
+
+# 記事ディレクトリに移動
+_cd_articles() {
+  cd $HOME/Documents/github/articles
+}
+
 # 投稿した記事を別ディレクトリに移動
-alias post='_move_posted_articles'
 _move_posted_articles() {
   # 投稿完了を意味する目印
   local POSTED_MARK='完'
@@ -339,6 +356,34 @@ _move_posted_articles() {
       git mv "${ARTICLE_DIR}/${file}" "$POSTED_DIR/" || mv "${ARTICLE_DIR}/${file}" "$POSTED_DIR/"
       printf "\e[33m${file} is moved!\e[m\n"
     fi
+  done
+}
+
+# 記事投稿に関するコミットをまとめてする
+_push_article() {
+  _move_posted_articles
+  local targets=(
+    $HOME/Documents/github/keynote-template
+    $HOME/Documents/github/articles
+  )
+  for target in ${targets[@]}; do
+    printf "\e[33m${target}\e[m\n"
+    git pull
+    git -C $target add -A
+    git -C $target commit -m "posted"
+    git -C $target push origin master
+  done
+}
+
+# 記事投稿に関するリポジトリを更新する
+_pull_article() {
+  local targets=(
+    $HOME/Documents/github/keynote-template
+    $HOME/Documents/github/articles
+  )
+  for target in ${targets[@]}; do
+    printf "\e[33m${target}\e[m\n"
+    git pull
   done
 }
 
@@ -1608,21 +1653,6 @@ _open_ios_simulator() {
   echo "$devices" | while read device; do
     xcrun simctl boot "$device"
     open -a Simulator
-  done
-}
-
-# 記事投稿に関するコミットをまとめてする
-alias post_all='_post_anything_artcle'
-function _post_anything_artcle() {
-  local targets=(
-    $HOME/Documents/github/keynote-template
-    $HOME/Documents/github/articles
-  )
-  for target in ${targets[@]}; do
-    printf "\e[33m${target}\e[m\n"
-    git -C $target add -A
-    git -C $target commit -m "posted"
-    git -C $target push origin master
   done
 }
 
