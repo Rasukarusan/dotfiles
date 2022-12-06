@@ -464,11 +464,6 @@ _generate_random_number() {
 
 # 第一引数の文字列をバッジにする。tmux未対応。
 alias ba='_set_badge'
-_set_badge() {
-  printf "\e]1337;SetBadgeFormat=%s\a"\
-  $(echo -n "$1" | base64)
-}
-
 
 # Dockerコマンドをfzfで選択
 alias dcc='_docker_commands'
