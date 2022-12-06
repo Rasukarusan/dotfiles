@@ -980,6 +980,16 @@ _toggle_desktop_icon_display() {
   fi
 }
 
+# Dockの表示/非表示を切り替える
+alias dock='_toggle_dock'
+_toggle_dock() {
+  osascript <<EOS
+  tell application "System Events"
+    tell dock preferences to set autohide to not autohide
+  end tell
+EOS
+}
+
 # 囲まれた文字のみを抽出
 alias tgrep='_grep_surround_word'
 _grep_surround_word() {
