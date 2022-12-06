@@ -107,7 +107,6 @@ alias gg='github'
 alias cw='chatwork'
 alias sqq='sequel_ace'
 alias itt='sh ~/Documents/github/iterm-scripts/iterm.sh'
-alias android='~/Library/Android/sdk/emulator/emulator -avd Pixel_4_API_29 -netdelay none -netspeed full'
 alias ip='open "https://www.cman.jp/network/support/go_access.cgi"'
 alias pjq='pbpaste | jq'
 alias code="/Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin/code"
