@@ -1678,3 +1678,10 @@ function create_dummy_image() {
   exiftool -m $target -comment\<=$tmpText
   rm ${target}_original $tmpText
 }
+
+# iosシミュレータを録画
+alias rec='_record_ios_simulator'
+function _record_ios_simulator() {
+  local name=${1:-`date +"%H%M%S"`}
+  xcrun simctl io booted recordVideo ~/Desktop/${name}.mov
+}
