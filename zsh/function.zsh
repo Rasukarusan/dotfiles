@@ -30,27 +30,6 @@ _fzf-cdr() {
   fi
 }
 
-alias cee='_easy_change_dir'
-function _easy_change_dir() {
-  local findOptions="-maxdepth 3 -type d -not -path './.git/*'"
-  local targetDir=$(eval "find . $findOptions" | fzf --bind "tab:reload(find {} $findOptions),ctrl-p:reload(find `dirname {}` $findOptions)" --preview 'tree -L 3 {}')
-  [ -z "$targetDir" ] && return
-  cd $targetDir
-}
-
-# ag & view
-alias jump='_jump'
-_jump(){
-  if [ -n "$1" ]; then
-    #pathと書くと$PATHと被ってエラーが出るので注意
-    local file=$(ag $1 | fzf | awk -F ':' '{printf  $1 " +" $2}'| sed -e 's/\+$//')
-    if [ -n "$file" ]; then
-      # vim $fileのようにそのまま渡すと開けないので文字列で渡して実行
-      eval "vim $file"
-    fi
-  fi
-}
-
 # カレントディレクトリ以下をプレビューし選択して開く
 alias lk='_look'
 _look() {
@@ -60,18 +39,6 @@ _look() {
     local find_result=$(find . -maxdepth 1 -type f -o -type l)
   fi
   local target_files=($(echo "$find_result" \
-    | sed 's/\.\///g' \
-    | grep -v -e '.jpg' -e '.gif' -e '.png' -e '.jpeg' \
-    | sort -r \
-    | fzf-tmux -p80% --select-1 --prompt 'vim ' --preview 'bat --color always {}' --preview-window=right:70%
-  ))
-  [ "$target_files" = "" ] && return
-  vim -p ${target_files[@]}
-}
-
-alias lkk='_look_all'
-_look_all() {
-  local target_files=($(find . -type f -not -path "./node_modules/*" \
     | sed 's/\.\///g' \
     | grep -v -e '.jpg' -e '.gif' -e '.png' -e '.jpeg' \
     | sort -r \
@@ -213,86 +180,6 @@ _fgg() {
   [ -n "$job" ] && fg %${job}
 }
 
-# あらかじめ指定したGitディレクトリを全て最新にする
-alias upd='_update_dotfile'
-_update_dotfile() {
-  ls -1 ~/Documents/github | while read dir; do
-    local dir=~/Documents/github/${dir}
-    printf "\e[33m${dir}\e[m\n"
-    git -C ${dir} pull --rebase origin master
-  done
-}
-# あらかじめ指定したGitディレクトリを全てpushする
-alias psd='_push_dotfile'
-_push_dotfile() {
-  ls -1 ~/Documents/github | while read dir; do
-    local dir=~/Documents/github/${dir}
-    printf "\e[33m${dir}\e[m\n"
-    git -C ${dir} add -A
-    git -C ${dir} commit -v
-    git -C ${dir} push origin master
-  done
-}
-# あらかじめ指定したGitディレクトリのgit statusを表示
-alias std='_show_git_status_dotfile'
-_show_git_status_dotfile() {
-  for targetDir in ${MY_TARGET_GIT_DIR[@]}; do
-    printf "\e[33m`basename ${targetDir}`\e[m\n"
-    git -C ${targetDir} status
-    echo ""
-  done
-}
-# 選択したディレクトリのgit diffを表示
-alias stdd='_preview_my_git_diff'
-_preview_my_git_diff() {
-  local target_dir=$(echo ${MY_TARGET_GIT_DIR[@]} | tr ' ' '\n' | fzf --preview 'git -C {} diff --color=always')
-  if [ -z "$target_dir" ]; then
-    return
-  fi
-  git -C $target_dir add -p && git -C $target_dir commit
-}
-
-# git管理しているディレクトリすべてでgit statusを実行
-alias sgs='_show_git_status'
-_show_git_status() {
-  ls -1 ~/Documents/github | while read dir; do
-    local dir=~/Documents/github/${dir}
-    if [ -n "$(git -C ${dir} status --porcelain)" ]; then
-      printf "\e[33m${dir}\e[m\n"
-      git -C ${dir} status -s
-    fi
-  done
-}
-
-# bcコマンドを簡単にかつ小数点時に.3333となるのを0.3333に直す(0を付け足す)
-alias bcc='_bcc'
-_bcc() {
-  echo "scale=2;$1" | bc | sed 's/^\./0\./g'
-}
-# agの結果をfzfで絞り込み選択するとvimで開く
-alias agg='_ag_and_vim'
-_ag_and_vim() {
-  if [ -z "$1" ]; then
-    echo 'Usage: agg PATTERN'
-    return 0
-  fi
-  ag $1 | fzf-tmux -p80% | IFS=':' read -A selected
-  [ ${#selected[@]} -lt 2 ] && return
-  vim ${selected[1]} +${selected[2]}
-}
-
-
-# ファイルパス:行番号のようなものをvimで開く
-viml() {
-  pbpaste | IFS=':' read -A selected
-  vim ${selected[1]} +${selected[2]}
-}
-
-alias maillog='_show_mail_log'
-_show_mail_log() {
-  log stream --predicate '(process == "smtpd") || (process == "smtp")' --info
-}
-
 # 記事に関するコマンド集
 alias art='_article_commands'
 _article_commands() {
@@ -387,37 +274,6 @@ _pull_article() {
   done
 }
 
-# Redmine記法からmarkdown形式へ変換
-alias rtm='_redmine_to_markdown'
-_redmine_to_markdown() {
-  sed "s/^# /1. /g" | \
-  sed "s/h2./##/g"  | \
-  sed "s/h3./###/g" | \
-  sed "s/<pre>/\`\`\`zsh/g" | \
-  sed "s/<\/pre>/\`\`\`/g"
-}
-
-# markdown記法からRedmine形式へ変換
-alias mtr='_markdown_to_redmine'
-_markdown_to_redmine() {
-  local converted=$(pbpaste | \
-  sed "s/^[0-9]\. /# /g" | \
-  sed "s/###/h3./g" | \
-  sed "s/##/h2./g"  | \
-  sed "s/\`\`\`.*/<pre>/g"
-  )
-  # 偶数番目の<pre>を</pre>に変換
-  local pre_line_numbers=(`echo "$converted" | grep -nP "^<pre>$" | sed 's/:.*//g'`)
-  local cnt=0
-  for pre_line_number in ${pre_line_numbers[@]};do
-    if [ `expr $cnt % 2` -ne 0 ]; then
-      converted=`echo "$converted" | sed "$pre_line_number s/<pre>/<\/pre>/g"`
-    fi
-    cnt=`expr $cnt + 1`
-  done
-  echo "$converted"
-}
-
 # 定義済みのaliasを表示
 alias com='_show_alias'
 _show_alias() {
@@ -468,7 +324,6 @@ _set_badge() {
   printf "\e]1337;SetBadgeFormat=%s\a"\
   $(echo -n "$1" | base64)
 }
-
 
 # Dockerコマンドをfzfで選択
 alias dcc='_docker_commands'
@@ -625,24 +480,6 @@ _copy_minrc() {
     print -s "$execCommand"
     printf "\e[33m${execCommand}\e[m\n\n" && eval $execCommand
   done
-}
-
-# 自作スクリプト編集時、fzfで選択できるようにする
-alias scc='_edit_my_script'
-_edit_my_script() {
-  local targetFiles=$(find ~/scripts -follow -maxdepth 1 -name "*.sh";ls -1 ~/.zshrc.local ~/.xvimrc)
-  local selected=$(echo "$targetFiles" | fzf-tmux -p80% --preview '{bat --color always {}}')
-  [ -z "$selected" ] && return
-  vim $selected
-}
-
-# 自作スクリプトをfzfで選んで実行
-alias ss='_source_my_script'
-_source_my_script() {
-  local targetFiles=$(find ~/scripts -follow -maxdepth 1 -name "*.sh")
-  local selected=$(echo "$targetFiles" | fzf-tmux -p80% --preview '{bat --color always {}}')
-  [ -z "$selected" ] && return
-  sh $selected
 }
 
 # tmuxコマンド集
@@ -955,20 +792,6 @@ _fzf_git_stash_drop() {
   fi
 }
 
-alias cld='_clipboard_diff'
-_clipboard_diff() {
-  local PATH_CLIP_LOG_DIR=~/.cliplog
-  local clipLogs=($(ls -t $PATH_CLIP_LOG_DIR | fzf --prompt "CHOOSE" --preview "cat $PATH_CLIP_LOG_DIR/{}" --preview-window=right:80%))
-  [ ${#clipLogs[@]} -ne 2 ] && return
-  local selectFiles=''
-  for clipLog in ${clipLogs[@]}; do
-    selectFiles="${selectFiles} ${PATH_CLIP_LOG_DIR}/${clipLog}"
-  done
-  echo "$selectFiles"
-  [ -z "$selectFiles" ] && return
-  vimdiff $(echo "$selectFiles")
-}
-
 # デスクトップ上アイコンの表示/非表示を切り替える
 alias dt='_toggle_desktop_icon_display'
 _toggle_desktop_icon_display() {
@@ -990,123 +813,12 @@ _toggle_dock() {
 EOS
 }
 
-# 囲まれた文字のみを抽出
-alias tgrep='_grep_surround_word'
-_grep_surround_word() {
-  # 正規表現の特殊文字をエスケープ
-  local escape='
-    s/*/\\\*/g;
-    s/+/\\\+/g;
-    s/\./\\\./g;
-    s/?/\\\?/g;
-    s/{/\\\{/g;
-    s/}/\\\}/g;
-    s/(/\\\(/g;
-    s/)/\\\)/g;
-    s/\[/\\\[/g;
-    s/\]/\\\]/g;
-    s/\^/\\\^/g;
-    s/|/\\\|/g;
-    '
-  local firstWord=`echo "$1" | sed "$escape"`
-  local lastWord=`echo "$2" | sed "$escape"`
-  grep -oP "(?<=$firstWord).*(?=$lastWord)"
-}
-
-# seleniumの操作リスト
-alias sell='_fzf_selenium'
-_fzf_selenium() {
-  local action=`cat <<- EOF | fzf-tmux -p
-		status
-		log
-		up
-		stop
-	EOF`
-  [ -z "$action" ] && return
-  local execCommand
-  case $action in
-    'status' )
-      execCommand="ps aux | grep -v grep | grep -c selenium"
-      ;;
-    'log' )
-      local LOG_DIR=~/.selenium-log
-      local latest_selenium_log=$(echo $(ls -t $LOG_DIR | head -n 1))
-      execCommand="tail -f $LOG_DIR/$latest_selenium_log"
-      ;;
-    'up' )
-      local LOG_DIR=~/.selenium-log
-      if [ ! -e $LOG_DIR ]; then
-        mkdir $LOG_DIR
-      fi
-      local is_run=`ps aux | grep -v grep | grep -c selenium`
-      local today=`date +%Y-%m-%d`
-      if [ $is_run -eq 0 ]; then
-        execCommand="java -jar /Library/java/Extensions/selenium-server-standalone-3.4.0.jar > ${LOG_DIR}/${today}.log 2>&1 &"
-      fi
-      ;;
-    'stop' )
-      execCommand="ps aux | grep selenium | grep -v grep | awk '{print \$2}' | xargs kill -9"
-      ;;
-  esac
-  print -s "$execCommand"
-  eval "$execCommand"
-}
-
-# masterブランチを最新にする
-alias update_master='_update_master'
-_update_master() {
-  git checkout master
-  git fetch --all
-  git pull --rebase origin master
-}
-
 # お天気情報を出力する
 alias tenki='_tenki'
 _tenki() {
   local place=${1:-kanagawa}
   curl -4 http://wttr.in/${place}
   # finger ${place}@graph.no
-}
-
-# vagrantのコマンドをfzfで選択
-alias vgg='_fzf_vagrant'
-_fzf_vagrant() {
-  local selectCommand=`cat <<- EOF | fzf-tmux -p
-		vagrant ssh
-		vagrant up
-		vagrant provision
-		vagrant reload
-		vagrant halt
-		vagrant reload&provision
-		vagrant global-status
-	EOF`
-  test -z "$selectCommand" && return
-  local arg=`echo $selectCommand | sed "s/vagrant //g"`
-  case "${arg}" in
-    'ssh' )
-      vagrant ssh
-      ;;
-    'up' )
-      vagrant up
-      ;;
-    'provision' )
-      vagrant provision
-      ;;
-    'reload' )
-      vagrant reload
-      ;;
-    'halt' )
-      vagrant halt
-      ;;
-    'global-status' )
-      vagrant global-status
-      ;;
-    'reload&provision' )
-      vagrant reload
-      vagrant provision
-      ;;
-    *) echo "${arg} Didn't match anything"
-  esac
 }
 
 # コマンド実行配下にパスワードなど漏れると危険な単語が入力されていないかをチェック
@@ -1116,41 +828,6 @@ _check_danger_input() {
   echo $danger_word
     ag --ignore-dir=vendor $danger_word ./*
   done
-}
-
-# 文字画像を生成。第一引数に生成したい文字を指定。
-alias create_bg_img='_create_bg_img'
-_create_bg_img() {
-  local sizeList=(75x75 100x100 320x240 360x480 500x500 600x390 640x480 720x480 1000x1000 1024x768 1280x960)
-  local sizes=($(echo ${sizeList} | tr ' ' '\n' | fzf-tmux -p))
-  local backgroundColor="#000000"
-  local fillColor="#ff8ad8" # 文字色
-  # フォントによっては日本語対応しておらず「?」になってしまうので注意
-  local fontPath=/System/Library/Fonts/ヒラギノ丸ゴ\ ProN\ W4.ttc
-  local default_caption='(･∀･)'
-  local caption=${1:-$default_caption}
-  for size in ${sizes[@]}; do
-    local imgPath=~/Desktop/${size}.png
-    echo $imgPath
-    convert \
-      -size $size  \
-      -background $backgroundColor\
-      -fill $fillColor \
-      -font $fontPath \
-      caption:$caption \
-      $imgPath
-  done
-}
-
-# gmailを既読を付けずにタイトルだけ表示
-alias gmail='_gmail'
-_gmail() {
-  local USER_ID=`cat ~/account.json | jq -r '.gmail.user_id'`
-  local PASS=`cat ~/account.json | jq -r '.gmail.pass'`
-  curl -u ${USER_ID}:${PASS} --silent "https://mail.google.com/mail/feed/atom" \
-    | tr -d '\n' \
-    | awk -F '<entry>' '{for (i=2; i<=NF; i++) {print $i}}' \
-    | sed -n "s/<title>\(.*\)<\/title.*name>\(.*\)<\/name>.*/\2 - \1/p"
 }
 
 # 定義済み関数をfzfで中身を見ながら出力する
@@ -1197,11 +874,6 @@ _clear_cdr_cache() {
   done
 }
 
-alias viw='_open_path_by_vim'
-_open_path_by_vim() {
-  vim "$(which -p "$1")"
-}
-
 # fzfの出力をしてからvimで開く
 alias vif='_fzf_vim'
 _fzf_vim() {
@@ -1233,72 +905,6 @@ _man_builtin_command_zsh() {
 alias manbash='_man_builtin_command_bash'
 _man_builtin_command_bash() {
   man bash | less -p "^       $1 "
-}
-
-# gitコマンドのmanを参照
-alias mangit='_fzf_man_git'
-_fzf_man_git() {
-  local target=$(git help -a | awk '{print $1}' | grep -Ev '^[A-Z]' | sed '/^$/d' \
-    | fzf \
-      --preview "git help {} | head -n 100 " \
-      --preview-window=right:80%
-    )
-  [ -z "$target" ] && return
-  git help $target
-  print -s "git help $target"
-}
-
-# ログインShellを切り替える
-alias shell='_switch_login_shell'
-_switch_login_shell() {
-  local target=$(cat /etc/shells | grep '^/' | fzf-tmux -p)
-  [ -z "$target" ] && return
-  chsh -s $target
-}
-
-# インストール一覧コマンド集
-alias list='_show_installed_list'
-_show_installed_list() {
-  local targets=`cat <<-EOS | fzf-tmux -p
-	brew
-	cask
-	mas
-	npm
-	yarn
-	gem
-	pip
-	pip3
-	EOS`
-  [ -z "$targets" ] && return
-  echo "$targets" | while read target; do
-    local cmd=''
-    case $target in
-      'cask')
-        cmd='brew cask list'
-        ;;
-      'npm')
-        cmd='npm ls -g'
-        ;;
-      *) cmd="$target list"
-    esac
-    printf "\n\e[33m\$ $cmd\e[m\n"
-    eval $cmd
-  done
-}
-
-# phpbrewによるphpバージョン切り替え
-alias phpp='_fzf_phpbrew'
-_fzf_phpbrew() {
-  local currentVersion=$(php -v)
-  local selected=$(phpbrew list \
-    | grep php \
-    | tr -d ' ' \
-    | tr -d '*' \
-    | currentVersion=$(php -v) fzf-tmux -p --preview="echo '$(php -v)'" --preview-window=down:50%
-  )
-  [ -z "$selected" ] && return
-  phpbrew use $selected
-  echo '$ php -v' && php -v
 }
 
 # npmコマンドをfzfで実行
@@ -1387,7 +993,6 @@ _fzf_composer() {
   print -s "composer $action"
 }
 
-
 # fzfでcarthage
 alias car='_fzf_carthage'
 _fzf_carthage() {
@@ -1420,56 +1025,6 @@ _fzf_vim_git_diff_branch(){
   local targets=($(git diff --name-only $parent $current | fzf-tmux -p80% --preview='git diff --exit-code {} >/dev/null && bat --color always {} || git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy'))
   [ -z "$targets" ] && return
   vim -p "${targets[@]}"
-}
-
-# vimメモ帳
-alias memo='_memo'
-_memo() {
-  local MEMO_PATH=~/memo.md
-  local today=`date '+%Y/%m/%d(%a)'`
-  if ! grep "# $today" $MEMO_PATH >/dev/null ; then
-    echo "\n# $today" >> $MEMO_PATH
-  fi
-  # 最下行を一番上にしてvimを開く (:help scroll-cursor)
-  echo "Gzt" | vim -s - $MEMO_PATH
-}
-
-alias pmux='_popuptmux'
-_popuptmux() {
-  if [ "$(\tmux display-message -p -F "#{session_name}")" = "popup" ];then
-    tmux detach-client
-  else
-    tmux popup -E "\tmux attach -t popup || \tmux new -s popup"
-  fi
-}
-
-alias imgcatt='_imgcat_for_tmux'
-_imgcat_for_tmux() {
-  # @See: https://qastack.jp/unix/88296/get-vertical-cursor-position
-  get_cursor_position() {
-    old_settings=$(stty -g) || exit
-    stty -icanon -echo min 0 time 3 || exit
-    printf '\033[6n'
-    pos=$(dd count=1 2> /dev/null)
-    pos=${pos%R*}
-    pos=${pos##*\[}
-    x=${pos##*;} y=${pos%%;*}
-    stty "$old_settings"
-  }
-  clear
-  command imgcat "$1"
-  [ $? -ne 0 ] && return
-  [ ! "$TMUX" ] && return
-  get_cursor_position
-  # 2行分画像が残ってしまうためtputで再描画判定させて消す
-  read && tput cup `expr $y - 2` 0
-}
-
-_show_commit_only_current_branch() {
-  local currentBranch=$(git branch --show-current)
-  local compareBranch=$(git branch -a | grep -v $currentBranch | tr -d ' ' | fzf --prompt "Select the branch to compare >" --preview "git cherry -v {}")
-  [ -z "$compareBranch" ] && return
-  git cherry -v $compareBranch
 }
 
 # plistファイルをjsonで出力
@@ -1537,24 +1092,6 @@ EOS
 EOS
 }
 
-# 禅モード
-# Dock非表示、Desktopアイコン非表示、itermの大きさ変更
-alias goyo='_goyo'
-_goyo() {
-  . ~/Documents/github/macos-scripts/desktop_background "/System/Library/Desktop Pictures/Solid Colors/Black.png"
-  . ~/Documents/github/macos-scripts/menu_bar 0
-  . ~/Documents/github/macos-scripts/dock
-  . ~/Documents/github/macos-scripts/desktop_icon 0
-  sh ~/Documents/github/iterm-scripts/iterm.sh window large
-}
-
-alias goyo!='_goyo!'
-_goyo!() {
-  . ~/Documents/github/macos-scripts/menu_bar 1
-  . ~/Documents/github/macos-scripts/dock
-  . ~/Documents/github/macos-scripts/desktop_icon 1
-}
-
 # ブログ用のkeynoteファイルを開く
 alias bb='_open_blog_keynote'
 _open_blog_keynote() {
@@ -1582,31 +1119,6 @@ _gif_to_mp4() {
   ffmpeg -i $gif -movflags faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" $mp4
 }
 
-alias terr="_terraform_execute"
-_terraform_execute() {
-  local cmd=$(terraform -help | grep '^  \S' | sed 's/  //' | fzf --with-nth=1 --preview='echo {2..}' --preview-window=up:1  | awk '{print $1}')
-  [ -z "$cmd" ] && return
-  print -s "terraform $cmd $1"
-  terraform $cmd $1
-}
-
-alias opp="_open_localhost"
-_open_localhost() {
-  local port=$(netstat -Watnlv | grep 'LISTEN' | awk '{"ps -ww -o args= -p" $9 | getline procname; print $4 "||" procname}' | column -t -s '||' \
-  | fzf --with-nth 1.. --preview="echo {1} | awk -F '.' '{print \$NF}' | xargs -I{} curl -I http://localhost:{}"  --preview-window=up:10 \
-  | awk '{print $1}' | awk -F '.' '{print $NF}')
-  [ -z "$port" ] && return
-  open http://localhost:$port
-}
-
-alias gbd='_git_branch_diff'
-_git_branch_diff() {
-  local current=$(git branch --show-current)
-  local target=$(git branch -a | tr -d ' ' | fzf --preview="git diff --color=always {} ${current}")
-  [ -z "$target" ] && return
-  git diff $target $current | delta --side-by-side
-}
-
 # c#ファイル(.cs)をコンパイルして実行
 # ln -s /Library/Frameworks/Mono.framework/Versions/Current/bin/mono /usr/local/bin
 # ln -s /Library/Frameworks/Mono.framework/Versions/Current/bin/mcs /usr/local/bin
@@ -1616,19 +1128,6 @@ _mcs_and_mono() {
   local fileName=${1/\.*/}
   mcs $1
   mono ${fileName}.exe
-}
-
-# 画像に枠線を追加
-alias imgBorder='_add_border_to_image'
-_add_border_to_image() {
-  local image=$1
-  local color=${2:-a0a8a9}
-  local borderWeight=${3:-10}
-  local width=$(sips -g pixelWidth $1 | awk -F ' ' '{print $2}' | tr -d '\n')
-  local height=$(sips -g pixelHeight $1 | awk -F ' ' '{print $2}' | tr -d '\n')
-  local borderWidth=$(expr $width + $borderWeight)
-  local borderHeight=$(expr $height + $borderWeight) 
-  sips -p $borderHeight $borderWidth --padColor $color $image -o border_${image}
 }
 
 # neovimを更新
