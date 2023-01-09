@@ -10,6 +10,3 @@ source_file ~/dotfiles/zsh/exports.zsh
 source_file ~/dotfiles/zsh/alias.zsh
 source_file ~/dotfiles/zsh/function.zsh
 source_file ~/.phpbrew/bashrc
-# zshrc.localを読み込む(行末に書くことで設定を上書きする)
-source_file ~/.zshrc.local
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
