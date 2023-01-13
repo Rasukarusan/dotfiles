@@ -47,12 +47,14 @@ function show() {
     local filter=${1:-""}
     local chrome_history=$(export_chrome_history)
     local selected=$(
-        echo "\texport\n$chrome_history" \
+        echo "\t\texport\n$chrome_history" \
         | grep -P "(\texport|$filter)" \
         | awk '!title[$2]++' \
-        | fzf-tmux -p80% --delimiter $'\t' --with-nth 2,3 --preview 'echo {1}' --preview-window up:1\
+        | awk -F '\t' '{print $3"\t"$2"\t"$1}' \
+        | fzf-tmux -p80% --delimiter $'\t' --with-nth=1,2 --preview 'echo {1}' --preview-window up:1\
         | tr -d '\n'
     )
+    echo "$selected"
     # | fzf --delimiter $'\t' --with-nth 2,3 --preview 'w3m -dump {1}'\
 
     [ -z "$selected" ] && return
@@ -61,7 +63,8 @@ function show() {
         echo "$chrome_history" | grep "$filter" | awk -F '\t' '{print $3"\t"$2}'
         return
     fi
-    open $(echo $selected | awk '{print $1}')
+    local url=$(echo "$selected" | awk -F '\t' '{print $3}')
+    open "$url"
 }
 
 function show_by_date() {
