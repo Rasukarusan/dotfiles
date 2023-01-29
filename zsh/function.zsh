@@ -255,9 +255,9 @@ _push_article() {
   )
   for target in ${targets[@]}; do
     printf "\e[33m${target}\e[m\n"
-    git pull
     git -C $target add -A
     git -C $target commit -m "posted"
+    git -C $target pull
     git -C $target push origin master
   done
 }
@@ -270,7 +270,7 @@ _pull_article() {
   )
   for target in ${targets[@]}; do
     printf "\e[33m${target}\e[m\n"
-    git pull
+    git -C $target pull
   done
 }
 
