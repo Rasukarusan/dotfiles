@@ -111,3 +111,4 @@ alias android='~/Library/Android/sdk/emulator/emulator -avd Pixel_4_API_29 -netd
 alias ip='open "https://www.cman.jp/network/support/go_access.cgi"'
 alias pjq='pbpaste | jq'
 alias code="/Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin/code"
+alias d='cd ~/Desktop'
