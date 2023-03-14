@@ -3,7 +3,7 @@
 # リポジトリ内の.git/hooksがある場合はそちらを優先する
 source ~/dotfiles/terminal/git/hooks/_load_local_hook
 
-jiraNo=$(git branch --show-current | grep -oP '[0-9]*')
+jiraNo=$(git branch --show-current | grep -oP '[0-9]*' | head -n 1)
 firstLine=$(head -n1 $1)  # git commit --amendとの区別のために最初の一行を取得
 
 test -z "$jiraNo" && exit
