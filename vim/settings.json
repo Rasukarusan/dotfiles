@@ -1,0 +1,22 @@
+{
+    "vim.vimrc.enable": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "window.autoDetectColorScheme": true,
+    "vim.normalModeKeyBindings": [
+        {
+            "before": ["<space>", "-"],
+            "after": ["g", "c","c"]
+        },
+        {
+            "before": ["<C-j>"],
+            "after": ["5", "j"]
+        }
+    ],
+    "vim.visualModeKeyBindings": [
+        {
+          "before": ["<space>", "-"],
+          "commands": ["editor.action.commentLine"]
+        }
+    ]
+}
