@@ -11,6 +11,10 @@
         {
             "before": ["<C-j>"],
             "after": ["5", "j"]
+        },
+        {
+            "before": ["K"],
+            "after": ["g", "h"]
         }
     ],
     "vim.visualModeKeyBindings": [
