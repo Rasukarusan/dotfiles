@@ -339,6 +339,8 @@ _docker_commands() {
 		docker stats
 		docker images -a
 		docker-compose ps
+		docker-compose build
+		docker-compose build --no-cache
 		docker-compose up
 		docker-compose up --build
 		docker-compose up -d
