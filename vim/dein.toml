@@ -261,6 +261,9 @@ lazy = 0
 [[plugins]]
 repo = 'leoluz/nvim-dap-go'
 lazy = 0
+[[plugins]]
+repo = 'theHamsta/nvim-dap-virtual-text'
+lazy = 0
 
 # --------------------------------------------
 # template
