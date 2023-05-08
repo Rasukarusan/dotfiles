@@ -251,6 +251,20 @@ lazy = 0
 # --------------------------------------------
 # template
 # --------------------------------------------
+[[plugins]]
+repo = 'mfussenegger/nvim-dap'
+hook_add = 'source ~/.config/nvim/plugin_settings/nvim-dap.lua'
+lazy = 0
+[[plugins]]
+repo = 'rcarriga/nvim-dap-ui'
+lazy = 0
+[[plugins]]
+repo = 'leoluz/nvim-dap-go'
+lazy = 0
+
+# --------------------------------------------
+# template
+# --------------------------------------------
 # [[plugins]]
 # repo = ''
 # hook_add = 'source ~/.config/nvim/plugin_settings/'
