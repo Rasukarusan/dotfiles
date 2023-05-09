@@ -249,6 +249,14 @@ hook_add = 'source ~/.config/nvim/plugin_settings/rust.vim'
 lazy = 0
 
 # --------------------------------------------
+# Github Copilot
+# --------------------------------------------
+[[plugins]]
+repo = 'github/copilot.vim'
+# hook_add = 'source ~/.config/nvim/plugin_settings/'
+lazy = 0
+
+# --------------------------------------------
 # template
 # --------------------------------------------
 [[plugins]]
