@@ -289,7 +289,7 @@ command! -nargs=+ -complete=command ShowExResult call s:show_ex_result(<q-args>)
 " =============================================
 function! s:fzf_vimrc()
   call fzf#run({
-    \ 'source': "find ~/dotfiles ${XDG_CONFIG_HOME}/nvim/myautoload -follow -name '*.vim' -o -name 'dein.toml' -o -name 'xvimrc' | awk '{ print length, $0 }' | sort -n -s | cut -d' ' -f2- ",
+    \ 'source': "find ~/dotfiles ${XDG_CONFIG_HOME}/nvim/myautoload -follow -name '*.vim' -o -name 'dein.toml' -o -name 'xvimrc' -o -name '*.lua' | awk '{ print length, $0 }' | sort -n -s | cut -d' ' -f2- ",
     \ 'sink': 'tabe',
     \ 'options': '--preview "bat --color always {} --style=plain | head -n 100"',
     \ 'tmux': '-p80%,80%',
