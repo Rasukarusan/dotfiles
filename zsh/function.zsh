@@ -349,6 +349,7 @@ _docker_commands() {
 		docker-compose --compatibility up -d
 		docker-compose up --force-recreate
 		docker-compose stop
+		docker-compose logs -f
 		docker rm
 		docker rmi
 		docker cp
@@ -704,7 +705,7 @@ _git_clean_df() {
 # vim関連ファイルをfzfで選択しvimで開く
 alias vimrc='_edit_vim_files'
 _edit_vim_files() {
-  local nvimFiles=$(find ~/dotfiles ${XDG_CONFIG_HOME}/nvim/myautoload -follow -name "*.vim")
+  local nvimFiles=$(find ~/dotfiles ${XDG_CONFIG_HOME}/nvim/myautoload -follow -name "*.vim" -o -name "*.lua")
   local deinToml=~/dotfiles/vim/dein.toml
   local xvimrc=~/dotfiles/vim/xvimrc
   # 文字数でソートする
