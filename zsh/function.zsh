@@ -893,6 +893,15 @@ _fzf_vim() {
   vim -p "${files[@]}"
 }
 
+# git管理下のファイルのみfzfで出力をしてvimで開く
+# vi"g"ではなく"p"にしているのは、vimのキーバインド(Ctrl-p)と合わせたかったため
+alias vip='_fzf_vim_git'
+_fzf_vim_git() {
+  local files=($(git ls-files | fzf --preview "bat --color always {}"))
+  [ -z "$files" ] && return
+  vim -p "${files[@]}"
+}
+
 # 現在開いているfinderのディレクトリに移動
 alias cdf='_cd_opend_finder'
 _cd_opend_finder() {
