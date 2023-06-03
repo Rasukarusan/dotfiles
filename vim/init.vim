@@ -375,6 +375,8 @@ cabbrev vs vertical rightbelow new
 cabbrev vh split
 " coc-markdown-preview-enhancedのコマンド
 command! MarkdownPreview :CocCommand markdown-preview-enhanced.openPreview
+" coc-markmapのコマンド
+command! MarkMap :CocCommand markmap.watch
 
 " local.vimで上書き
 runtime! myautoload/local.vim
