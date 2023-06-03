@@ -274,6 +274,28 @@ _pull_article() {
   done
 }
 
+# マインドマップを書く
+alias map='_write_mindmap'
+_write_mindmap() {
+  local dir=/Users/`whoami`/Documents/github/articles/mindmap
+  local mindmap=`ls ${dir}/*.md | xargs -I {} basename {} | fzf-tmux -p80% --preview "bat --color=always ${dir}/{}"`
+  test -z "$mindmap" && return
+
+  if [ "$mindmap" = "00000000.md" ]; then
+    local tmpfile=$(mktemp)
+    vim $tmpfile
+    local title="$(cat $tmpfile | tr -d '\n')"
+    rm $tmpfile
+
+    local today=`date '+%Y_%m_%d_'`
+    local target=${dir}/${today}${title}.md
+    echo "# ${title}" > $target
+    vim ${dir}/${today}${title}.md -c "MarkMap"
+  else
+    vim ${dir}/${mindmap} -c "MarkMap"
+  fi
+}
+
 # 定義済みのaliasを表示
 alias com='_show_alias'
 _show_alias() {
