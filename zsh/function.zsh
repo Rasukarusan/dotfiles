@@ -277,8 +277,8 @@ _pull_article() {
 # マインドマップを書く
 alias map='_write_mindmap'
 _write_mindmap() {
-  local dir=/Users/`whoami`/Documents/github/articles/mindmap
-  local mindmap=`ls ${dir}/*.md | xargs -I {} basename {} | fzf-tmux -p80% --preview "bat --color=always ${dir}/{}"`
+  local dir=/Users/`whoami`/Documents/github/mindmap-view/data
+  local mindmap=`(echo 00000000.md && ls ${dir}/*.md | xargs -I {} basename {}) | fzf-tmux -p80% --preview "bat --color=always ${dir}/{}"`
   test -z "$mindmap" && return
 
   if [ "$mindmap" = "00000000.md" ]; then
@@ -286,6 +286,7 @@ _write_mindmap() {
     vim $tmpfile
     local title="$(cat $tmpfile | tr -d '\n')"
     rm $tmpfile
+    test -z "$title" && return
 
     local today=`date '+%Y_%m_%d_'`
     local target=${dir}/${today}${title}.md
