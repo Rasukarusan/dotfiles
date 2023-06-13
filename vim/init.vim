@@ -34,6 +34,7 @@ call plug#begin()
   Plug 'rcarriga/nvim-dap-ui'
   Plug 'leoluz/nvim-dap-go'
   Plug 'theHamsta/nvim-dap-virtual-text'
+  " Plug 'flyinshadow/php_localvarcheck.vim'
 call plug#end()
 " 各種設定の読み込み
 " @see https://zenn.dev/mattn/articles/565c4ec71f461cbbf5c9
