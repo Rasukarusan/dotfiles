@@ -27,13 +27,14 @@ files:
   - { src: ~/dotfiles/terminal/tmux.conf, dest: ~/.tmux.conf }
   - { src: ~/dotfiles/terminal/hyper.js, dest: ~/.hyper.js }
   - { src: ~/dotfiles/terminal/agignore, dest: ~/.agignore }
-  - { src: ~/dotfiles/terminal/gitconfig, dest: ~/.gitconfig }
-  - { src: ~/dotfiles/terminal/gitignore_global, dest: ~/.gitignore_global }
-  - { src: ~/dotfiles/terminal/git_template, dest: ~/.git_template }
+  - { src: ~/dotfiles/terminal/git/gitconfig, dest: ~/.gitconfig }
+  - { src: ~/dotfiles/terminal/git/gitignore_global, dest: ~/.gitignore_global }
   # Vim
   - { src: ~/dotfiles/vim/xvimrc, dest: ~/.xvimrc }
   - { src: ~/dotfiles/vim/init.vim, dest: ~/.vimrc }
   - { src: ~/dotfiles/vim/init.vim, dest: ~/.config/nvim/init.vim }
+  - { src: ~/dotfiles/vim/colors, dest: ~/.config/nvim/colors }
+  - { src: ~/dotfiles/vim/colors, dest: ~/.vim/colors }
   - { src: ~/dotfiles/vim/textlintrc, dest: ~/.textlintrc }
   - { src: ~/dotfiles/vim/dein.toml, dest: ~/.config/nvim/dein.toml }
   - { src: ~/dotfiles/vim/plugin_settings, dest: ~/.config/nvim/plugin_settings }
