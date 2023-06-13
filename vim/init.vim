@@ -5,28 +5,44 @@ let g:python3_host_prog = $PYENV_ROOT.'/versions/neovim3/bin/python'
 if &compatible
   set nocompatible
 endif
-set runtimepath+=$XDG_CONFIG_HOME/nvim/dein/repos/github.com/Shougo/dein.vim
-let s:rc_dir    = expand($XDG_CONFIG_HOME.'/nvim')
-let s:toml      = s:rc_dir . '/dein.toml'
-
-if dein#load_state(expand($XDG_CONFIG_HOME.'/nvim/dein'))
-    call dein#begin(expand($XDG_CONFIG_HOME.'/nvim/dein'))
-    call dein#load_toml(s:toml)
-    call dein#end()
-    call dein#save_state()
-endif
-
-if dein#check_install()
-    call dein#install()
-endif
-
-if len(dein#check_clean()) > 0
-  call dein#recache_runtimepath()
-endif
-
-command! DeinClear call dein#recache_runtimepath()
-command! DeinUpdate call dein#update()
-
+call plug#begin()
+  Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+  Plug 'junegunn/fzf.vim'
+  Plug 'scrooloose/nerdcommenter'
+  Plug 'tpope/vim-fugitive'
+  Plug 'thinca/vim-quickrun'
+  Plug 'mattn/emmet-vim'
+  Plug 'w0rp/ale'
+  Plug 'kana/vim-submode'
+  Plug 'junegunn/vim-easy-align'
+  Plug 'rhysd/git-messenger.vim'
+  Plug 'neoclide/coc.nvim', {'branch': 'release'}
+  Plug 'honza/vim-snippets'
+  Plug 'airblade/vim-gitgutter'
+  Plug 'keith/swift.vim'
+  Plug 'gorodinskiy/vim-coloresque'
+  Plug 'skanehira/translate.vim'
+  Plug 'segeljakt/vim-silicon'
+  Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+  Plug 'machakann/vim-sandwich'
+  Plug 'lambdalisue/fern.vim'
+  Plug 'yuki-yano/fern-preview.vim'
+  Plug 'Rasukarusan/nvim-select-multi-line'
+  Plug 'rust-lang/rust.vim'
+  Plug 'github/copilot.vim'
+  Plug 'mfussenegger/nvim-dap'
+  Plug 'rcarriga/nvim-dap-ui'
+  Plug 'leoluz/nvim-dap-go'
+  Plug 'theHamsta/nvim-dap-virtual-text'
+call plug#end()
+" 各種設定の読み込み
+" @see https://zenn.dev/mattn/articles/565c4ec71f461cbbf5c9
+let s:plugs = get(s:, 'plugs', get(g:, 'plugs', {}))
+function! FindPlugin(name) abort
+  return has_key(s:plugs, a:name) ? isdirectory(s:plugs[a:name].dir) : 0
+endfunction
+command! -nargs=1 UsePlugin if !FindPlugin(<args>) | finish | endif
+runtime! plugin_settings/*.vim
 
 " ===============グローバル設定関連===================== "
 " 別ファイルのvimの設定を読み込む
