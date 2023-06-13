@@ -4,6 +4,7 @@ settings:
   - { domain: com.apple.finder, key: QuitMenuItem, type: bool, value: TRUE }
   - { domain: com.apple.screencapture, key: show-thumbnail, type: bool, value: FALSE }
   - { domain: com.apple.screencapture, key: name, type: string, value: "screenshot_" }
+  - { domain: com.apple.finder, key: QuitMenuItem, type: bool, value: TRUE }
 
 directories:
   - {path: ~/.zsh}
