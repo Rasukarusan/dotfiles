@@ -1,3 +1,5 @@
+UsePlugin 'fzf'
+UsePlugin 'fzf.vim'
 " 実行ファイルのfzfではなくfzfのディレクトリの場所を指定する。
 " これを指定しないとVimのPluginとしてfzfをいれなければならない、
 " かつ、:Windowsなど様々なfzf.vimのコマンドが使用不可能になる。
