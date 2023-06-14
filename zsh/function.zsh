@@ -1137,12 +1137,7 @@ EOS
 )
   local target=$(echo "${targets}"| fzf)
   [ -z "$target" ] && return
-  osascript <<EOS
-tell application "Keynote"
-  activate
   open "$target"
-end tell
-EOS
 }
 
 alias gif_to_mp4='_gif_to_mp4'
