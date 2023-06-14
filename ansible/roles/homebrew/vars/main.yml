@@ -67,3 +67,4 @@ packages:
   - name: gh
   - name: gron
   - name: lolcat
+  - name: flyctl
