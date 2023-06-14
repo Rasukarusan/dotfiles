@@ -2,8 +2,7 @@
 #         alias-Command          #
 # ============================== #
 alias dot='cd ~/dotfiles'
-alias vim='~/neovim/nvim/bin/nvim'
-alias nvim='~/neovim/nvim/bin/nvim'
+alias vim='nvim'
 alias vi='~/neovim/nvim/bin/nvim'
 alias ls='ls -G'
 alias l='ls -1'
