@@ -1,3 +1,4 @@
+UsePlugin 'vim-silicon'
 "@See https://github.com/segeljakt/vim-silicon
 let g:silicon = {
       \   'theme':              'Dracula',

@@ -1,3 +1,4 @@
+UsePlugin 'vim-sandwich'
 let g:sandwich_no_default_key_mappings = 1
 silent! nmap <unique><silent> cd <Plug>(operator-sandwich-delete)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)
 silent! nmap <unique><silent> cr <Plug>(operator-sandwich-replace)<Plug>(operator-sandwich-release-count)<Plug>(textobj-sandwich-query-a)
