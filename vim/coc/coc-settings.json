@@ -36,5 +36,6 @@
     "enable": true,
     "startupMessage": false,
     "executable.command": "/usr/local/bin/jedi-language-server"
-  }
+  },
+  "snippets.ultisnips.pythonPrompt": false
 }

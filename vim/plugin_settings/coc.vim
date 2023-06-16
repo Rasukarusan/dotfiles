@@ -1,3 +1,4 @@
+UsePlugin 'coc.nvim'
 nnoremap <silent> K :call <SID>show_documentation()<CR>
 nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gr <Plug>(coc-references)
