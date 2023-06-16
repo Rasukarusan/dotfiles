@@ -1,3 +1,4 @@
+UsePlugin 'ale'
 if executable('eslint_d')
   let g:ale_javascript_eslint_use_global = 1
   let g:ale_javascript_eslint_executable = 'eslint_d'
