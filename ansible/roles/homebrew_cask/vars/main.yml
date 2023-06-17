@@ -1,19 +1,19 @@
 packages:
-  - name: font-ricty-diminished
   - name: google-chrome
   - name: firefox
   - name: google-japanese-ime
-  - name: skype
   - name: visual-studio-code
   - name: iterm2
   - name: hyper
   - name: docker
   - name: wireshark
-  - name: vagrant
   - name: virtualbox
-  - name: sequel-pro-nightly
+  - name: sequel-ace
   - name: ngrok
   - name: java11
   - name: couleurs
   - name: keycastr
   - name: another-redis-desktop-manager
+  - name: font-hackgen
+  - name: font-hackgen-nerd
+
