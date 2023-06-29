@@ -13,7 +13,6 @@
     "coc-tsserver": ">=1.8.0",
     "coc-ultisnips": ">=1.2.3",
     "coc-webview": ">=0.11.1",
-    "coc-word": ">=1.2.2",
     "coc-rust-analyzer": ">=0.69.4",
     "@yaegassy/coc-tailwindcss3": ">=0.4.7",
     "coc-markmap": ">=0.6.3"
