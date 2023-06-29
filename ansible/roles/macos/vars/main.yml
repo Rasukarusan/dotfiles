@@ -8,7 +8,7 @@ settings:
 
 directories:
   - {path: ~/.zsh}
-  - {path: ~/.config/nvim}
+  - {path: ~/.config/nvim/plugin}
   - {path: ~/.cache/cdr}
 
 modes:
@@ -36,7 +36,6 @@ files:
   - { src: ~/dotfiles/vim/colors, dest: ~/.config/nvim/colors }
   - { src: ~/dotfiles/vim/colors, dest: ~/.vim/colors }
   - { src: ~/dotfiles/vim/textlintrc, dest: ~/.textlintrc }
-  - { src: ~/dotfiles/vim/dein.toml, dest: ~/.config/nvim/dein.toml }
   - { src: ~/dotfiles/vim/plugin_settings, dest: ~/.config/nvim/plugin_settings }
   - { src: ~/dotfiles/vim/coc/coc-settings.json, dest: ~/.config/nvim/coc-settings.json }
   - { src: ~/dotfiles/vim/coc/package.json, dest: ~/.config/coc/extensions/package.json }
