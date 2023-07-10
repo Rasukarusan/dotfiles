@@ -68,3 +68,4 @@ packages:
   - name: gron
   - name: lolcat
   - name: flyctl
+  - name: azure-cli
