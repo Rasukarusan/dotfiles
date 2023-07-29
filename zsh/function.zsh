@@ -481,15 +481,13 @@ _danger_docker_commands() {
 _copy_minrc() {
   targetFile="${HOME}/dotfiles/zsh/minrc"
 
-  containers=($(docker ps --format "{{.Names}}" | fzf-tmux -p80%))
+  containers=($(docker ps --format "{{.Names}}"))
   for container in ${containers[@]};do
     printf "\e[35m${container}\e[m\n"
-    filename=".profile"
     shell="ash"
 
     # bashが使えるか判定
     if docker exec -it $container cat /etc/shells | grep bash >/dev/null ; then
-      filename=".bashrc"
       shell="bash"
     fi
 
@@ -500,9 +498,7 @@ _copy_minrc() {
     # コンテナのHOMEディレクトリを取得
     home=$(docker exec -i $container $shell -c "getent passwd | tail -n 1 | cut -d: -f6")
 
-    echo "$targetFile =====> ${container}(${id})"
-    execCommand="docker cp ${targetFile} ${id}:${home}/${filename}"
-    print -s "$execCommand"
+    execCommand="docker cp ${targetFile} ${id}:${home}/.profile"
     printf "\e[33m${execCommand}\e[m\n\n" && eval $execCommand
   done
 }
