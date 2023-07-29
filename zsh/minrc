@@ -3,3 +3,9 @@ alias ...='cd ../../'
 alias ....='cd ../../../'
 alias la='ls -la'
 alias ll='ls -l'
+alias lt='_ls_today'
+alias ss='source ~/.profile'
+function _ls_today() {
+  ls --full-time --time-style="+%Y-%m-%d %H:%M:%S" $1 | grep `date "+%F"`
+}
+
