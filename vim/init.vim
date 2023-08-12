@@ -274,6 +274,8 @@ set backupskip=/tmp/*,/private/tmp/*
 set virtualedit=onemore
 " コメント文中の改行でコメントを継続しない
 " set formatoptions-=ro
+" 「w」コマンドで単語を移動する際、アンダースコアを認識するようにする
+:set iskeyword-=_
 
 " ===============キーマップ関連===================== "
 nnoremap <C-j> J
