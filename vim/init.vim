@@ -344,7 +344,7 @@ nmap <silent> <Esc><Esc> :nohlsearch<CR>
 " Yで末尾までコピー
 nnoremap <S-y> y$
 " syで単語コピー
-nnoremap sy byw
+nnoremap sy bye
 " source ~/.vimrcを簡略化
 " nnoremap rr :call dein#recache_runtimepath() \| source ~/.config/nvim/init.vim<CR>
 nnoremap rr :source ~/.config/nvim/init.vim<CR>
