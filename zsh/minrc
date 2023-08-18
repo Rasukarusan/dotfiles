@@ -8,4 +8,4 @@ alias ss='source ~/.profile'
 function _ls_today() {
   ls --full-time --time-style="+%Y-%m-%d %H:%M:%S" $1 | grep `date "+%F"`
 }
-
+alias ts='tail -f logs/slim.log'
