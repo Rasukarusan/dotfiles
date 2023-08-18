@@ -69,3 +69,4 @@ packages:
   - name: lolcat
   - name: flyctl
   - name: azure-cli
+  - name: rust
