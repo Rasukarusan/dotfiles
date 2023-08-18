@@ -111,3 +111,5 @@ alias ip='open "https://www.cman.jp/network/support/go_access.cgi"'
 alias pjq='pbpaste | jq'
 alias code="/Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin/code"
 alias d='cd ~/Desktop'
+# SQLフォーマット
+alias fq='pbpaste | sleek --uppercase | pbcopy && pbpaste'
