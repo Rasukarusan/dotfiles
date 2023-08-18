@@ -376,6 +376,7 @@ _docker_commands() {
 		docker rmi
 		docker cp
 		docker system prune -a
+		copy minrc
 	EOF`
   local arg=`echo $selectCommand | sed "s/docker //g"`
   local execCommand
@@ -449,6 +450,29 @@ _docker_commands() {
       done
       return
       ;;
+    'copy minrc' ) # dockerコンテナにminrc配置
+      targetFile="${HOME}/dotfiles/zsh/minrc"
+      containers=($(docker ps --format "{{.Names}}"))
+      for container in ${containers[@]};do
+        printf "\e[35m${container}\e[m\n"
+        shell="ash"
+
+        # bashが使えるか判定
+        if docker exec -it $container cat /etc/shells | grep bash >/dev/null ; then
+          shell="bash"
+        fi
+
+        # コンテナにコピー
+        id=$(docker ps -aq --filter "name=$container")
+        test -z "$id" && echo "Not found $container's Container ID." && continue
+
+        # コンテナのHOMEディレクトリを取得
+        home=$(docker exec -i $container $shell -c "getent passwd | tail -n 1 | cut -d: -f6")
+
+        execCommand="docker cp ${targetFile} ${id}:${home}/.profile"
+        printf "\e[33m${execCommand}\e[m\n\n" && eval $execCommand
+      done
+      ;;
     'docker-compose up --build -d <service>' )
       local service=$(cat docker-compose.yml | yq --yaml-roundtrip ".services|keys" | sed 's/^- //g' | fzf)
       test -z "$service" && return
@@ -465,42 +489,6 @@ _docker_commands() {
     printf "\e[33m${separateStr}\n  ${execCommand}  \n${separateStr}\e[m\n"
     eval $execCommand
   fi
-}
-
-# docker危険コマンド集
-alias ddc='_danger_docker_commands'
-_danger_docker_commands() {
-  local actions=(
-    'minrc配置:_copy_minrc'
-  )
-  local action=$(echo "${actions[@]}" | tr ' ' '\n' | fzf -d ':' --with-nth=1 | cut -d ':' -f 2,2)
-  [ -n "$action" ] && eval "$action"
-}
-
-# minrc配置
-_copy_minrc() {
-  targetFile="${HOME}/dotfiles/zsh/minrc"
-
-  containers=($(docker ps --format "{{.Names}}"))
-  for container in ${containers[@]};do
-    printf "\e[35m${container}\e[m\n"
-    shell="ash"
-
-    # bashが使えるか判定
-    if docker exec -it $container cat /etc/shells | grep bash >/dev/null ; then
-      shell="bash"
-    fi
-
-    # コンテナにコピー
-    id=$(docker ps -aq --filter "name=$container")
-    test -z "$id" && echo "Not found $container's Container ID." && continue
-
-    # コンテナのHOMEディレクトリを取得
-    home=$(docker exec -i $container $shell -c "getent passwd | tail -n 1 | cut -d: -f6")
-
-    execCommand="docker cp ${targetFile} ${id}:${home}/.profile"
-    printf "\e[33m${execCommand}\e[m\n\n" && eval $execCommand
-  done
 }
 
 # tmuxコマンド集
