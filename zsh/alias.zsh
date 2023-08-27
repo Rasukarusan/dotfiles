@@ -3,7 +3,6 @@
 # ============================== #
 alias dot='cd ~/dotfiles'
 alias vim='nvim'
-alias vi='~/neovim/nvim/bin/nvim'
 alias ls='ls -G'
 alias l='ls -1'
 alias la='ls -laG'
