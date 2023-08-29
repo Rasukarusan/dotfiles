@@ -8,10 +8,6 @@ func main() {
 }
 endsnippet
 
-snippet f "fmt.Println()" b
-fmt.Println($1)
-endsnippet
-
 snippet er "if err != nil" b
 if err != nil {
 	$1
@@ -20,54 +16,25 @@ endsnippet
 
 # 色付きで出力
 snippet fmage "log.Printf('\x1b[35m%s\x1b[0m', 'hoge')" b
-log.Printf("\x1b[35m%+v\x1b[0m", $1)
+log.Printf("\x1b[35m %+v\x1b[0m", $1)
 endsnippet
 
 snippet fred "log.Printf('\x1b[31m%s\x1b[0m', 'hoge')" b
-log.Printf("\x1b[31m%+v\x1b[0m", $1)
+log.Printf("\x1b[31m %+v\x1b[0m", $1)
 endsnippet
 
 snippet fgreen "log.Printf('\x1b[32m%s\x1b[0m', 'hoge')" b
-log.Printf("\x1b[32m%+v\x1b[0m", $1)
+log.Printf("\x1b[32m %+v\x1b[0m", $1)
 endsnippet
 
 snippet fyellow "log.Printf('\x1b[33m%s\x1b[0m', 'hoge')" b
-log.Printf("\x1b[33m%+v\x1b[0m", $1)
+log.Printf("\x1b[33m %+v\x1b[0m", $1)
 endsnippet
 
 snippet scan "bufio.NewScanner(os.Stdin)" b
 	s := bufio.NewScanner(os.Stdin)
 	for s.Scan() {
 		fmt.Println(s.Text())
-	}
-endsnippet
-
-snippet filer "os.Open(file.txt)" b
-	fp, err := os.Open("file.txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer fp.Close()
-	scanner := bufio.NewScanner(fp)
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
-	}
-endsnippet
-
-snippet filew "os.Create(file.txt)" b
-	file, err := os.Create("file.txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	lines := []string{"hoge\n", "foo\n"}
-
-	for _, line := range lines {
-		_, err := file.WriteString(line)
-		if err != nil {
-			log.Fatal(err)
-		}
 	}
 endsnippet
 
