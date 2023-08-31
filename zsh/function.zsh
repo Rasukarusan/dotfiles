@@ -496,6 +496,7 @@ _docker_commands() {
 alias tt='_tmux_commands'
 _tmux_commands() {
   local command=$(cat <<-EOF | fzf --bind 'ctrl-y:execute-silent(echo {} | pbcopy)'
+		bg-color
 		resize
 		rename-window
 		man
@@ -510,6 +511,9 @@ _tmux_commands() {
   test -z "$command" && return
 
   case "${command}" in
+    'bg-color')
+      tmux select-pane -P 'bg=black'
+      ;;
     'resize')
       local actions=('Left' 'Right' 'Up' 'Down')
       echo "${actions[@]}" \
@@ -1182,7 +1186,7 @@ _open_ios_simulator() {
 # 指定サイズのダミー画像を生成する
 function create_dummy_image() {
   # 1MB
-  local byte=2948218
+  local byte=1024000
   local tmpText=~/Desktop/dummy.txt
   local target=~/Desktop/dummy.png
 
