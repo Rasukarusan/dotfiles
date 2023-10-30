@@ -1202,3 +1202,12 @@ function _record_ios_simulator() {
   local name=${1:-`date +"%H%M%S"`}
   xcrun simctl io booted recordVideo ~/Desktop/${name}.mov
 }
+
+# 複数ファイル移動
+# ファイルを列挙してコマンドラインに出すだけで、移動先のディレクトリは自身で入力する
+alias mvv='_move_multiple_file'
+function _move_multiple_file() {
+  local targets=($(ls -1 | fzf --preview 'bat --color always {}'))
+  [ -z "$targets" ] && return
+  print -z "mv ${targets[@]} "
+}
