@@ -392,6 +392,8 @@ cabbrev ms messages
 " vsplitで右側に空バッファを作る
 cabbrev vs vertical rightbelow new
 cabbrev vh split
+" .envファイルを開くための入力補完
+cabbrev env tabe libs/.env
 " coc-markdown-preview-enhancedのコマンド
 command! MarkdownPreview :CocCommand markdown-preview-enhanced.openPreview
 " coc-markmapのコマンド
