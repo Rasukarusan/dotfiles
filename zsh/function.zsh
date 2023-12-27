@@ -67,6 +67,7 @@ _git_push_fzf() {
   local remote=`git remote | fzf --select-1`
   git push $1 ${remote} $(git branch | grep "*" | sed -e "s/^\*\s*//g")
 }
+alias pof='_git_push_fzf -f'
 
 # git logをpreviewで差分を表示する
 # -S "pattern"でpatternを含む差分のみを表示することができる
