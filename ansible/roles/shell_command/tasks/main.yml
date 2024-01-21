@@ -27,29 +27,24 @@
       become: yes
       changed_when: false
 
-    - name: Install Neovim by pip
-      shell: pip install neovim
-      changed_when: false
+    # - name: Install Neovim by pip
+    #   shell: pip install neovim
+    #   changed_when: false
 
-    - name: Install Neovim by pip3
-      shell: pip3 install neovim
-      changed_when: false
+    # - name: Install Neovim by pip3
+    #   shell: pip3 install neovim
+    #   changed_when: false
 
-    - name: Install PythonProvider by pip3
-      shell: pip3 install pynvim
-      changed_when: false
+    # - name: Install PythonProvider by pip3
+    #   shell: pip3 install pynvim
+    #   changed_when: false
 
     - name: Install Jedi Language Server
       shell: pip install -U jedi-language-server
       changed_when: false
 
-    - name: Download dein
-      get_url: 
-        url: https://raw.githubusercontent.com/Shougo/dein.vim/master/bin/installer.sh 
-        dest: ~/.config/nvim/
-
-    - name: Install dein
-      shell: sh ~/.config/nvim/installer.sh ~/.config/nvim/dein
+    - name: Install Imgcat # tmux対応。https://github.com/wookayin/python-imgcat
+      shell: pip install imgcat
       changed_when: false
 
     - name: Refresh SystemUIServer for screencapture
