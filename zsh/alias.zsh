@@ -112,3 +112,4 @@ alias code="/Applications/Visual\ Studio\ Code.app/Contents/Resources/app/bin/co
 alias d='cd ~/Desktop'
 # SQLフォーマット
 alias fq='pbpaste | sleek --uppercase | pbcopy && pbpaste'
+alias pq='pbpaste | jq'
