@@ -350,9 +350,10 @@ function! s:copy_last_message()
         return
     end
     let @*=lastMessage
-    echo 'clipped: ' . @*[:20] . '...'
+    echo 'clipped!! ' . @*[:30] . '...'
 endfunction
 command! CopyLastMessage call s:copy_last_message()
+nnoremap MC :CopyLastMessage<CR>
 
 " =============================================
 " jsxでコメントアウト開始/終了を差し込む
