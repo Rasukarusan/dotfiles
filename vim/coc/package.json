@@ -16,6 +16,7 @@
     "coc-rust-analyzer": ">=0.69.4",
     "@yaegassy/coc-tailwindcss3": ">=0.4.7",
     "coc-markmap": ">=0.6.3",
-    "coc-word": ">=1.2.2"
+    "coc-word": ">=1.2.2",
+    "coc-prettier": ">=9.3.2"
   }
 }
