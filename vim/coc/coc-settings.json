@@ -32,7 +32,16 @@
     "typescriptreact": ["typescript"]
   },
   "snippets.userSnippetsDirectory": "~/dotfiles/vim/UltiSnips",
-  "coc.preferences.formatOnSaveFiletypes": ["go"],
+  "coc.preferences.formatOnSaveFiletypes": [
+    "go",
+    "css",
+    "html",
+    "markdown",
+    "typescriptreact",
+    "typescript",
+    "javascriptreact",
+    "javascript"
+  ],
   "jedi": {
     "enable": true,
     "startupMessage": false,
