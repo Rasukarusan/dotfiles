@@ -113,3 +113,4 @@ alias d='cd ~/Desktop'
 # SQLフォーマット
 alias fq='pbpaste | sleek --uppercase | pbcopy && pbpaste'
 alias pq='pbpaste | jq'
+alias tmux-save='tmux capture-pane -pS - > main.txt'
