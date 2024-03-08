@@ -25,7 +25,7 @@ function! s:open_file_on_branch(...)
     " スクロール同期
     " execute 'windo :set scb'
     " windowを右に入れ替える
-    " call feedkeys("\<C-w>\<S-l>") 
+    " call feedkeys("\<C-w>\<S-l>")
 endfunction
 
 " =============================================

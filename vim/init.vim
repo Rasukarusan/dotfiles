@@ -420,3 +420,16 @@ set statusline+=%l/%L\ \%y
 " init.vimを再読み込みした際にも反映されるようにcoc.vimの設定ファイルではなくここに書く
 hi CocFloating guifg=#cccccc guibg=#001622
 hi CocMenuSel guifg=#cccccc guibg=#2a3d75
+
+" コマンド履歴に:wや:qを残さない
+augroup histclean
+  autocmd!
+  autocmd ModeChanged c:* call s:HistClean()
+augroup END
+
+function! s:HistClean() abort
+  let cmd = histget(":", -1)
+  if cmd == "x" || cmd == "xa" || cmd =~# "^w\\?q\\?a\\?!\\?$"
+    call histdel(":", -1)
+  endif
+endfunction
