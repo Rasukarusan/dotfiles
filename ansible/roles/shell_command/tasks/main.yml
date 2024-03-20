@@ -47,6 +47,14 @@
       shell: pip install imgcat
       changed_when: false
 
+    - name: Install flake8 # pythonのlinter
+      shell: pip install flake8
+      changed_when: false
+
+    - name: Install black # pythonのformatter
+      shell: pip install black
+      changed_when: false
+
     - name: Refresh SystemUIServer for screencapture
       shell: killall SystemUIServer
       become: yes
