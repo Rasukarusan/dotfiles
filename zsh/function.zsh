@@ -945,6 +945,20 @@ _fzf_npm() {
   fi
 }
 
+# pipenvコマンドをfzfで実行
+alias pii='_fzf_pipenv'
+_fzf_pipenv() {
+  if [ -f Pipfile ]; then
+    local action=$(cat Pipfile | dasel -r toml -w json | jq -r '.scripts | keys | .[]' \
+      | fzf-tmux -p80% --preview "cat Pipfile | dasel -r toml -w json | jq -r '.scripts[\"{}\"]'" --preview-window=up:1)
+    [ -z "$action" ] && return
+    pipenv run $action
+    print -s "pipenv run $action"
+  else
+    echo 'Not Found Pipfile'
+  fi
+}
+
 # sedで一括置換
 alias rsed='_replace_all'
 _replace_all() {
