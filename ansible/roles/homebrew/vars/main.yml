@@ -70,3 +70,5 @@ packages:
   - name: flyctl
   - name: azure-cli
   - name: rust
+  - name: dasel
+  - name: kind
