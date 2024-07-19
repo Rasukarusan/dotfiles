@@ -1,0 +1,4 @@
+# 指定のディレクトリ配下にあるシェルスクリプトを読み込みコマンドとして実行できるようにする
+for script in $(find ~/Documents/github/scripts/local -type f); do
+  source $script
+done
