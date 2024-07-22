@@ -931,20 +931,6 @@ _man_builtin_command_bash() {
   man bash | less -p "^       $1 "
 }
 
-# npmコマンドをfzfで実行
-alias npp='_fzf_npm'
-_fzf_npm() {
-  if [ -f package.json ]; then
-    local action=$(cat package.json | jq -r '.scripts | keys | .[]' \
-      | fzf-tmux -p80% --preview "cat package.json | jq -r '.scripts[\"{}\"]'" --preview-window=up:1)
-    [ -z "$action" ] && return
-    npm run $action
-    print -s "npm run $action"
-  else
-    echo 'Not Found package.json'
-  fi
-}
-
 # pipenvコマンドをfzfで実行
 alias pii='_fzf_pipenv'
 _fzf_pipenv() {
@@ -987,6 +973,31 @@ _rmm() {
     echo "$removeFile"
     rm "$removeFile"
   done
+}
+
+# npmコマンドをfzfで実行
+alias npp='_fzf_npm'
+_fzf_npm() {
+  local packageJson=$(find ./ -maxdepth 1  -name 'package.json')
+  if [ -z "$packageJson" ]; then
+    local gitRoot=$(git rev-parse --show-cdup)
+    packageJson=$(find ${gitRoot}. -maxdepth 2  -name 'package.json')
+  fi
+  [ -z "$packageJson" ] && return
+  local actions=($(cat ${packageJson} | jq -r '.scripts | keys | .[]' \
+    | fzf-tmux -p --preview "cat ${packageJson} | jq -r '.scripts[\"{}\"]'" --preview-window=up:1))
+  [ -z "$actions" ] && return
+  local cmd=''
+  for action in "${actions[@]}"; do
+    if [ -z "$cmd" ]; then
+      cmd="npm $action"
+    else
+      cmd="$cmd && npm $action"
+    fi
+  done
+  printf "\e[35m$cmd\n\e[m\n"
+  print -s "$cmd"
+  eval "$cmd"
 }
 
 # fzfでyarn
