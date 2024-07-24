@@ -14,7 +14,7 @@ let g:ale_fix_on_save = 1
 let g:ale_javascript_prettier_use_local_config = 1
 
 " vimrcを再読込みしないとfixersが未定義になってしまうため、autocmdで設定した
-autocmd VimEnter,SourcePost * :let b:ale_fixers = ['eslint']
+autocmd VimEnter,SourcePost * :let b:ale_fixers = ['prettier', 'eslint']
 
 let g:ale_pattern_options = {
 \   '.*\.html$': {'ale_fix_on_save': 1},
@@ -23,8 +23,14 @@ let g:ale_pattern_options = {
 " エラー箇所に飛ぶ
 nmap <silent> <C-a><C-n> <Plug>(ale_next_wrap)
 nmap <silent> <C-a><C-p> <Plug>(ale_previous_wrap)
+
+" ale_virtualtext関連とale_sign_errorを有効にするには0にする
+" これを0にするとvirtual textの色が失われる
+let g:ale_use_neovim_diagnostics_api = 0
 let g:ale_virtualtext_cursor = 1
 let g:ale_virtualtext_prefix = ' --> '
+let g:ale_sign_error = '>>'
+let g:ale_sign_warning = '--'
 
 let g:ale_set_highlights = 0
 " @See https://github.com/dense-analysis/ale/issues/249
