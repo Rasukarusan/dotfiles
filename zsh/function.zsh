@@ -1026,6 +1026,29 @@ _fzf_yarn() {
   eval "$cmd"
 }
 
+# pnpmコマンドをfzfで実行
+alias pnn='_fzf_pnpm'
+_fzf_pnpm() {
+  local gitRoot=$(git rev-parse --show-cdup)
+  local packageJson=$(find ${gitRoot}. -maxdepth 2  -name 'package.json')
+  [ -z "$packageJson" ] && return
+  local actions=($(cat ${packageJson} | jq -r '.scripts | keys | .[]' \
+    | fzf-tmux -p --preview "cat ${packageJson} | jq -r '.scripts[\"{}\"]'" --preview-window=up:1))
+  [ -z "$actions" ] && return
+  local cmd=''
+  for action in "${actions[@]}"; do
+    if [ -z "$cmd" ]; then
+      cmd="pnpm run $action"
+    else
+      cmd="$cmd && pnpm run $action"
+    fi
+  done
+  printf "\e[35m$cmd\n\e[m\n"
+  print -s "$cmd"
+  eval "$cmd"
+}
+
+
 # fzfでcomposer
 alias coo='_fzf_composer'
 _fzf_composer() {
