@@ -47,5 +47,12 @@
     "startupMessage": false,
     "executable.command": "/usr/local/bin/jedi-language-server"
   },
-  "snippets.ultisnips.pythonPrompt": false
+  "snippets.ultisnips.pythonPrompt": false,
+  "pyright": {
+    "inlayHints": {
+       "variableTypes": false,
+       "parameterTypes": false,
+       "functionReturnTypes": false
+    }
+  }
 }
