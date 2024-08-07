@@ -513,7 +513,7 @@ _tmux_commands() {
 
   case "${command}" in
     'bg-color')
-      tmux select-pane -P 'bg=black'
+      tmux select-pane -P 'bg=#000'
       ;;
     'resize')
       local actions=('Left' 'Right' 'Up' 'Down')
