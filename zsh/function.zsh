@@ -1260,3 +1260,51 @@ function _move_multiple_file() {
   [ -z "$targets" ] && return
   print -z "mv ${targets[@]} "
 }
+
+# .ssh/configにあるサーバーに接続する
+alias sshl='_ssh_fzf'
+function _ssh_fzf() {
+  function _change_bg_color() {
+    local server=$1
+    # サーバーによって色を変える
+    if echo "$server" | grep "admin" >/dev/null ; then
+      tmux select-pane -P 'bg=colour52'
+    elif echo "$server" | grep "stg" >/dev/null ; then
+      tmux select-pane -P 'bg=colour17'
+    else 
+      tmux select-pane -P 'bg=#000'
+    fi
+  }
+
+  local target_servers=(`cat ~/.ssh/configs/* ~/.ssh/config | grep "Host " | grep -v "#" | grep -v "\*" | perl -pe 's/Host\s//g' | fzf`)
+  [ -z "$target_servers" ] && return 130
+  local server_num=${#target_servers[@]}
+
+  # 選択したサーバーが1つなら現在のpaneでsshを実行する
+  if [ $server_num -eq 1 ]; then
+      _change_bg_color ${target_servers}
+      # ssh -t $target_servers  "/bin/bash --rcfile ~/tanaka/bashrc"
+      ssh -t $target_servers
+      return
+  fi
+
+  tmux new-window
+  local count=0
+  for server in ${target_servers[@]}; do
+      count=$(expr $count + 1)
+      tmux select-layout tiled
+      _change_bg_color ${target_server}
+      # tmux send-keys "ssh -t $server '/bin/bash --rcfile ~/tanaka/bashrc'" C-m
+      tmux send-keys "ssh -t $server" C-m
+      tmux send-keys "clear" C-m
+      if [ $count -ne ${#target_servers[@]} ];then
+          tmux splitw
+      fi
+  done
+
+  tmux set pane-border-status top
+  tmux set pane-border-format '#T'
+  tmux rename-window "multi-ssh"
+  tmux set-window-option synchronize-panes
+}
+
