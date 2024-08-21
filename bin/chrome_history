@@ -25,7 +25,7 @@
 
 function export_chrome_history() {
     # Chromeを開いているとdbがロック状態で参照できないので、コピーしたものを参照する
-    cp ~/Library/Application\ Support/Google/Chrome/Default/History ~/
+    cp ~/Library/Application\ Support/Google/Chrome/Profile\ 1/History ~/
     local SQL="
     SELECT
         url,
