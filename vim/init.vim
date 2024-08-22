@@ -35,6 +35,7 @@ call plug#begin()
   Plug 'leoluz/nvim-dap-go'
   Plug 'theHamsta/nvim-dap-virtual-text'
   Plug 'monaqa/dial.nvim'
+  Plug '0xmovses/move.vim'
   " Plug 'flyinshadow/php_localvarcheck.vim'
 call plug#end()
 " 各種設定の読み込み
