@@ -1276,7 +1276,7 @@ function _ssh_fzf() {
     fi
   }
 
-  local target_servers=(`cat ~/.ssh/configs/* ~/.ssh/config | grep "Host " | grep -v "#" | grep -v "\*" | perl -pe 's/Host\s//g' | fzf`)
+  local target_servers=(`find ~/.ssh/configs -type f -exec cat {} +; cat ~/.ssh/config | grep "Host " | grep -v "#" | grep -v "\*" | perl -pe 's/Host\s//g' | fzf`)
   [ -z "$target_servers" ] && return 130
   local server_num=${#target_servers[@]}
 
