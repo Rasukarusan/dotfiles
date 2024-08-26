@@ -24,8 +24,6 @@
 #
 
 function export_chrome_history() {
-    # Chromeを開いているとdbがロック状態で参照できないので、コピーしたものを参照する
-    cp ~/Library/Application\ Support/Google/Chrome/Profile\ 1/History ~/
     local SQL="
     SELECT
         url,
@@ -40,7 +38,14 @@ function export_chrome_history() {
     LIMIT
         10000 ;
     "
-    sqlite3 ~/History -cmd '.mode tabs' "$SQL"
+    # 各プロファイルのHistoryをコピー
+    test -e  ~/Library/Application\ Support/Google/Chrome/Default && cp ~/Library/Application\ Support/Google/Chrome/Default/History ~/
+    # Chromeを開いているとdbがロック状態で参照できないので、コピーしたものを参照する
+    for profile in ~/Library/Application\ Support/Google/Chrome/Profile\ */History; do
+        profile_number=$(basename $(dirname "$profile") | grep -oE '[0-9]+$')
+        cp "$profile" ~/History"$profile_number"
+        sqlite3 ~/History"$profile_number" -cmd '.mode tabs' "$SQL"
+    done
 }
 
 function show() {
