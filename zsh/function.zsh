@@ -1220,6 +1220,14 @@ _git_checkout_from_pr() {
   gh pr checkout $pr
 }
 
+# 自分が関連するPR一覧を取得
+alias prl='_github_pr_involves'
+_github_pr_involves() {
+  local url=$(gh pr list --search "NOT bump in:title is:open is:pr involves:@me" --json number,title,url --template '{{range .}}{{.number}} - {{.title}} {{.url}}{{"\n"}}{{end}}' | fzf | awk '{print $4}')
+  [ -z "url" ] && return
+  open $url
+}
+
 # iOSシミュレータを起動
 alias ios='_open_ios_simulator'
 _open_ios_simulator() {
