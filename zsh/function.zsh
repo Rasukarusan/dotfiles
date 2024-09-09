@@ -506,6 +506,7 @@ _tmux_commands() {
 		kill-window
 		kill-session
 		kill-server
+		capture-window
 		tmux
 		EOF
   )
@@ -543,6 +544,9 @@ _tmux_commands() {
       for sessionId in ${sessionIds[@]}; do
         tmux kill-session -t $sessionId
       done
+      ;;
+    'capture-window')
+      tmux capture-pane -pS - > ~/Desktop/tmux.txt
       ;;
     *)
       tmux $command
