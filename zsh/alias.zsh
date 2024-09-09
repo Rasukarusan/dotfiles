@@ -114,7 +114,6 @@ alias d='cd ~/Desktop'
 # SQLフォーマット
 alias fq='pbpaste | sleek --uppercase | pbcopy && pbpaste'
 alias pq='pbpaste | jq'
-alias tmux-save='tmux capture-pane -pS - > main.txt'
 alias conda='/opt/homebrew/anaconda3/_conda'
 alias cdc='cd $(find . -type d | grep -v .git | fzf --preview "tree {}")'
 alias k='kubectl'
