@@ -1227,9 +1227,18 @@ _git_checkout_from_pr() {
 # 自分が関連するPR一覧を取得
 alias prl='_github_pr_involves'
 _github_pr_involves() {
-  local url=$(gh pr list --search "NOT bump in:title is:open is:pr involves:@me" --json number,title,url --template '{{range .}}{{.number}} - {{.title}} {{.url}}{{"\n"}}{{end}}' | fzf | awk '{print $4}')
-  [ -z "url" ] && return
-  open $url
+  local repos=($(git remote get-url origin | sed "s/.*://g;s/.git//g"))
+  if [ $# -ne 0 ]; then
+    local repos=("$@")
+  fi
+  local urls=($(for repo in "${repos[@]}";do
+    gh pr list --repo "$repo" --search "NOT bump in:title is:open is:pr involves:@me" --json number,title,url --template '{{range .}}【'$repo'】#{{.number}}{{"\t"}}{{.title}}{{"\t"}}{{.url}}{{"\t"}}{{"\n"}}{{end}}'
+  done | fzf | awk -F "\t" '{print $3}'))
+  [ -z "$urls" ] && return
+
+  for url in "${urls[@]}";do
+    open "$url"
+  done
 }
 
 # iOSシミュレータを起動
