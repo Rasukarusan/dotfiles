@@ -1219,7 +1219,11 @@ function _ls_today() {
 # PRのブランチへチェックアウト
 alias prr='_git_checkout_from_pr'
 _git_checkout_from_pr() {
-  local pr=$(gh pr list --search "NOT bump in:title" | fzf | awk '{print $1}')
+ # デフォルトのクエリ
+  local default_query="NOT bump in:title is:open is:pr"
+  # 引数があればそれを付け足す
+  local query="$default_query ${1:+$1}"
+  local pr=$(gh pr list --search "$query" | fzf | awk '{print $1}')
   [ -z "$pr" ] && return
   gh pr checkout $pr
 }
