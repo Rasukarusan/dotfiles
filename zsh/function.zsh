@@ -724,8 +724,9 @@ _edit_vim_files() {
   local nvimFiles=$(find ~/dotfiles ${XDG_CONFIG_HOME}/nvim/myautoload -follow -name "*.vim" -o -name "*.lua")
   local deinToml=~/dotfiles/vim/dein.toml
   local xvimrc=~/dotfiles/vim/xvimrc
+  local vimrcLocal=~/.vimrc.local
   # 文字数でソートする
-  local editFile=$(echo "${nvimFiles}\n${deinToml}\n${xvimrc}" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf-tmux -p80% --preview "bat --color always {}")
+  local editFile=$(echo "${nvimFiles}\n${deinToml}\n${xvimrc}\n${vimrcLocal}" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf-tmux -p80% --preview "bat --color always {}")
   test -z "$editFile" && return
   vim $editFile
 }
