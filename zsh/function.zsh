@@ -366,6 +366,7 @@ _docker_commands() {
 		docker-compose build --progress=plain
 		docker-compose build --progress=plain --no-cache 
 		docker-compose up
+		docker-compose up <service>
 		docker-compose up --build
 		docker-compose up -d
 		docker-compose up --build -d
@@ -475,8 +476,13 @@ _docker_commands() {
         printf "\e[33m${execCommand}\e[m\n\n" && eval $execCommand
       done
       ;;
+    'docker-compose up <service>' )
+      local service=$(cat docker-compose.yml | yq ".services|keys" | grep "-" | sed 's/^- //g' | fzf)
+      test -z "$service" && return
+      execCommand="docker-compose up $service"
+      ;;
     'docker-compose up --build -d <service>' )
-      local service=$(cat docker-compose.yml | yq --yaml-roundtrip ".services|keys" | sed 's/^- //g' | fzf)
+      local service=$(cat docker-compose.yml | yq ".services|keys" | grep "-" | sed 's/^- //g' | fzf)
       test -z "$service" && return
       execCommand="docker-compose up --build -d $service"
       ;;
