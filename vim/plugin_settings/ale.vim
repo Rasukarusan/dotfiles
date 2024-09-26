@@ -14,7 +14,7 @@ let g:ale_fix_on_save = 1
 let g:ale_javascript_prettier_use_local_config = 1
 
 " vimrcを再読込みしないとfixersが未定義になってしまうため、autocmdで設定した
-autocmd VimEnter,SourcePost * :let b:ale_fixers = ['biome', 'prettier', 'eslint']
+autocmd VimEnter,SourcePost * :let b:ale_fixers = ['biome', 'eslint']
 
 let g:ale_pattern_options = {
 \   '.*\.html$': {'ale_fix_on_save': 1},
