@@ -1340,3 +1340,20 @@ function _ssh_fzf() {
   tmux set-window-option synchronize-panes
 }
 
+# 合計値を出す。列が一つのときのみ有効
+alias tsum='_sum_from_clipboard'
+function _sum_from_clipboard() {
+  # クリップボードの内容を取得
+  local clipboard=$(pbpaste)
+
+  # 各行をカンマを無視して数値として足し合わせる
+  sum=0
+  echo "$clipboard" | while IFS= read -r line; do
+    # カンマを削除して数値として扱う
+    num=$(echo "$line" | tr -d ',')
+    sum=$((sum + num))
+  done
+
+  # 合計を表示
+  printf "%'d\n" "$sum"
+}
