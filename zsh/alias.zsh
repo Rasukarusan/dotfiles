@@ -51,8 +51,6 @@ alias rtable='pbpaste | tr "\t" "|" | sed -e "s/^/|/g" -e "s/$/|/g" -e "/|\"/s/|
 alias vims='vim -p `git diff --name-only`'
 # Unite tabでコピーしたものをタブで開く
 alias vimt="vim -p `pbpaste | sed 's/(\/)//g' | awk -F ':' '{print $2}' | grep -v '\[' | tr '\n' ' '`"
-# 合計値を出す。列が一つのときのみ有効
-alias tsum='awk "{sum += \$1}END{print sum}"'
 # 最終更新日が一番新しいもののファイル名を取得
 alias fin='echo `ls -t | head -n 1`'
 # less `fin`と打つのが面倒だったため関数化。finはコマンドとして残しておきたいので残す
