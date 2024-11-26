@@ -771,7 +771,7 @@ _git_stash_list() {
 }
 
 _git_stash() {
-  git stash
+  git stash -u
 }
 
 _git_stash_pop() {
@@ -1356,4 +1356,18 @@ function _sum_from_clipboard() {
 
   # 合計を表示
   printf "%'d\n" "$sum"
+}
+
+# ブランチ最新化
+# developの場合はバックアップを取る
+alias gpl='_git_pull_and_backup'
+function _git_pull_and_backup() {
+  local current_branch=$(git branch | grep "*" | sed -e "s/^\* \s*//g")
+  # develop ブランチの場合はバックアップを作成
+  if [ "$current_branch" = "develop" ]; then
+    local backup_branch="develop_$(date +%Y%m%d_%H%M%S)"
+    git checkout -b "$backup_branch"
+    git checkout "$current_branch"
+  fi
+  git pull --rebase origin "$current_branch"
 }
