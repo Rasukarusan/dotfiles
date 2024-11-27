@@ -1371,3 +1371,16 @@ function _git_pull_and_backup() {
   fi
   git pull --rebase origin "$current_branch"
 }
+
+# カレントディレクトリ配下の.envを探して開く
+alias envv='_open_env'
+_open_env() {
+  local find_result=$(find . -name ".env" -type f)
+  local target_files=($(echo "$find_result" \
+    | sed 's/\.\///g' \
+    | fzf-tmux -p80% --select-1 --prompt 'vim ' --preview 'bat --color always {}' --preview-window=right:70%
+  ))
+  [ "$target_files" = "" ] && return
+  vim -p ${target_files[@]}
+}
+
