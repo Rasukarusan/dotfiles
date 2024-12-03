@@ -257,7 +257,7 @@ _push_article() {
   for target in ${targets[@]}; do
     printf "\e[33m${target}\e[m\n"
     git -C $target add -A
-    git -C $target commit -m "posted"
+    git -C $target commit --no-verify -m "posted"
     git -C $target pull --rebase origin master
     git -C $target push origin master
   done
