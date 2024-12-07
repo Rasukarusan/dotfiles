@@ -401,6 +401,8 @@ cabbrev Env tabe libs/.env
 command! MarkdownPreview :CocCommand markdown-preview-enhanced.openPreview
 " coc-markmapのコマンド
 command! MarkMap :CocCommand markmap.watch
+" Hexモードでバイナリを開く
+command! BinaryMode :%!xxd
 
 " local.vimで上書き
 runtime! myautoload/local.vim
