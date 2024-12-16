@@ -1255,7 +1255,7 @@ _github_pr_involves() {
 # iOSシミュレータを起動
 alias ios='_open_ios_simulator'
 _open_ios_simulator() {
-  local identifier=$(xcrun simctl list runtimes -j | jq -r '.runtimes[] | select(.platform == "iOS") | .identifier')
+  local identifier=$(xcrun simctl list runtimes -j | jq -r '.runtimes[] | select(.platform == "iOS") | .identifier' | head -n 1)
   local devices=$(xcrun simctl list devices -j | jq -r ".devices[\"${identifier}\"][] | select(.isAvailable == true) | .name" | fzf)
   [ -z "$devices" ] && return
   echo "$devices" | while read device; do
