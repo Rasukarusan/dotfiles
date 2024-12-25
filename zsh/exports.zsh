@@ -41,6 +41,8 @@ export MY_TARGET_GIT_DIR=(
   ~/scripts
   ~/Documents/github/*
 )
+# brew install時の自動アップデートを無効化
+export HOMEBREW_NO_AUTO_UPDATE=1
 # ggrepをgrepにするため
 export PATH="/usr/local/opt/grep/libexec/gnubin:$PATH"
 export PATH="/opt/homebrew/opt/grep/libexec/gnubin:$PATH"
