@@ -35,7 +35,6 @@ alias co='git checkout $(git branch -a | tr -d " " |fzf-tmux -p80% --prompt "CHE
 alias co-='git checkout -'
 alias gst='git status'
 alias gv='git remote -v'
-alias gca='git checkout $(git diff --name-only)'
 alias gcl='git clone'
 alias gfa='git fetch --all --prune'
 # ctagsをbrew installしたものを使う
