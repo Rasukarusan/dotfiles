@@ -1380,3 +1380,9 @@ _open_env() {
   vim -p ${target_files[@]}
 }
 
+# 全てのファイルをgit checkoutする
+alias gca='_git_checkout_all'
+function _git_checkout_all() {
+  local path_working_tree_root=$(git rev-parse --show-cdup)
+  git -C "$path_working_tree_root" checkout $(git -C "$path_working_tree_root" diff --name-only)
+}
