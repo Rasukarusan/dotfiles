@@ -1242,13 +1242,9 @@ _github_pr_involves() {
   if [ $# -ne 0 ]; then
     local repos=("$@")
   fi
-  local urls=($(for repo in "${repos[@]}";do
-    gh pr list --repo "$repo" --search "NOT bump in:title is:open is:pr involves:@me" --json number,title,url --template '{{range .}}【'$repo'】#{{.number}}{{"\t"}}{{.title}}{{"\t"}}{{.url}}{{"\t"}}{{"\n"}}{{end}}'
-  done | fzf | awk -F "\t" '{print $3}'))
-  [ -z "$urls" ] && return
+  for repo in "${repos[@]}";do
+    gh pr list --repo "$repo" --search "NOT bump in:title is:open is:pr involves:@me" --json number,title,url,reviewDecision --template '{{range .}}{{if ne .reviewDecision "APPROVED"}}【'"$repo"'】#{{.number}}{{"\t"}}{{.title}}{{"\t"}}{{.url}}{{"\t"}}{{"\n"}}{{end}}{{end}}'
 
-  for url in "${urls[@]}";do
-    open "$url"
   done
 }
 
