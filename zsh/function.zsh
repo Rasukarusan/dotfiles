@@ -1040,12 +1040,17 @@ _fzf_yarn() {
 # pnpmコマンドをfzfで実行
 alias pnn='_fzf_pnpm'
 _fzf_pnpm() {
-  local gitRoot=$(git rev-parse --show-cdup)
-  local packageJson=$(find ${gitRoot}. -maxdepth 2  -name 'package.json')
+  local packageJson="./package.json"
+  if [ ! -f "$packageJson" ]; then
+    local gitRoot=$(git rev-parse --show-cdup)
+    packageJson=$(find "${gitRoot}." -maxdepth 2 -name 'package.json' | head -n 1)
+  fi
   [ -z "$packageJson" ] && return
-  local actions=($(cat ${packageJson} | jq -r '.scripts | keys | .[]' \
-    | fzf-tmux -p --preview "cat ${packageJson} | jq -r '.scripts[\"{}\"]'" --preview-window=up:1))
+
+  local actions=($(jq -r '.scripts | keys | .[]' "$packageJson" \
+    | fzf-tmux -p --preview "jq -r '.scripts[\"{}\"]' $packageJson" --preview-window=up:1))
   [ -z "$actions" ] && return
+
   local cmd=''
   for action in "${actions[@]}"; do
     if [ -z "$cmd" ]; then
@@ -1054,7 +1059,8 @@ _fzf_pnpm() {
       cmd="$cmd && pnpm run $action"
     fi
   done
-  printf "\e[35m$cmd\n\e[m\n"
+
+  printf "\e[35m%s\n\e[m\n" "$cmd"
   print -s "$cmd"
   eval "$cmd"
 }
