@@ -1257,7 +1257,7 @@ _github_pr_involves() {
     local repos=("$@")
   fi
   for repo in "${repos[@]}";do
-    gh pr list --repo "$repo" --search "NOT bump in:title is:open is:pr involves:@me" --json number,title,url,reviewDecision --template '{{range .}}{{if ne .reviewDecision "APPROVED"}}【'"$repo"'】#{{.number}}{{"\t"}}{{.title}}{{"\t"}}{{.url}}{{"\t"}}{{"\n"}}{{end}}{{end}}'
+    gh pr list --repo "$repo" --search "NOT bump in:title is:open is:pr involves:@me" --json number,title,url,reviewDecision,author --template '{{range .}}{{if ne .reviewDecision "APPROVED"}}【'"$repo"'】#{{.number}}{{"\t"}}{{.title}}{{"\t"}}{{.url}}{{"\t"}}{{.author.login}}{{"\n"}}{{end}}{{end}}'
 
   done
 }
