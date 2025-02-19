@@ -1106,6 +1106,14 @@ _fzf_vim_git_modified_untracked() {
   vim -p "${files[@]}"
 }
 
+# modifiedファイルをfzfで選択して開く
+alias vimgm='_fzf_vim_git_modified'
+_fzf_vim_git_modified() {
+  local files=($(git ls-files -m -o --exclude-standard | sort -u | fzf-tmux -p80% --preview='git diff --exit-code {} >/dev/null && bat --color always {} || git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy') )
+  [ -z "$files" ] && return
+  vim -p "${files[@]}"
+}
+
 # ブランチ間の差分ファイルをfzfで選択して開く
 alias vimd='_fzf_vim_git_diff_branch'
 _fzf_vim_git_diff_branch(){
