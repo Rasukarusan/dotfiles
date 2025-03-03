@@ -254,13 +254,22 @@ command! -range RemoveSpace <line1>,<line2>call s:remove_space()
 " 指定のデータをレジスタに登録する
 " =============================================
 function! s:Clip(data)
-    let @*=substitute(a:data, $HOME.'/', '',  'g')
-    echo "clipped: " . @*
+    let clipdata = substitute(a:data, $HOME.'/', '', 'g')
+    let @* = clipdata
+    " 改行をスペースに置換して1行にまとめる
+    let oneline = substitute(clipdata, "\n", " ", "g")
+    " 40文字を超える場合、40文字だけにして残りは...にする
+    if strlen(oneline) > 40
+        let oneline = strpart(oneline, 0, 40) . '...'
+    endif
+    echo "clipped: " . oneline
 endfunction
 " 現在開いているファイルのパスをレジスタへ
 command! -nargs=0 ClipPath call s:Clip(expand('%:p'))
 " 現在開いているファイルのファイル名をレジスタへ
 command! -nargs=0 ClipFile call s:Clip(expand('%:t'))
+" 現在開いているファイルのパスと内容をレジスタへコピーするコマンド
+command! -nargs=0 ClipAll call s:Clip(expand('%:p') . "\n" . join(getline(1, '$'), "\n"))
 " memoを新しいタブで開く
 command! Memo :tabe ~/memo.md
 
