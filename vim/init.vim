@@ -281,7 +281,6 @@ set virtualedit=onemore
 " :set iskeyword-=_
 
 " ===============キーマップ関連===================== "
-nnoremap <C-j> J
 " 入力モードでのカーソル移動
 " inoremap <C-j> <Down>
 " inoremap <C-k> <Up>
