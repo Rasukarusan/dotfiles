@@ -254,7 +254,9 @@ command! -range RemoveSpace <line1>,<line2>call s:remove_space()
 " 指定のデータをレジスタに登録する
 " =============================================
 function! s:Clip(data)
-    let clipdata = substitute(a:data, $HOME.'/', '', 'g')
+    " $HOME/の後に任意のディレクトリ（[^/]\+）とその後ろの任意のディレクトリ（[^/]\+）及び末尾のスラッシュを削除
+    let pattern = $HOME . '/[^/]\+/[^/]\+/' " この場合~/hoge1/hoge2/まで削除。
+    let clipdata = substitute(a:data, pattern, '', 'g')
     let @* = clipdata
     " 改行をスペースに置換して1行にまとめる
     let oneline = substitute(clipdata, "\n", " ", "g")
@@ -270,6 +272,8 @@ command! -nargs=0 ClipPath call s:Clip(expand('%:p'))
 command! -nargs=0 ClipFile call s:Clip(expand('%:t'))
 " 現在開いているファイルのパスと内容をレジスタへコピーするコマンド
 command! -nargs=0 ClipAll call s:Clip(expand('%:p') . "\n" . join(getline(1, '$'), "\n"))
+nnoremap %% :ClipAll<CR>
+
 " memoを新しいタブで開く
 command! Memo :tabe ~/memo.md
 
