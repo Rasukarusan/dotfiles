@@ -253,25 +253,30 @@ command! -range RemoveSpace <line1>,<line2>call s:remove_space()
 " =============================================
 " 指定のデータをレジスタに登録する
 " =============================================
-function! s:Clip(data)
-    " $HOME/の後に任意のディレクトリ（[^/]\+）とその後ろの任意のディレクトリ（[^/]\+）及び末尾のスラッシュを削除
-    let pattern = $HOME . '/[^/]\+/[^/]\+/' " この場合~/hoge1/hoge2/まで削除。
-    let clipdata = substitute(a:data, pattern, '', 'g')
+function! s:Clip(data, ...) abort
+    " 第2引数があれば、それを区切り線付与のフラグとして使用（1なら付与する）
+    let useSeparate = (a:0 >= 1 ? a:1 : 0)
+    let pattern = $HOME . '/[^/]\+/[^/]\+/'
+    if useSeparate
+        let separate = "\n---------------------------------\n"
+        let clipdata = separate . substitute(a:data, pattern, '', 'g') . separate
+    else
+        let clipdata = substitute(a:data, pattern, '', 'g')
+    endif
     let @* = clipdata
-    " 改行をスペースに置換して1行にまとめる
     let oneline = substitute(clipdata, "\n", " ", "g")
-    " 40文字を超える場合、40文字だけにして残りは...にする
     if strlen(oneline) > 40
         let oneline = strpart(oneline, 0, 40) . '...'
     endif
     echo "clipped: " . oneline
 endfunction
-" 現在開いているファイルのパスをレジスタへ
+
+" ClipPath と ClipFile は引数なしで呼ぶ（区切り線なし）
 command! -nargs=0 ClipPath call s:Clip(expand('%:p'))
-" 現在開いているファイルのファイル名をレジスタへ
 command! -nargs=0 ClipFile call s:Clip(expand('%:t'))
-" 現在開いているファイルのパスと内容をレジスタへコピーするコマンド
-command! -nargs=0 ClipAll call s:Clip(expand('%:p') . "\n" . join(getline(1, '$'), "\n"))
+
+" ClipAll のみ引数を渡して区切り線付きにする
+command! -nargs=0 ClipAll call s:Clip(expand('%:p') . "\n" . join(getline(1, '$'), "\n"), 1)
 nnoremap %% :ClipAll<CR>
 
 " memoを新しいタブで開く
