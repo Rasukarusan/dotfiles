@@ -68,3 +68,4 @@ eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)"
 # 自作スクリプト
 export PATH="$HOME/dotfiles/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
