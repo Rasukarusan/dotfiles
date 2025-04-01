@@ -364,7 +364,7 @@ _docker_commands() {
 		docker images -a
 		docker-compose ps
 		docker-compose build --progress=plain
-		docker-compose build --progress=plain --no-cache 
+		docker-compose build --progress=plain --no-cache
 		docker-compose up
 		docker-compose up <service>
 		docker-compose up --build
@@ -486,7 +486,7 @@ _docker_commands() {
       test -z "$service" && return
       execCommand="docker-compose up --build -d $service"
       ;;
-    *) 
+    *)
       execCommand="${selectCommand}"
       ;;
   esac
@@ -978,7 +978,7 @@ _rmm() {
     --bind "f2:reload(find . -maxdepth 2 -type d \( -name node_modules -o -name .git \) -prune -o -type f | sort)" \
     --bind "f3:reload(find . -maxdepth 3 -type d \( -name node_modules -o -name .git \) -prune -o -type f | sort)" \
     --bind "f5:reload(find . -type d \( -name node_modules -o -name .git \) -prune -o -type f | sort)" \
-    --preview='bat --color=always {}' 
+    --preview='bat --color=always {}'
   )
   do
     echo "$removeFile"
@@ -1313,7 +1313,7 @@ function _ssh_fzf() {
       tmux select-pane -P 'bg=colour52'
     elif echo "$server" | grep "stg" >/dev/null ; then
       tmux select-pane -P 'bg=colour17'
-    else 
+    else
       tmux select-pane -P 'bg=#000'
     fi
   }
@@ -1347,6 +1347,54 @@ function _ssh_fzf() {
   tmux set pane-border-status top
   tmux set pane-border-format '#T'
   tmux rename-window "multi-ssh"
+  tmux set-window-option synchronize-panes
+}
+
+# AWS EC2にfzfでSSHする
+alias aww='_aws_ssh_fzf'
+function _aws_ssh_fzf() {
+  local selected_lines
+  selected_lines=$(aws ec2 describe-instances \
+    --query 'Reservations[*].Instances[*].[Tags[?Key==`Name`].Value | [0], InstanceId]' \
+    --output text | column -t -s $'\t' | fzf)
+  [ -z "$selected_lines" ] && return 130
+
+  # 選択行の件数をカウント
+  local count
+  count=$(echo "$selected_lines" | wc -l | tr -d ' ')
+
+  # 選択行が1件なら現在の pane で実行
+  if [ "$count" -eq 1 ]; then
+    local instance_id
+    instance_id=$(echo "$selected_lines" | awk '{print $2}')
+    tmux select-pane -P 'bg=colour17'
+    aws ssm start-session --target "$instance_id"
+    return
+  fi
+
+  # 複数選択の場合は新しい tmux ウィンドウで各 pane に割り当て
+  tmux new-window -n "multi-ssm"
+  local total
+  total=$(echo "$selected_lines" | wc -l | tr -d ' ')
+
+  local pane_index=0
+  # 各行をループ処理
+  while IFS= read -r line; do
+    pane_index=$((pane_index + 1))
+    local instance_id
+    instance_id=$(echo "$line" | awk '{print $2}')
+    tmux select-layout tiled
+    tmux select-pane -P 'bg=colour17'
+    tmux send-keys "aws ssm start-session --target $instance_id" C-m
+    tmux send-keys "clear" C-m
+    # 最後の pane でなければ pane を分割
+    if [ $pane_index -lt $total ]; then
+      tmux split-window
+    fi
+  done <<< "$selected_lines"
+
+  tmux set pane-border-status top
+  tmux set pane-border-format '#T'
   tmux set-window-option synchronize-panes
 }
 
