@@ -1,12 +1,12 @@
 UsePlugin 'ale'
 if executable('eslint_d')
-  let g:ale_javascript_eslint_use_global = 1
+  " let g:ale_javascript_eslint_use_global = 1
   let g:ale_javascript_eslint_executable = 'eslint_d'
 endif
 let g:ale_fixers = {
 \   '*': ['remove_trailing_lines', 'trim_whitespace'],
-\   'javascript': ['eslint'],
-\   'typescriptreact': ['eslint'],
+\   'javascript': ['biome', 'eslint'],
+\   'typescriptreact': ['biome', 'eslint'],
 \   'markdown': ['textlint'],
 \}
 let g:ale_fix_on_save = 1
@@ -14,7 +14,7 @@ let g:ale_fix_on_save = 1
 let g:ale_javascript_prettier_use_local_config = 1
 
 " vimrcを再読込みしないとfixersが未定義になってしまうため、autocmdで設定した
-autocmd VimEnter,SourcePost * :let b:ale_fixers = ['biome', 'eslint']
+" autocmd VimEnter,SourcePost * :let b:ale_fixers = ['biome', 'eslint']
 
 let g:ale_pattern_options = {
 \   '.*\.html$': {'ale_fix_on_save': 1},
