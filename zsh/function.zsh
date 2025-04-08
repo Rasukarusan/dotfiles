@@ -765,7 +765,7 @@ _git_stash_commands() {
 }
 
 _git_stash_list() {
-  local stashNo=$(git stash list | fzf --preview 'echo {} | awk "{print \$1}" | tr -d ":" | xargs git stash show --color=always -p' | awk '{print $1}' | tr -d ':' )
+  local stashNo=$(git stash list | fzf --preview 'echo {} | awk "{print \$1}" | tr -d ":" | xargs git stash show -u --color=always -p' | awk '{print $1}' | tr -d ':' )
   [ -z "$stashNo" ] && return 130
   git stash show --color=always -p $stashNo
 }
@@ -795,13 +795,13 @@ _git_stash_each_file() {
 }
 
 _fzf_git_stash_apply() {
-  local stashNo=$(git stash list | fzf --preview 'echo {} | awk "{print \$1}" | tr -d ":" | xargs git stash show --color=always -p' | awk '{print $1}' | tr -d ':' )
+  local stashNo=$(git stash list | fzf --preview 'echo {} | awk "{print \$1}" | tr -d ":" | xargs git stash show -u --color=always -p' | awk '{print $1}' | tr -d ':' )
   test -z "${stashNo}" && return
   git stash apply "${stashNo}"
 }
 
 _fzf_git_stash_drop() {
-  local stashNos=($(git stash list | fzf --preview 'echo {} | awk "{print \$1}" | tr -d ":" | xargs git stash show --color=always -p' | awk '{print $1}' | tr -d ':'  | tac))
+  local stashNos=($(git stash list | fzf --preview 'echo {} | awk "{print \$1}" | tr -d ":" | xargs git stash show -u --color=always -p' | awk '{print $1}' | tr -d ':'  | tac))
   test -z "${stashNos}" && return
   printf "\e[36m======削除するstash一覧=====\e[m\n"
   for stashNo in ${stashNos[@]}; do
