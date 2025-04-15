@@ -1368,6 +1368,7 @@ function _aws_ssh_fzf() {
     local instance_id
     instance_id=$(echo "$selected_lines" | awk '{print $2}')
     tmux select-pane -P 'bg=colour17'
+    printf "\e[33maws ssm start-session --target $instance_id\e[m\n"
     aws ssm start-session --target "$instance_id"
     return
   fi
@@ -1385,6 +1386,7 @@ function _aws_ssh_fzf() {
     instance_id=$(echo "$line" | awk '{print $2}')
     tmux select-layout tiled
     tmux select-pane -P 'bg=colour17'
+    printf "\e[33maws ssm start-session --target $instance_id\e[m\n"
     tmux send-keys "aws ssm start-session --target $instance_id" C-m
     tmux send-keys "clear" C-m
     # 最後の pane でなければ pane を分割
