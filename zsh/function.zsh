@@ -1353,6 +1353,10 @@ function _ssh_fzf() {
 # AWS EC2にfzfでSSHする
 alias aww='_aws_ssh_fzf'
 function _aws_ssh_fzf() {
+  # SSO セッションの有効性を確認
+  if ! aws sts get-caller-identity >/dev/null 2>&1; then
+    aws sso login
+  fi
   local selected_lines
   selected_lines=$(aws ec2 describe-instances \
     --query 'Reservations[*].Instances[*].[Tags[?Key==`Name`].Value | [0], InstanceId]' \
