@@ -657,3 +657,34 @@ function! s:exec_this_method() abort
   call system('rm ' . tempfile)
 endfunction
 nnoremap <silent><nowait><C-j> :call <sid>exec_this_method()<CR>
+
+" ===== develop ブランチで GitHub を開く :OpenGithub =====
+function! s:OpenGithub() abort
+  " リポジトリルート取得 ─ Git 管理下でなければ終了
+  let l:root = trim(system('git rev-parse --show-toplevel'))
+  if v:shell_error
+    echoerr 'Git 管理下のファイルではありません'
+    return
+  endif
+
+  " origin URL を https 化（SSH 形式も対応）
+  let l:remote = trim(system('git config --get remote.origin.url'))
+  let l:remote = substitute(l:remote, '^git@\(.*\):', 'https://\1/', '')
+  let l:remote = substitute(l:remote, '\.git$', '', '')
+
+  " develop ブランチ固定 & 相対パス
+  let l:branch = 'develop'
+  let l:rel    = substitute(expand('%:p'), l:root.'/', '', '')
+
+  " 完全 URL
+  let l:url = printf('%s/blob/%s/%s', l:remote, l:branch, l:rel)
+
+  " ブラウザで開く
+  call system('open '.shellescape(l:url))
+  echo 'Opened: '.l:url
+endfunction
+
+command! OpenGithub call s:OpenGithub()
+
+" 任意でキーマッピング
+nnoremap <silent> <leader>gu :OpenGithub<CR>
