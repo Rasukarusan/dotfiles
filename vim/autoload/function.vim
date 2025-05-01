@@ -687,4 +687,37 @@ endfunction
 command! OpenGithub call s:OpenGithub()
 
 " 任意でキーマッピング
-nnoremap <silent> <leader>gu :OpenGithub<CR>
+nnoremap <silent> go :OpenGithub<CR>
+
+function! SearchCommitInGitHubPulls()
+  " カーソル下の単語（コミットハッシュ）を取得
+  let l:commit = expand('<cword>')
+
+  " コミットハッシュっぽくないなら終了
+  if l:commit !~# '^[0-9a-f]\{7,40}$'
+    echo "コミットハッシュが見つかりません"
+    return
+  endif
+
+  " GitHubリポジトリのURLを取得
+  let l:remote = system('git remote get-url origin')
+  let l:remote = substitute(l:remote, '\n', '', '')
+
+  " SSH or HTTPS 形式を正規化
+  if l:remote =~# '^git@github.com:'
+    let l:repo = substitute(l:remote, '^git@github.com:\(.*\)\.git$', '\1', '')
+  elseif l:remote =~# '^https://github.com/'
+    let l:repo = substitute(l:remote, '^https://github.com/\(.*\)\.git$', '\1', '')
+  else
+    echo "GitHubリポジトリではありません"
+    return
+  endif
+
+  " 最終URL
+  let l:url = 'https://github.com/' . l:repo . '/pulls?q=' . l:commit
+
+  " Macでブラウザを開く
+  call system('open ' . shellescape(l:url))
+endfunction
+
+nnoremap <silent>gp :call SearchCommitInGitHubPulls()<CR>
