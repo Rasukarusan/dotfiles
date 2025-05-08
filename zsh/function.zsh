@@ -1109,9 +1109,28 @@ _fzf_vim_git_modified_untracked() {
 # modifiedファイルをfzfで選択して開く
 alias vimgm='_fzf_vim_git_modified'
 _fzf_vim_git_modified() {
-  local files=($(git ls-files -m -o --exclude-standard | sort -u | fzf-tmux -p80% --preview='git diff --exit-code {} >/dev/null && bat --color always {} || git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy') )
-  [ -z "$files" ] && return
-  vim -p "${files[@]}"
+  # まず -m -o --exclude-standard で modified/untracked を列挙
+  # そのあと [[ -e ]] で実際に存在するものだけを残す
+  local all files=()
+  # read で１行ずつ取り出して存在チェック(deletedのファイルを除外するため)
+  while IFS= read -r f; do
+    [[ -e $f ]] && files+=("$f")
+  done < <(git ls-files -m -o --exclude-standard)
+
+  # 対象がなければ終了
+  [ ${#files[@]} -eq 0 ] && return
+
+  # fzf で選択
+  local selected=($(printf '%s\n' "${files[@]}" | sort -u \
+    | fzf-tmux -p80% --preview='
+      git diff --exit-code {} >/dev/null && bat --color always {} \
+      || git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy
+    '))
+
+  [ -z "$selected" ] && return
+
+  # vim を開く
+  vim -p "${selected[@]}"
 }
 
 # ブランチ間の差分ファイルをfzfで選択して開く
