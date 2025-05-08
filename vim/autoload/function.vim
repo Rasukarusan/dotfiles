@@ -687,7 +687,7 @@ endfunction
 command! OpenGithub call s:OpenGithub()
 
 " 任意でキーマッピング
-nnoremap <silent> go :OpenGithub<CR>
+nnoremap <silent> GO :OpenGithub<CR>
 
 function! SearchCommitInGitHubPulls()
   " カーソル下の単語（コミットハッシュ）を取得
@@ -720,4 +720,4 @@ function! SearchCommitInGitHubPulls()
   call system('open ' . shellescape(l:url))
 endfunction
 
-nnoremap <silent>gp :call SearchCommitInGitHubPulls()<CR>
+nnoremap <silent> GP :call SearchCommitInGitHubPulls()<CR>
