@@ -1040,31 +1040,57 @@ _fzf_yarn() {
 # pnpmコマンドをfzfで実行
 alias pnn='_fzf_pnpm'
 _fzf_pnpm() {
-  local packageJson="./package.json"
-  if [ ! -f "$packageJson" ]; then
-    local gitRoot=$(git rev-parse --show-cdup)
-    packageJson=$(find "${gitRoot}." -maxdepth 2 -name 'package.json' | head -n 1)
-  fi
-  [ -z "$packageJson" ] && return
+  # ワークスペース一覧を取得
+  local -a workspacePkgs=( "root|./package.json" )
+  while IFS= read -r pkg; do
+    local name=$(jq -r '.name // empty' "$pkg")
+    [[ -z $name ]] && name=$(basename "$(dirname "$pkg")")
+    workspacePkgs+=( "$name|$pkg" )
+  done < <(find . -maxdepth 4 -type f -name 'package.json' \
+            -not -path './node_modules/*' -not -path './package.json')
 
-  local actions=($(jq -r '.scripts | keys | .[]' "$packageJson" \
-    | fzf-tmux -p --preview "jq -r '.scripts[\"{}\"]' $packageJson" --preview-window=up:1))
-  [ -z "$actions" ] && return
+  # パッケージ選択
+  local pkgName=$(printf '%s\n' "${workspacePkgs[@]}" \
+                  | cut -d'|' -f1 \
+                  | fzf --prompt="📦 パッケージを選択 > ") || return
+  [[ -z $pkgName ]] && return
 
-  local cmd=''
-  for action in "${actions[@]}"; do
-    if [ -z "$cmd" ]; then
-      cmd="pnpm run $action"
-    else
-      cmd="$cmd && pnpm run $action"
-    fi
+  # package.json パス取得
+  local pkgJson
+  for entry in "${workspacePkgs[@]}"; do
+    [[ "${entry%%|*}" == "$pkgName" ]] && pkgJson="${entry#*|}" && break
   done
 
-  printf "\e[35m%s\n\e[m\n" "$cmd"
+  # 実行ベース切り替え
+  local baseCmd="pnpm run"
+  [[ $pkgName != "root" ]] && baseCmd="pnpm --filter $pkgName run"
+
+  # scripts を一旦文字列で受け取る
+  local selected
+  selected=$(jq -r '.scripts | keys[]' "$pkgJson" \
+             | fzf --multi \
+                   --prompt="⚙️ スクリプトを選択 > " \
+                   --preview="jq -r '.scripts[\"{}\"]' $pkgJson" \
+                   --preview-window=up:1) || return
+  [[ -z $selected ]] && return
+
+  # 文字列を一行ずつ配列に詰める
+  local -a actions=()
+  while IFS= read -r act; do
+    actions+=( "$act" )
+  done <<< "$selected"
+
+  # コマンド組み立て
+  local cmd=""
+  for act in "${actions[@]}"; do
+    [[ -z $cmd ]] && cmd="$baseCmd $act" || cmd="$cmd && $baseCmd $act"
+  done
+
+  # 実行
+  printf "\e[32m> %s\e[m\n" "$cmd"
   print -s "$cmd"
   eval "$cmd"
 }
-
 
 # fzfでcomposer
 alias coo='_fzf_composer'
