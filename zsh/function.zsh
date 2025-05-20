@@ -1471,13 +1471,17 @@ function _sum_from_clipboard() {
 # developの場合はバックアップを取る
 alias gpl='_git_pull_and_backup'
 function _git_pull_and_backup() {
-  local current_branch=$(git branch | grep "*" | sed -e "s/^\* \s*//g")
-  # develop ブランチの場合はバックアップを作成
+  # 現在のブランチ名を取得
+  local current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+  # develop ブランチならバックアップブランチを作る
   if [ "$current_branch" = "develop" ]; then
     local backup_branch="develop_$(date +%Y%m%d_%H%M%S)"
-    git checkout -b "$backup_branch"
-    git checkout "$current_branch"
+    # checkout せず、単にブランチだけ作成
+    git branch "$backup_branch"
+    echo "バックアップブランチ '$backup_branch' を作成しました"
   fi
+
   git pull --rebase origin "$current_branch"
 }
 
