@@ -1043,48 +1043,60 @@ _fzf_pnpm() {
   # ワークスペース一覧を取得
   local -a workspacePkgs=( "root|./package.json" )
   while IFS= read -r pkg; do
-    local name=$(jq -r '.name // empty' "$pkg")
+    local name
+    name=$(jq -r '.name // empty' "$pkg")
     [[ -z $name ]] && name=$(basename "$(dirname "$pkg")")
     workspacePkgs+=( "$name|$pkg" )
   done < <(find . -maxdepth 4 -type f -name 'package.json' \
             -not -path './node_modules/*' -not -path './package.json')
 
-  # パッケージ選択
-  local pkgName=$(printf '%s\n' "${workspacePkgs[@]}" \
-                  | cut -d'|' -f1 \
-                  | fzf --prompt="📦 パッケージを選択 > ") || return
-  [[ -z $pkgName ]] && return
+  local pkgName pkgJson
 
-  # package.json パス取得
-  local pkgJson
-  for entry in "${workspacePkgs[@]}"; do
-    [[ "${entry%%|*}" == "$pkgName" ]] && pkgJson="${entry#*|}" && break
-  done
+  # rootだけなら選択をスキップ
+  if [ "${#workspacePkgs[@]}" -eq 1 ]; then
+    pkgName="root"
+    pkgJson="./package.json"
+  else
+    # パッケージ選択
+    pkgName=$(
+      printf '%s\n' "${workspacePkgs[@]}" | cut -d'|' -f1 \
+      | fzf --prompt="📦 パッケージを選択 > "
+    ) || return
+    [[ -z $pkgName ]] && return
 
-  # 実行ベース切り替え
+    # 選択パッケージの package.json パス取得
+    for entry in "${workspacePkgs[@]}"; do
+      if [[ "${entry%%|*}" == "$pkgName" ]]; then
+        pkgJson="${entry#*|}"
+        break
+      fi
+    done
+  fi
+
+  # 実行コマンドのベース切り替え
   local baseCmd="pnpm run"
   [[ $pkgName != "root" ]] && baseCmd="pnpm --filter $pkgName run"
 
-  # scripts を一旦文字列で受け取る
+  # scripts を選択
   local selected
-  selected=$(jq -r '.scripts | keys[]' "$pkgJson" \
-             | fzf --multi \
-                   --prompt="⚙️ スクリプトを選択 > " \
-                   --preview="jq -r '.scripts[\"{}\"]' $pkgJson" \
-                   --preview-window=up:1) || return
+  selected=$(
+    jq -r '.scripts | keys[]' "$pkgJson" \
+    | fzf --multi \
+          --prompt="⚙️ スクリプトを選択 > " \
+          --preview="jq -r '.scripts[\"{}\"]' $pkgJson" \
+          --preview-window=up:1
+  ) || return
   [[ -z $selected ]] && return
 
-  # 文字列を一行ずつ配列に詰める
-  local -a actions=()
-  while IFS= read -r act; do
-    actions+=( "$act" )
-  done <<< "$selected"
-
-  # コマンド組み立て
+  # 選択スクリプトを配列化し、コマンド組み立て
   local cmd=""
-  for act in "${actions[@]}"; do
-    [[ -z $cmd ]] && cmd="$baseCmd $act" || cmd="$cmd && $baseCmd $act"
-  done
+  while IFS= read -r act; do
+    if [[ -z $cmd ]]; then
+      cmd="$baseCmd $act"
+    else
+      cmd="$cmd && $baseCmd $act"
+    fi
+  done <<< "$selected"
 
   # 実行
   printf "\e[32m> %s\e[m\n" "$cmd"
