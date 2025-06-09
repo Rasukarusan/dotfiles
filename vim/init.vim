@@ -354,6 +354,8 @@ nnoremap rr :source ~/.config/nvim/init.vim<CR>
 nnoremap re :e!<CR>
 " 現在開いているスクリプトを読み込む
 nnoremap S :source %<CR>
+" クリップボードの内容で上書き
+nnoremap R :%d<Bar>put +<Bar>w<CR>
 " InsertモードのときはFキーを無効化(MacBookProのキーボードがおかしいせいでF5が入力されしまう等があるため)
 imap <F1> <nop>
 imap <F2> <nop>
