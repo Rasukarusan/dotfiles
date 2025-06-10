@@ -1,5 +1,5 @@
--- UsePlugin 'plenary.nvim'
--- UsePlugin 'claude-code.nvim'
+if not UsePlugin('plenary.nvim') then return end
+if not UsePlugin('claude-code.nvim') then return end
 require("claude-code").setup({
   -- Terminal window settings
   window = {
