@@ -1,8 +1,8 @@
-vim.cmd("UsePlugin 'nvim-dap'")
-vim.cmd("UsePlugin 'nvim-nio'")
-vim.cmd("UsePlugin 'nvim-dap-ui'")
-vim.cmd("UsePlugin 'nvim-dap-go'")
-vim.cmd("UsePlugin 'nvim-dap-virtual-text'")
+if not UsePlugin('nvim-dap') then return end
+if not UsePlugin('nvim-nio') then return end
+if not UsePlugin('nvim-dap-ui') then return end
+if not UsePlugin('nvim-dap-go') then return end
+if not UsePlugin('nvim-dap-virtual-text') then return end
 local function map(mode, lhs, rhs, opts)
   local options = {noremap = true}
   if opts then options = vim.tbl_extend('force', options, opts) end
