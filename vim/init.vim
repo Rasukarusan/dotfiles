@@ -27,15 +27,20 @@ call plug#begin()
   Plug 'machakann/vim-sandwich'
   Plug 'lambdalisue/fern.vim'
   Plug 'yuki-yano/fern-preview.vim'
+  " Plug 'LumaKernel/fern-mapping-reload-all.vim'
   Plug 'Rasukarusan/nvim-select-multi-line'
   Plug 'rust-lang/rust.vim'
   Plug 'github/copilot.vim'
-  Plug 'mfussenegger/nvim-dap'
-  Plug 'rcarriga/nvim-dap-ui'
+  " Plug 'mfussenegger/nvim-dap'
+  " Plug 'nvim-neotest/nvim-nio' " nvim-dap-uiに必要
+  " Plug 'rcarriga/nvim-dap-ui'
   Plug 'leoluz/nvim-dap-go'
   Plug 'theHamsta/nvim-dap-virtual-text'
   Plug 'monaqa/dial.nvim'
   Plug '0xmovses/move.vim'
+  Plug 'nvim-lua/plenary.nvim' " Claude Codeに必要
+  Plug 'greggh/claude-code.nvim'
+  " Plug 'glacambre/firenvim', { 'do': { _ -> firenvim#install(0) } }
   " Plug 'flyinshadow/php_localvarcheck.vim'
 call plug#end()
 " 各種設定の読み込み
