@@ -45,7 +45,16 @@ function! FindPlugin(name) abort
   return has_key(s:plugs, a:name) ? isdirectory(s:plugs[a:name].dir) : 0
 endfunction
 command! -nargs=1 UsePlugin if !FindPlugin(<args>) | finish | endif
+lua << EOF
+function UsePlugin(name)
+  if vim.fn.FindPlugin(name) == 0 then
+    return false
+  end
+  return true
+end
+EOF
 runtime! plugin_settings/*.vim
+runtime! plugin_settings/*.lua
 
 " ===============グローバル設定関連===================== "
 " 別ファイルのvimの設定を読み込む
