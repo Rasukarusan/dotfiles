@@ -31,9 +31,9 @@ call plug#begin()
   Plug 'Rasukarusan/nvim-select-multi-line'
   Plug 'rust-lang/rust.vim'
   Plug 'github/copilot.vim'
-  " Plug 'mfussenegger/nvim-dap'
-  " Plug 'nvim-neotest/nvim-nio' " nvim-dap-uiに必要
-  " Plug 'rcarriga/nvim-dap-ui'
+  Plug 'mfussenegger/nvim-dap'
+  Plug 'nvim-neotest/nvim-nio' " nvim-dap-uiに必要
+  Plug 'rcarriga/nvim-dap-ui'
   Plug 'leoluz/nvim-dap-go'
   Plug 'theHamsta/nvim-dap-virtual-text'
   Plug 'monaqa/dial.nvim'
@@ -50,14 +50,7 @@ function! FindPlugin(name) abort
   return has_key(s:plugs, a:name) ? isdirectory(s:plugs[a:name].dir) : 0
 endfunction
 command! -nargs=1 UsePlugin if !FindPlugin(<args>) | finish | endif
-lua << EOF
-function UsePlugin(name)
-  if vim.fn.FindPlugin(name) == 0 then
-    return false
-  end
-  return true
-end
-EOF
+lua require('utils')
 runtime! plugin_settings/*.vim
 runtime! plugin_settings/*.lua
 
