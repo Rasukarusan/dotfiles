@@ -1040,64 +1040,82 @@ _fzf_yarn() {
 # pnpmコマンドをfzfで実行
 alias pnn='_fzf_pnpm'
 _fzf_pnpm() {
-  # ワークスペース一覧を取得
-  local -a workspacePkgs=( "root|./package.json" )
+  # すべてのpackage.jsonとスクリプトを収集
+  local -a allScripts=()
+  
+  # rootのpackage.json
+  if [[ -f "./package.json" ]]; then
+    while IFS= read -r script; do
+      allScripts+=( "root: $script" )
+    done < <(jq -r '.scripts | keys[]' "./package.json" 2>/dev/null)
+  fi
+  
+  # ワークスペースのpackage.json
   while IFS= read -r pkg; do
     local name
-    name=$(jq -r '.name // empty' "$pkg")
+    name=$(jq -r '.name // empty' "$pkg" 2>/dev/null)
     [[ -z $name ]] && name=$(basename "$(dirname "$pkg")")
-    workspacePkgs+=( "$name|$pkg" )
+    
+    while IFS= read -r script; do
+      allScripts+=( "$name: $script" )
+    done < <(jq -r '.scripts | keys[]' "$pkg" 2>/dev/null)
   done < <(find . -maxdepth 4 -type f -name 'package.json' \
             -not -path './node_modules/*' -not -path './package.json')
-
-  local pkgName pkgJson
-
-  # rootだけなら選択をスキップ
-  if [ "${#workspacePkgs[@]}" -eq 1 ]; then
-    pkgName="root"
-    pkgJson="./package.json"
-  else
-    # パッケージ選択
-    pkgName=$(
-      printf '%s\n' "${workspacePkgs[@]}" | cut -d'|' -f1 \
-      | fzf --prompt="📦 パッケージを選択 > "
-    ) || return
-    [[ -z $pkgName ]] && return
-
-    # 選択パッケージの package.json パス取得
-    for entry in "${workspacePkgs[@]}"; do
-      if [[ "${entry%%|*}" == "$pkgName" ]]; then
-        pkgJson="${entry#*|}"
-        break
-      fi
-    done
-  fi
-
-  # 実行コマンドのベース切り替え
-  local baseCmd="pnpm run"
-  [[ $pkgName != "root" ]] && baseCmd="pnpm --filter $pkgName run"
-
-  # scripts を選択
+  
+  # 選択肢がない場合は終了
+  [[ ${#allScripts[@]} -eq 0 ]] && echo "スクリプトが見つかりません" && return
+  
+  # スクリプトを選択
   local selected
   selected=$(
-    jq -r '.scripts | keys[]' "$pkgJson" \
+    printf '%s\n' "${allScripts[@]}" \
     | fzf --multi \
-          --prompt="⚙️ スクリプトを選択 > " \
-          --preview="jq -r '.scripts[\"{}\"]' $pkgJson" \
-          --preview-window=up:1
+          --prompt="📦 パッケージ: スクリプト > " \
+          --preview='
+            IFS=": " read -r pkg script <<< "{}"
+            if [[ $pkg == "root" ]]; then
+              echo "📦 Package: root"
+              echo "📜 Script: $script"
+              echo "────────────────────"
+              jq -r ".scripts[\"$script\"]" "./package.json" 2>/dev/null || echo "Script not found"
+            else
+              echo "📦 Package: $pkg"
+              echo "📜 Script: $script"
+              echo "────────────────────"
+              for p in $(find . -maxdepth 4 -type f -name "package.json" -not -path "./node_modules/*" -not -path "./package.json"); do
+                pname=$(jq -r ".name // empty" "$p" 2>/dev/null)
+                [[ -z $pname ]] && pname=$(basename "$(dirname "$p")")
+                if [[ $pname == $pkg ]]; then
+                  jq -r ".scripts[\"$script\"]" "$p" 2>/dev/null || echo "Script not found"
+                  break
+                fi
+              done
+            fi
+          ' \
+          --preview-window=up:7
   ) || return
   [[ -z $selected ]] && return
-
-  # 選択スクリプトを配列化し、コマンド組み立て
+  
+  # コマンドを組み立て
   local cmd=""
-  while IFS= read -r act; do
-    if [[ -z $cmd ]]; then
-      cmd="$baseCmd $act"
+  while IFS= read -r line; do
+    local pkg="${line%%: *}"
+    local script="${line#*: }"
+    local runCmd
+    
+    if [[ $pkg == "root" ]]; then
+      runCmd="pnpm run $script"
     else
-      cmd="$cmd && $baseCmd $act"
+      runCmd="pnpm --filter $pkg run $script"
+    fi
+    
+    if [[ -z $cmd ]]; then
+      cmd="$runCmd"
+    else
+      cmd="$cmd && $runCmd"
     fi
   done <<< "$selected"
-
+  
   # 実行
   printf "\e[32m> %s\e[m\n" "$cmd"
   print -s "$cmd"
