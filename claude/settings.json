@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm:*)",
+      "Bash(tmux:*)",
+      "Bash(git:*)",
+      "Bash(gh:*)",
+      "Bash(ls:*)",
+      "Bash(rg:*)",
+      "Read(~/.zshrc)",
+      "Read(~/.claude)",
+      "Read(~/.config)"
+    ],
+    "deny": [
+      "Bash(curl:*)"
+    ]
+  }
+}

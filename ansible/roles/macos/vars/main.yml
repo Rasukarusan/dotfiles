@@ -10,6 +10,7 @@ directories:
   - {path: ~/.zsh}
   - {path: ~/.config/nvim/plugin}
   - {path: ~/.cache/cdr}
+  - {path: ~/.claude}
 
 modes:
   - {path: /usr/local/share/zsh, mode: 755}
@@ -42,3 +43,6 @@ files:
   - { src: ~/dotfiles/vim/UltiSnips, dest: ~/.config/nvim/UltiSnips }
   - { src: ~/dotfiles/vim/autoload, dest: ~/.config/nvim/myautoload }
   - { src: ~/dotfiles/vim/lua, dest: ~/.config/nvim/lua }
+  # Claude
+  - { src: ~/dotfiles/claude/CLAUDE.md, dest: ~/.claude/CLAUDE.md }
+  - { src: ~/dotfiles/claude/settings.json, dest: ~/.claude/settings.json }
