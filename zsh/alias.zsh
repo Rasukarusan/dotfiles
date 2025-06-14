@@ -116,3 +116,5 @@ alias k='kubectl'
 alias ag='ag --hidden -S'
 alias cl='claude'
 alias clc='claude --continue'
+alias cld='claude --dangerously-skip-permissions'
+
