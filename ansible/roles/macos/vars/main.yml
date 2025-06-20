@@ -44,5 +44,5 @@ files:
   - { src: ~/dotfiles/vim/autoload, dest: ~/.config/nvim/myautoload }
   - { src: ~/dotfiles/vim/lua, dest: ~/.config/nvim/lua }
   # Claude
-  - { src: ~/dotfiles/claude/CLAUDE.md, dest: ~/.claude/CLAUDE.md }
-  - { src: ~/dotfiles/claude/settings.json, dest: ~/.claude/settings.json }
+  - { src: ~/dotfiles/claude/CLAUDE.md, dest: ~/.config/claude/CLAUDE.md }
+  - { src: ~/dotfiles/claude/settings.json, dest: ~/.config/claude/settings.json }
