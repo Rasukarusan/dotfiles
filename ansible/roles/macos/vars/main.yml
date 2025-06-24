@@ -46,3 +46,7 @@ files:
   # Claude
   - { src: ~/dotfiles/claude/CLAUDE.md, dest: ~/.config/claude/CLAUDE.md }
   - { src: ~/dotfiles/claude/settings.json, dest: ~/.config/claude/settings.json }
+  - { src: ~/dotfiles/claude/commands, dest: ~/.config/claude/commands }
+  - { src: ~/dotfiles/claude/CLAUDE.md, dest: ~/.claude/CLAUDE.md }
+  - { src: ~/dotfiles/claude/settings.json, dest: ~/.claude/settings.json }
+  - { src: ~/dotfiles/claude/commands, dest: ~/.claude/commands }
