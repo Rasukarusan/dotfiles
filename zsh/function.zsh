@@ -1041,12 +1041,13 @@ _fzf_yarn() {
 alias pnn='_fzf_pnpm'
 _fzf_pnpm() {
   # すべてのpackage.jsonとスクリプトを収集
-  local -a allScripts=()
+  local -a rootScripts=()
+  local -a workspaceScripts=()
   
   # rootのpackage.json
   if [[ -f "./package.json" ]]; then
     while IFS= read -r script; do
-      allScripts+=( "root: $script" )
+      rootScripts+=( "root: $script" )
     done < <(jq -r '.scripts | keys[]' "./package.json" 2>/dev/null)
   fi
   
@@ -1057,10 +1058,13 @@ _fzf_pnpm() {
     [[ -z $name ]] && name=$(basename "$(dirname "$pkg")")
     
     while IFS= read -r script; do
-      allScripts+=( "$name: $script" )
+      workspaceScripts+=( "$name: $script" )
     done < <(jq -r '.scripts | keys[]' "$pkg" 2>/dev/null)
   done < <(find . -maxdepth 4 -type f -name 'package.json' \
             -not -path './node_modules/*' -not -path './package.json')
+  
+  # rootのスクリプトを先に、次にワークスペースのスクリプトを結合
+  local -a allScripts=( "${rootScripts[@]}" "${workspaceScripts[@]}" )
   
   # 選択肢がない場合は終了
   [[ ${#allScripts[@]} -eq 0 ]] && echo "スクリプトが見つかりません" && return
@@ -1068,8 +1072,13 @@ _fzf_pnpm() {
   # スクリプトを選択
   local selected
   selected=$(
-    printf '%s\n' "${allScripts[@]}" \
-    | fzf --multi \
+    {
+      # rootスクリプトを先に出力
+      printf '%s\n' "${rootScripts[@]}"
+      # その後ワークスペーススクリプトを出力
+      printf '%s\n' "${workspaceScripts[@]}"
+    } | fzf --multi \
+          --tiebreak=index \
           --prompt="📦 パッケージ: スクリプト > " \
           --preview='
             IFS=": " read -r pkg script <<< "{}"
