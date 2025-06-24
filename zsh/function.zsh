@@ -1337,6 +1337,20 @@ _github_pr_involves() {
   done
 }
 
+# 直近2週間で自分がコメントしたPRを出力
+alias prc='_github_pr_commented_2weeks'
+_github_pr_commented_2weeks() {
+  local repos=($(git remote get-url origin | sed "s/.*://g;s/.git//g"))
+  if [ $# -ne 0 ]; then
+    local repos=("$@")
+  fi
+  # 2週間前の日付を取得
+  local two_weeks_ago=$(date -v-2w '+%Y-%m-%d')
+  for repo in "${repos[@]}";do
+    gh pr list --repo "$repo" --search "NOT bump in:title is:pr commenter:@me updated:>=$two_weeks_ago" --state all --json number,title,url,reviewDecision,author,updatedAt,state --template '{{range .}}#{{.number}}{{"\t"}}{{.title}}{{"\t"}}{{.url}}{{"\n"}}{{end}}'
+  done
+}
+
 # iOSシミュレータを起動
 alias ios='_open_ios_simulator'
 _open_ios_simulator() {
