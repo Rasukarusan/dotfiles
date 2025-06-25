@@ -1,4 +1,3 @@
-
 # Claude Code 部下管理・作業分担ガイド
 
 ## 🚨 部下起動の即座実行ガイド（リーダー向け）
@@ -12,7 +11,7 @@
 ```bash
 # 0. 既存ペインのクリーンアップ（必須）
 # リーダーペイン（ペイン1）以外を削除
-for i in {2..9}; do 
+for i in {2..9}; do
     if tmux list-panes -F '#{pane_index}' | grep -q "^$i$"; then
         tmux kill-pane -t $i 2>/dev/null || true
     fi
@@ -48,7 +47,7 @@ tmux select-pane -t 1
 ```bash
 # 0. 既存ペインのクリーンアップ（必須）
 # リーダーペイン（ペイン1）以外を削除
-for i in {2..9}; do 
+for i in {2..9}; do
     if tmux list-panes -F '#{pane_index}' | grep -q "^$i$"; then
         tmux kill-pane -t $i 2>/dev/null || true
     fi
@@ -84,6 +83,7 @@ tmux select-pane -t 1
 ```
 
 ### 【部下起動チェックリスト】
+
 - [ ] tmuxペインを作成したか？
 - [ ] claudeコマンドを実行したか？
 - [ ] --dangerously-skip-permissionsオプションを付けたか？
@@ -99,6 +99,7 @@ tmux select-pane -t 1
 **⚠️ 複数の部下に作業をやらせる時は、必ずgit-worktreeを使用すること**
 
 理由：
+
 - 同一ディレクトリでの並行作業はファイルコンフリクトを引き起こす
 - 部下が同じファイルを同時編集すると作業が破綻する
 - worktreeによる環境分離が並行作業の前提条件
@@ -138,6 +139,7 @@ tmux select-pane -t 1
 ```
 
 **ultrathink使用例：**
+
 - 複雑なタスクの分担計画を立てる時
 - 技術的な判断や設計決定を行う時
 - 問題解決やトラブルシューティングを行う時
@@ -173,7 +175,7 @@ tmux list-panes
 
 # 2. リーダーペイン以外をすべて削除（エラーが出ても無視）
 # リーダーペイン（ペイン1）以外を削除
-for i in {2..9}; do 
+for i in {2..9}; do
     if tmux list-panes -F '#{pane_index}' | grep -q "^$i$"; then
         tmux kill-pane -t $i 2>/dev/null || true
     fi
@@ -191,6 +193,7 @@ tmux select-pane -t 1
 ```
 
 **ペイン構成図：**
+
 ```
 ┌─────────────┬─────────────┐
 │             │   部下1     │
@@ -237,7 +240,7 @@ tmux send-keys -t 2 'src/components/配下のコンポーネントをTypeScript�
 
 報告方法：
 進捗報告は以下の2段階でリーダーペイン（ペイン1）に送信してください：
-1段階目：tmux send-keys -t 1 "【部下2報告】報告内容"
+1段階目：tmux send-keys -t 1 "【部下1報告】報告内容"
 2段階目：tmux send-keys -t 1 Enter
 
 報告タイミング：
@@ -251,7 +254,7 @@ tmux send-keys -t 3 'src/api/配下のAPIクライアントのエラーハンド
 
 報告方法：
 進捗報告は以下の2段階でリーダーペイン（ペイン1）に送信してください：
-1段階目：tmux send-keys -t 1 "【部下3報告】報告内容"
+1段階目：tmux send-keys -t 1 "【部下1報告】報告内容"
 2段階目：tmux send-keys -t 1 Enter
 
 報告タイミング：
@@ -297,7 +300,6 @@ tmux send-keys -t 2 Enter
 # - 部下からの報告が途絶えた場合
 # - 作業内容に不安がある場合
 ```
-
 
 #### 効果的な報告の要求方法
 
@@ -350,20 +352,23 @@ tmux send-keys -t 2 Enter
 ```bash
 # 【必須】作業完了後のクリーンアップ
 
-# 1. 部下の作業終了
-tmux send-keys -t 2 'exit' Enter
-tmux send-keys -t 3 'exit' Enter
+# 1. 部下の作業終了、tmuxペイン削除
+tmux send-keys -t 2 'exit' Enter && tmux send-keys -t 2 Enter
+tmux send-keys -t 3 'exit' Enter && tmux send-keys -t 3 Enter
 
-# 2. worktree削除
+# 2. リーダーペイン（ペイン1）以外を削除
+for i in {2..9}; do
+    if tmux list-panes -F '#{pane_index}' | grep -q "^$i$"; then
+        tmux kill-pane -t $i 2>/dev/null || true
+    fi
+done
+
+# 3. worktree削除
 git worktree remove ../kidoku-worker1
 git worktree remove ../kidoku-worker2
 
-# 3. worktree確認（削除されていることを確認）
+# 4. worktree確認（削除されていることを確認）
 git worktree list
-
-# 4. tmuxペイン削除
-tmux kill-pane -t 2
-tmux kill-pane -t 3
 ```
 
 ## 作業分担の指針
@@ -371,10 +376,12 @@ tmux kill-pane -t 3
 ### 効果的な分担方法
 
 1. **ファイルベース分担**
+
    - 異なるディレクトリ・ファイルを担当
    - 例: 部下1=フロントエンド、部下2=バックエンド
 
 2. **機能ベース分担**
+
    - 独立した機能単位で分割
    - 例: 部下1=認証機能、部下2=検索機能
 
