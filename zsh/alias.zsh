@@ -117,4 +117,5 @@ alias ag='ag --hidden -S'
 alias cl='claude'
 alias clc='claude --continue'
 alias cld='claude --dangerously-skip-permissions'
+alias cldr='claude --dangerously-skip-permissions --resume'
 
