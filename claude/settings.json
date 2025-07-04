@@ -17,5 +17,6 @@
       "Bash(curl:*)"
     ]
   },
-  "model": "opus"
+  "model": "opus",
+  "includeCoAuthoredBy": false
 }
