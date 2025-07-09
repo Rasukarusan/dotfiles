@@ -9,7 +9,6 @@
       "Bash(rg:*)",
       "Read(~/.zshrc)",
       "Read(~/.claude)",
-      "Read(~/.config/claude)",
       "Read(~/.config)",
       "WebFetch(domain:github.com)"
     ],
