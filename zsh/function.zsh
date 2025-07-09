@@ -750,11 +750,29 @@ _edit_zsh_files() {
 # Claude Code関連ファイルをfzfで選択しvimで開く
 alias cll='_edit_claude_files'
 _edit_claude_files() {
+  # 新しいコマンド作成オプションを追加
+  local createNewOption="新しいcommandを作成"
   local claudeFiles=$(find ~/dotfiles/claude -type f)
   # 文字数でソートする
-  local editFiles=($(echo "$claudeFiles" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf-tmux -p80% --preview "bat --color always {}"))
-  test -z "$editFiles" && return
-  vim -p "${editFiles[@]}"
+  local selection=$(echo -e "$createNewOption\n$(echo "$claudeFiles" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2-)" | fzf-tmux -p80% --preview "test '{}' = '$createNewOption' && echo '新しいコマンドファイルを作成します' || bat --color always {}")
+  test -z "$selection" && return
+  if [[ "$selection" == "$createNewOption" ]]; then
+    # 新しいコマンドを作成
+    echo -n "ファイル名を入力（.mdは自動付与）: "
+    read filename
+    test -z "$filename" && return
+    # .mdを除去して再付与（重複防止）
+    filename="${filename%.md}.md"
+    local filepath="$HOME/dotfiles/claude/commands/$filename"
+    # ディレクトリが存在しない場合は作成
+    mkdir -p "$HOME/dotfiles/claude/commands"
+    # ファイルを作成してvimで開く
+    touch "$filepath"
+    vim "$filepath"
+  else
+    # 既存ファイルを開く
+    vim -p "$selection"
+  fi
 }
 
 # git stashでよく使うコマンド集
