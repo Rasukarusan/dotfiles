@@ -271,10 +271,28 @@ function! s:Clip(data, ...) abort
     echo "clipped: " . oneline
 endfunction
 
+function! s:ClipNum(line1, line2) abort
+    let path = expand('%:p')
+    let pattern = $HOME . '/[^/]\+/[^/]\+/'
+    let relative_path = substitute(path, pattern, '', 'g')
+
+    if a:line1 == a:line2
+        " 単一行の場合
+        let clipdata = relative_path . '#' . a:line1
+    else
+        " 複数行の場合
+        let clipdata = relative_path . '#' . a:line1 . '-' . a:line2
+    endif
+
+    let @* = clipdata
+    echo 'clipped: ' . clipdata
+endfunction
+
 " ClipPath と ClipFile は引数なしで呼ぶ（区切り線なし）
 command! -nargs=0 ClipPath call s:Clip(expand('%:p'))
 command! -nargs=0 ClipFile call s:Clip(expand('%:t'))
-
+" ClipNum は選択範囲の行番号付きパスをクリップボードにコピー
+command! -nargs=0 -range ClipNum call s:ClipNum(<line1>, <line2>)
 " ClipAll のみ引数を渡して区切り線付きにする
 command! -nargs=0 ClipAll call s:Clip(expand('%:p') . "\n" . join(getline(1, '$'), "\n"), 1)
 nnoremap %% :ClipAll<CR>
