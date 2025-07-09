@@ -118,4 +118,5 @@ alias cl='claude'
 alias clc='claude --continue'
 alias cld='claude --dangerously-skip-permissions'
 alias cldr='claude --dangerously-skip-permissions --resume'
+alias gpd="gh pr diff $(gh pr view --json number --jq '.number') | pbcopy"
 
