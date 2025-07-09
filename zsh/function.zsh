@@ -747,6 +747,16 @@ _edit_zsh_files() {
   vim -p "${editFiles[@]}"
 }
 
+# Claude Code関連ファイルをfzfで選択しvimで開く
+alias cll='_edit_claude_files'
+_edit_claude_files() {
+  local claudeFiles=$(find ~/dotfiles/claude -type f)
+  # 文字数でソートする
+  local editFiles=($(echo "$claudeFiles" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf-tmux -p80% --preview "bat --color always {}"))
+  test -z "$editFiles" && return
+  vim -p "${editFiles[@]}"
+}
+
 # git stashでよく使うコマンド集
 alias gss='_git_stash_commands'
 _git_stash_commands() {
