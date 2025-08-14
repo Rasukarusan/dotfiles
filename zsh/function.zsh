@@ -1584,3 +1584,13 @@ function _git_checkout_all() {
   local path_working_tree_root=$(git rev-parse --show-cdup)
   git -C "$path_working_tree_root" checkout $(git -C "$path_working_tree_root" diff --name-only)
 }
+
+alias his='_history_fzf'
+function _history_fzf() {
+  local cmd=$(history | cut -d " " -f 3- | tail -r | cut -d " " -f 2- | sed "s/^ //g" | fzf)
+  if [ -n "$cmd" ]; then
+      printf "\e[33m${cmd}\e[m\n"
+      print -s "$cmd"
+      eval "$cmd"
+  fi
+}

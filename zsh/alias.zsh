@@ -14,7 +14,6 @@ alias grep='grep --color=auto -i'
 alias ...='cd ../../'
 alias ....='cd ../../../'
 alias history='history 1'
-alias his='eval $(\history 1 | cut -d " " -f 3- | tail -r | cut -d " " -f 2- | sed "s/^ //g" | fzf)'
 alias time='/usr/bin/time -p'
 alias ssh='TERM=xterm ssh'
 alias tree='tree -N -a -I ".DS_Store|.git|node_modules|vendor|.next|dist"'
@@ -118,5 +117,5 @@ alias cl='claude'
 alias clc='claude --continue'
 alias cld='claude --dangerously-skip-permissions'
 alias cldr='claude --dangerously-skip-permissions --resume'
-alias gpd="gh pr diff $(gh pr view --json number --jq '.number') | pbcopy"
+alias agu="ag -uu"
 
