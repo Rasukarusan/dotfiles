@@ -614,7 +614,7 @@ _delete_branch() {
 
 # 現在のブランチにマージされているブランチを削除する
 _delete_merged_branch() {
-  git branch --merged | grep -E -v '(master|develop|stage|stg|php7.2|renewal)'
+  git branch --merged | grep -E -v '(main|master|develop|stage|stg|php7.2|renewal)'
   printf "\e[35m上記のブランチを削除して良いですか？(y/N) > \e[m\n"
   read isOK
   case "${isOK}" in
