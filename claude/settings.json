@@ -13,9 +13,16 @@
       "WebFetch(domain:github.com)"
     ],
     "deny": [
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(pnpm supabase db reset)",
+      "Bash(git commit)",
+      "Bash(git push)"
     ]
   },
   "model": "opus",
-  "includeCoAuthoredBy": false
+  "includeCoAuthoredBy": false,
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline.sh"
+  }
 }
