@@ -112,10 +112,10 @@ alias pq='pbpaste | jq'
 alias conda='/opt/homebrew/anaconda3/_conda'
 alias cdc='cd $(find . -type d | grep -v .git | fzf --preview "tree {}")'
 alias k='kubectl'
-alias ag='ag --hidden -S'
+alias ag='ag --hidden -S' # --hidden: 隠しファイル対象、-S: 大文字小文字区別なし, -uu: ignore設定を全部無視して全検索。
 alias cl='claude'
 alias clc='claude --continue'
 alias cld='claude --dangerously-skip-permissions'
 alias cldr='claude --dangerously-skip-permissions --resume'
-alias agu="ag -uu"
+alias rg="rg --hidden" # --no-ignoreで全検索
 
