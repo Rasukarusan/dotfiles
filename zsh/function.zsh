@@ -136,11 +136,18 @@ alias gdd='_git_diff'
 _git_diff(){
   local path_working_tree_root=$(git rev-parse --show-cdup)
   [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
-  local files=($(git -C $path_working_tree_root ls-files --modified \
-    | fzf-tmux -p80% --select-1 --prompt "SELECT FILES>" --preview 'git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy' --preview-window=right:50% ))
+  local files=($(
+    { git -C $path_working_tree_root ls-files --modified; \
+      git -C $path_working_tree_root ls-files --others --exclude-standard; } \
+    | sort -u \
+    | fzf-tmux -p80% --select-1 --prompt "SELECT FILES>" --preview 'if git ls-files --error-unmatch $(git rev-parse --show-cdup){} &>/dev/null; then git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy; else bat --color=always --style=numbers,changes $(git rev-parse --show-cdup){} 2>/dev/null || cat $(git rev-parse --show-cdup){}; fi' --preview-window=right:50% ))
   [ -z "$files" ] && return
   for file in "${files[@]}";do
-    git diff -b ${path_working_tree_root}${file}
+    if git ls-files --error-unmatch ${path_working_tree_root}${file} &>/dev/null; then
+      git diff -b ${path_working_tree_root}${file}
+    else
+      git diff --no-index /dev/null ${path_working_tree_root}${file}
+    fi
   done
 }
 
