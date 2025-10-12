@@ -1,4 +1,5 @@
 {
+  "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
       "Bash(npm:*)",
@@ -16,11 +17,10 @@
       "Bash(curl:*)",
       "Bash(pnpm supabase db reset)",
       "Bash(git commit)",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(brew:*)"
     ]
   },
-  "model": "opus",
-  "includeCoAuthoredBy": false,
   "statusLine": {
     "type": "command",
     "command": "bash ~/.claude/statusline.sh"
