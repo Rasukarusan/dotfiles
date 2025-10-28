@@ -603,7 +603,7 @@ _branch_diff_on_github() {
 
 # ブランチをfzfで選択して削除
 _delete_branch() {
-  local targets=($(git branch | grep -E -v 'master|stage|stg|php7.2|renewal|develop$' | fzf --preview 'git show --color=always {1}' --preview-window=right:50%))
+  local targets=($(git branch | grep -E -v 'master|stage|stg|php7.2|develop$' | fzf --preview 'git show --color=always {1}' --preview-window=right:50%))
   test -z "$targets" && return
   echo "${targets[@]}" | tr ' ' '\n'
   printf "\e[35m上記のブランチを削除して良いですか？(y/N) > \e[m\n"
