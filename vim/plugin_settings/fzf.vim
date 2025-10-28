@@ -23,6 +23,29 @@ command! -bang -nargs=? -complete=dir GFiles
 command! -bang Colors
   \ call fzf#vim#colors({'left': '15%', 'options': '--reverse --margin 30%,0'}, <bang>0)
 
+" Agコマンドをカスタマイズ（複数選択時にタブで開く）
+function! s:ag_to_qf(lines)
+  " 最初の行はキーバインド情報なのでスキップ
+  let key = remove(a:lines, 0)
+  " 各行をタブで開く（ファイル名:行番号の形式でパース）
+  for line in a:lines
+    let parts = matchlist(line, '^\([^:]*\):\(\d\+\):\(\d\+\):')
+    if !empty(parts)
+      let file = parts[1]
+      let lnum = parts[2]
+      let col = parts[3]
+      execute 'tabedit +' . lnum . ' ' . fnameescape(file)
+    endif
+  endfor
+endfunction
+
+command! -bang -nargs=* Ag
+  \ call fzf#vim#ag(<q-args>,
+  \   fzf#vim#with_preview({
+  \     'sink*': function('s:ag_to_qf'),
+  \     'options': ['--multi', '--bind', 'ctrl-a:select-all']
+  \   }), <bang>0)
+
 " Git管理下ファイル検索
 nmap <C-p> :GFiles<CR>
 " ファイル内検索
