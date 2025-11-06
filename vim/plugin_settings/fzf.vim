@@ -27,6 +27,8 @@ command! -bang Colors
 function! s:ag_to_qf(lines)
   " 最初の行はキーバインド情報なのでスキップ
   let key = remove(a:lines, 0)
+  " 開いたファイルを記録する辞書（重複防止用）
+  let opened_files = {}
   " 各行をタブで開く（ファイル名:行番号の形式でパース）
   for line in a:lines
     let parts = matchlist(line, '^\([^:]*\):\(\d\+\):\(\d\+\):')
@@ -34,7 +36,11 @@ function! s:ag_to_qf(lines)
       let file = parts[1]
       let lnum = parts[2]
       let col = parts[3]
-      execute 'tabedit +' . lnum . ' ' . fnameescape(file)
+      " 同じファイルを複数回開かないようにチェック
+      if !has_key(opened_files, file)
+        execute 'tabedit +' . lnum . ' ' . fnameescape(file)
+        let opened_files[file] = 1
+      endif
     endif
   endfor
 endfunction
