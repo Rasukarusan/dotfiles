@@ -27,7 +27,6 @@ call plug#begin()
   Plug 'machakann/vim-sandwich'
   Plug 'lambdalisue/fern.vim'
   Plug 'yuki-yano/fern-preview.vim'
-  " Plug 'LumaKernel/fern-mapping-reload-all.vim'
   Plug 'Rasukarusan/nvim-select-multi-line'
   Plug 'rust-lang/rust.vim'
   Plug 'github/copilot.vim'
