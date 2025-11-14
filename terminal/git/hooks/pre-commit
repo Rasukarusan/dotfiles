@@ -4,26 +4,38 @@
 source ~/dotfiles/terminal/git/hooks/_load_local_hook
 
 words=(
-    console.log
-    var_dump
-    outer_log
-    log.Printf
+    "console.log"
+    "var_dump"
+    "outer_log"
+    "log.Printf"
 )
-files=($(git diff --cached --name-only HEAD))
+
+files=($(git diff --cached --name-only))
 error=0
-for file in "${files[@]}"
-do
-    for word in ${words[@]}
-    do
-        if grep "$word" $file >/dev/null; then
-            echo $file
-            grep --color -n "$word" $file
+
+for file in "${files[@]}"; do
+    # ファイルごとの差分（追加・変更行のみ(U0)）を取得
+    diff=$(git diff --cached -U0 -- "$file")
+
+    hit_once=0
+
+    for word in "${words[@]}"; do
+        # diff にワードが含まれるか確認
+        if echo "$diff" | grep -E "$word" >/dev/null; then
+            # ファイル名は最初の1回だけ表示
+            if [ $hit_once -eq 0 ]; then
+                echo -e "\n$file"
+                hit_once=1
+            fi
+
+            # 差分の中から該当行を表示（追加行のみを見たい場合は '^+' を追加）
+            echo "$diff" | grep --color=always -nE "$word"
             error=1
         fi
     done
 done
 
 if [ $error -eq 1 ]; then
-    printf "\e[31;1m\nDebug sentence is exist!\nIf you want to continue, exec \`git commit --no-verify\`\e[m\n"
+    printf "\e[31;1m\nDebug sentence exists in diff!\nIf you want to continue, exec \`git commit --no-verify\`\e[m\n"
     exit 1
 fi
