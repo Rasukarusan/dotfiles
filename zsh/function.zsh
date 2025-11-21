@@ -140,7 +140,7 @@ _git_diff(){
     { git -C $path_working_tree_root ls-files --modified; \
       git -C $path_working_tree_root ls-files --others --exclude-standard; } \
     | sort -u \
-    | fzf-tmux -p80% --select-1 --prompt "SELECT FILES>" --preview 'if git ls-files --error-unmatch $(git rev-parse --show-cdup){} &>/dev/null; then git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy; else bat --color=always --style=numbers,changes $(git rev-parse --show-cdup){} 2>/dev/null || cat $(git rev-parse --show-cdup){}; fi' --preview-window=right:50% ))
+    | fzf-tmux -p80% --select-1 --prompt "SELECT FILES>" --preview 'if git ls-files --error-unmatch $(git rev-parse --show-cdup){} &>/dev/null; then git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy; else bat --color=always --style=numbers --line-range=:500 --style=numbers,changes $(git rev-parse --show-cdup){} 2>/dev/null || cat $(git rev-parse --show-cdup){}; fi' --preview-window=right:50% ))
   [ -z "$files" ] && return
   for file in "${files[@]}";do
     if git ls-files --error-unmatch ${path_working_tree_root}${file} &>/dev/null; then
@@ -205,12 +205,12 @@ _article_commands() {
 _write_article() {
   local ARTICLE_DIR=/Users/`whoami`/Documents/github/articles
   if [ "$1" = '-a' ];then
-    local targetFile=$(find $ARTICLE_DIR -name "*.md" | fzf-tmux -p80% --delimiter 'articles' --with-nth  -1 --preview "bat --color=always {}")
+    local targetFile=$(find $ARTICLE_DIR -name "*.md" | fzf-tmux -p80% --delimiter 'articles' --with-nth  -1 --preview "bat --color=always --style=numbers --line-range=:500 {}")
     [ -z "$targetFile" ] && return
     vim $targetFile
     return
   fi
-  local article=`ls ${ARTICLE_DIR}/*.md | xargs -I {} basename {} | fzf-tmux -p80% --preview "bat --color=always ${ARTICLE_DIR}/{}"`
+  local article=`ls ${ARTICLE_DIR}/*.md | xargs -I {} basename {} | fzf-tmux -p80% --preview "bat --color=always --style=numbers --line-range=:500 ${ARTICLE_DIR}/{}"`
 
   # 何も選択しなかった場合は終了
   if [ -z "$article" ]; then
@@ -286,7 +286,7 @@ _pull_article() {
 alias map='_write_mindmap'
 _write_mindmap() {
   local dir=/Users/`whoami`/Documents/github/mindmap-view/data
-  local mindmap=`(echo 00000000.md && ls ${dir}/*.md | xargs -I {} basename {}) | fzf-tmux -p80% --preview "bat --color=always ${dir}/{}"`
+  local mindmap=`(echo 00000000.md && ls ${dir}/*.md | xargs -I {} basename {}) | fzf-tmux -p80% --preview "bat --color=always --style=numbers --line-range=:500 ${dir}/{}"`
   test -z "$mindmap" && return
 
   if [ "$mindmap" = "00000000.md" ]; then
@@ -821,7 +821,7 @@ _git_stash_with_name() {
 }
 
 _git_stash_each_file() {
-  local targets=($(git ls-files -m -o --exclude-standard | sort | fzf --preview='bat --color=always {}'))
+  local targets=($(git ls-files -m -o --exclude-standard | sort | fzf --preview='bat --color=always --style=numbers --line-range=:500 {}'))
   [ -z "$targets" ] && return
   echo "保存名を入力してくだい"
   read name
@@ -1013,7 +1013,7 @@ _rmm() {
     --bind "f2:reload(find . -maxdepth 2 -type d \( -name node_modules -o -name .git \) -prune -o -type f | sort)" \
     --bind "f3:reload(find . -maxdepth 3 -type d \( -name node_modules -o -name .git \) -prune -o -type f | sort)" \
     --bind "f5:reload(find . -type d \( -name node_modules -o -name .git \) -prune -o -type f | sort)" \
-    --preview='bat --color=always {}'
+    --preview='bat --color=always --style=numbers --line-range=:500 {}'
   )
   do
     echo "$removeFile"
