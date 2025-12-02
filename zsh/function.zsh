@@ -1368,6 +1368,58 @@ _git_checkout_from_pr() {
   gh pr checkout $pr
 }
 
+# PRのブランチでworktreeを作成
+alias prw='_git_worktree_from_pr'
+_git_worktree_from_pr() {
+  # デフォルトのクエリ
+  local default_query="NOT bump in:title is:open is:pr"
+  # 引数があればそれを付け足す
+  local query="$default_query ${1:+$1}"
+
+  # PR選択
+  local pr_line=$(gh pr list --search "$query" --limit 100 | fzf)
+  [ -z "$pr_line" ] && return
+
+  local pr_number=$(echo "$pr_line" | awk '{print $1}')
+  local branch_name=$(gh pr view "$pr_number" --json headRefName -q '.headRefName')
+  [ -z "$branch_name" ] && echo "ブランチ名を取得できませんでした" && return
+
+  # リポジトリ名と親ディレクトリを取得
+  local repo_root=$(git rev-parse --show-toplevel)
+  local repo_name=$(basename "$repo_root")
+  local parent_dir=$(dirname "$repo_root")
+
+  # ブランチ名の/を-に置換（ディレクトリ名として使用するため）
+  local safe_branch_name=$(echo "$branch_name" | tr '/' '-')
+  local worktree_path="${parent_dir}/${repo_name}-${safe_branch_name}"
+
+  # すでにworktreeが存在するか確認
+  if [ -d "$worktree_path" ]; then
+    printf "\e[33mWorktreeは既に存在します: ${worktree_path}\e[m\n"
+    printf "移動しますか？(y/N) > "
+    read answer
+    if [ "$answer" = 'y' ] || [ "$answer" = 'Y' ]; then
+      cd "$worktree_path"
+    fi
+    return
+  fi
+
+  # リモートブランチをfetch
+  printf "\e[36mリモートブランチをfetch中...\e[m\n"
+  git fetch origin "$branch_name"
+
+  # worktree作成
+  printf "\e[36mWorktreeを作成中: ${worktree_path}\e[m\n"
+  git worktree add "$worktree_path" "$branch_name"
+
+  if [ $? -eq 0 ]; then
+    printf "\e[32mWorktreeを作成しました: ${worktree_path}\e[m\n"
+    cd "$worktree_path"
+  else
+    printf "\e[31mWorktreeの作成に失敗しました\e[m\n"
+  fi
+}
+
 # 自分が関連するPR一覧を取得
 alias prl='_github_pr_involves'
 _github_pr_involves() {
