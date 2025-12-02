@@ -1420,6 +1420,46 @@ _git_worktree_from_pr() {
   fi
 }
 
+# worktreeをfzfで選択して削除
+alias prwr='_git_worktree_remove'
+_git_worktree_remove() {
+  # メインのworktreeのパスを取得
+  local main_worktree=$(git worktree list --porcelain | head -n 1 | sed 's/worktree //')
+
+  # worktree一覧を取得（メイン以外）
+  local worktrees=$(git worktree list | grep -v "^${main_worktree} ")
+  if [ -z "$worktrees" ]; then
+    echo "削除可能なworktreeがありません"
+    return
+  fi
+
+  # fzfで選択（複数選択可能）
+  local selected=$(echo "$worktrees" | fzf --multi --preview 'echo {} | awk "{print \$1}" | xargs ls -la')
+  [ -z "$selected" ] && return
+
+  # 選択されたworktreeを削除
+  echo "$selected" | while IFS= read -r line; do
+    local worktree_path=$(echo "$line" | awk '{print $1}')
+    local branch=$(echo "$line" | awk '{print $3}' | tr -d '[]')
+
+    printf "\e[33m削除: ${worktree_path} (${branch})\e[m\n"
+
+    # 現在そのworktreeにいる場合はメインに移動
+    if [ "$(pwd)" = "$worktree_path" ]; then
+      printf "\e[36m現在のworktreeを削除するため、メインリポジトリに移動します\e[m\n"
+      cd "$main_worktree"
+    fi
+
+    # worktree削除
+    git worktree remove "$worktree_path" --force
+    if [ $? -eq 0 ]; then
+      printf "\e[32m削除完了: ${worktree_path}\e[m\n"
+    else
+      printf "\e[31m削除失敗: ${worktree_path}\e[m\n"
+    fi
+  done
+}
+
 # 自分が関連するPR一覧を取得
 alias prl='_github_pr_involves'
 _github_pr_involves() {
