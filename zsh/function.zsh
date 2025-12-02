@@ -246,7 +246,7 @@ _move_posted_articles() {
 
   # 投稿が完了したファイルを別ディレクトリに移す
   ls $ARTICLE_DIR | while read file; do
-    if tail -n 1 "${ARTICLE_DIR}/${file}" | grep $POSTED_MARK > /dev/null; then
+    if [[ "$(tail -n 1 "${ARTICLE_DIR}/${file}")" == "$POSTED_MARK" ]]; then
       # git管理されていない場合失敗するので通常のmvを実行する
       git mv "${ARTICLE_DIR}/${file}" "$POSTED_DIR/" || mv "${ARTICLE_DIR}/${file}" "$POSTED_DIR/"
       printf "\e[33m${file} is moved!\e[m\n"
