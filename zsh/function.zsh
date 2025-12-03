@@ -1419,8 +1419,57 @@ _git_worktree_from_pr() {
   fi
 }
 
+# 指定のブランチでworktreeを作成
+alias cow='_git_worktree_checkout'
+_git_worktree_checkout() {
+  # ブランチ選択（ローカル＋リモート）
+  local branch_line=$(git branch -a | tr -d " " | fzf-tmux -p80% --prompt "WORKTREE BRANCH>" --preview "git log --color=always {}" | head -n 1 | sed -e "s/^\*\s*//g")
+  [ -z "$branch_line" ] && return
+
+  # remotes/origin/ を除去してブランチ名を取得
+  local branch_name=$(echo "$branch_line" | perl -pe "s/remotes\/origin\///g")
+  [ -z "$branch_name" ] && echo "ブランチ名を取得できませんでした" && return
+
+  # リポジトリ名と親ディレクトリを取得
+  local repo_root=$(git rev-parse --show-toplevel)
+  local repo_name=$(basename "$repo_root")
+  local parent_dir=$(dirname "$repo_root")
+
+  # ブランチ名の/を-に置換（ディレクトリ名として使用するため）
+  local safe_branch_name=$(echo "$branch_name" | tr '/' '-')
+  local worktree_path="${parent_dir}/${repo_name}-${safe_branch_name}"
+
+  # すでにworktreeが存在するか確認
+  if [ -d "$worktree_path" ]; then
+    printf "\e[33mWorktreeは既に存在します: ${worktree_path}\e[m\n"
+    printf "移動しますか？(y/N) > "
+    read answer
+    if [ "$answer" = 'y' ] || [ "$answer" = 'Y' ]; then
+      cd "$worktree_path"
+    fi
+    return
+  fi
+
+  # リモートブランチの場合はfetch
+  if echo "$branch_line" | grep -q "remotes/origin/"; then
+    printf "\e[36mリモートブランチをfetch中...\e[m\n"
+    git fetch origin "$branch_name"
+  fi
+
+  # worktree作成
+  printf "\e[36mWorktreeを作成中: ${worktree_path}\e[m\n"
+  git worktree add "$worktree_path" "$branch_name"
+
+  if [ $? -eq 0 ]; then
+    printf "\e[32mWorktreeを作成しました: ${worktree_path}\e[m\n"
+    cd "$worktree_path"
+  else
+    printf "\e[31mWorktreeの作成に失敗しました\e[m\n"
+  fi
+}
+
 # worktreeをfzfで選択して削除
-alias prwr='_git_worktree_remove'
+alias wrr='_git_worktree_remove'
 _git_worktree_remove() {
   # メインのworktreeのパスを取得
   local main_worktree=$(git worktree list --porcelain | head -n 1 | sed 's/worktree //')
