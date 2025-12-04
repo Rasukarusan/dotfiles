@@ -118,5 +118,5 @@ alias clc='claude --continue'
 alias cld='claude --dangerously-skip-permissions'
 alias cldr='claude --dangerously-skip-permissions --resume'
 alias rg="rg --hidden" # --no-ignoreで全検索
-alias tc="table-to-clipboard"
+alias tc="pbpaste | table-to-clipboard"
 
