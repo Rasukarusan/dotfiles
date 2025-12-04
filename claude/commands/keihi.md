@@ -21,13 +21,13 @@ Microsoft,文教堂,Udemy,蔦屋書店,コメダ珈琲店,むさしの森珈琲,
 ## ファイル名の変更
 
 以下のルールに従って、 画像ファイル名にprefixを追加してください。
-交際費: gohan_
-消耗品費: syoumouhin_
-新聞図書費: book_
-通信費: net_
-研修費: other_
-雑費: 店名_（例：starbucks_、tullys_、hosino_）
-車両費: gasorin_
+- 交際費: gohan_
+- 消耗品費: syoumouhin_
+- 新聞図書費: book_
+- 通信費: net_
+- 研修費: other_
+- 雑費: 店名_（例：starbucks_、tullys_、hosino_）
+- 車両費: gasorin_
 
 ## ファイルの圧縮
 
