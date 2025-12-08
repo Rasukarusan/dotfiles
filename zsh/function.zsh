@@ -1741,3 +1741,24 @@ function _history_fzf() {
       eval "$cmd"
   fi
 }
+
+# Cloud Watchのロググループをfzfで選択してtailする
+alias cww='_fzf_cloud_watch_log_tail'
+_fzf_cloud_watch_log_tail() {
+  # ロググループ一覧を取得 → 1行ずつに整形 → fzf で選択
+  local log_group
+  log_group=$(
+    aws logs describe-log-groups \
+      --query 'logGroups[].logGroupName' \
+      --output text \
+      | tr '\t' '\n' \
+      | fzf --prompt="Select log group> "
+  ) || return
+
+  # 何も選ばなかったら終了
+  [ -z "$log_group" ] && return
+
+  local execCommand="aws logs tail $log_group --follow --since 1h --format short"
+  print -s "$execCommand"
+  printf "\e[33m${execCommand}\e[m\n" && eval $execCommand
+}
