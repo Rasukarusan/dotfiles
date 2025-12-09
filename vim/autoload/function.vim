@@ -290,10 +290,11 @@ endfunction
 
 " ClipPath と ClipFile は引数なしで呼ぶ（区切り線なし）
 command! -nargs=0 ClipPath call s:Clip(expand('%:p'))
+nnoremap <S-C><S-P> :ClipPath<CR>
 command! -nargs=0 ClipFile call s:Clip(expand('%:t'))
 " ClipNum は選択範囲の行番号付きパスをクリップボードにコピー
 command! -nargs=0 -range ClipNum call s:ClipNum(<line1>, <line2>)
-vnoremap <S-N> :ClipNum<CR>
+vnoremap <S-C><S-N> :ClipNum<CR>
 " ClipAll のみ引数を渡して区切り線付きにする
 command! -nargs=0 ClipAll call s:Clip(expand('%:p') . "\n" . join(getline(1, '$'), "\n"), 1)
 nnoremap %% :ClipAll<CR>
