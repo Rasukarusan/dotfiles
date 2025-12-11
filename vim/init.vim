@@ -35,7 +35,7 @@ call plug#begin()
   Plug 'rcarriga/nvim-dap-ui'
   Plug 'leoluz/nvim-dap-go'
   Plug 'theHamsta/nvim-dap-virtual-text'
-  Plug 'monaqa/dial.nvim'
+  Plug 'monaqa/dial.nvim', { 'commit': '2c7e275' } " Neovim 0.10互換
   Plug '0xmovses/move.vim'
   Plug 'nvim-lua/plenary.nvim' " Claude Codeに必要
   Plug 'greggh/claude-code.nvim'
