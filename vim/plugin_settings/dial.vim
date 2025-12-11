@@ -14,7 +14,11 @@ require("dial.config").augends:register_group{
     augend.integer.alias.decimal,
     augend.integer.alias.hex,
     augend.date.alias["%Y/%m/%d"],
-    augend.constant.alias.bool
+    augend.constant.new{
+      elements = {"true", "false"},
+      word = true,
+      cyclic = true,
+    },
   },
 }
 EOF
