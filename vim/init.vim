@@ -28,6 +28,7 @@ call plug#begin()
   Plug 'lambdalisue/fern.vim'
   Plug 'yuki-yano/fern-preview.vim'
   Plug 'Rasukarusan/nvim-select-multi-line'
+  Plug 'Rasukarusan/vim-tetris-paste'
   Plug 'Rasukarusan/vim-tetris-delete'
   Plug 'rust-lang/rust.vim'
   Plug 'github/copilot.vim'
