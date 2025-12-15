@@ -30,6 +30,7 @@ call plug#begin()
   Plug 'Rasukarusan/nvim-select-multi-line'
   Plug 'Rasukarusan/vim-tetris-paste'
   Plug 'Rasukarusan/vim-tetris-delete'
+  Plug 'Rasukarusan/markview.nvim', { 'do': './install.sh' }
   Plug 'rust-lang/rust.vim'
   Plug 'github/copilot.vim'
   Plug 'mfussenegger/nvim-dap'
