@@ -23,7 +23,7 @@ call plug#begin()
   Plug 'gorodinskiy/vim-coloresque'
   Plug 'skanehira/translate.vim'
   Plug 'segeljakt/vim-silicon'
-  Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+  Plug 'nvim-treesitter/nvim-treesitter', {'branch': 'main', 'do': ':TSUpdate'}
   Plug 'machakann/vim-sandwich'
   Plug 'lambdalisue/fern.vim'
   Plug 'yuki-yano/fern-preview.vim'
