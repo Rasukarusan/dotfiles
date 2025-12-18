@@ -12,9 +12,9 @@
   },
   "languageserver": {
     "dockerfile": {
-      "command": "docker-langserver",
+      "command": "docker-language-server",
       "filetypes": ["dockerfile"],
-      "args": ["--stdio"]
+      "args": ["start", "--stdio"]
     },
     "swift": {
       "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp",
