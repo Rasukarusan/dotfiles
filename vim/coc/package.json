@@ -5,7 +5,6 @@
     "coc-html": ">=1.8.0",
     "coc-jedi": ">=0.36.1",
     "coc-json": ">=1.9.2",
-    "coc-markdown-preview-enhanced": ">=0.5.5",
     "coc-phpls": ">=2.2.4",
     "coc-snippets": ">=3.2.0",
     "coc-tailwindcss": ">=0.7.0",
@@ -19,5 +18,5 @@
     "coc-prettier": ">=11.0.0",
     "coc-pyright": ">=1.1.395"
   },
-  "lastUpdate": 1741092865603
+  "lastUpdate": 1766107191921
 }
