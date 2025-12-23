@@ -1743,6 +1743,64 @@ function _history_fzf() {
 }
 
 # Cloud Watchのロググループをfzfで選択してtailする
+# チケット名からブランチ名を生成（Claude CLIを使用）
+alias gb='_generate_branch_name'
+_generate_branch_name() {
+  if [ -z "$1" ]; then
+    echo "Usage: cb <ticket_name>"
+    return 1
+  fi
+
+  local ticket_name="$1"
+  local additional_instruction=""
+  local branch_name=""
+
+  while true; do
+    local prompt="以下のチケット名からgitブランチ名を生成してください。
+フォーマット: feature/<チケット番号>/<英語のケバブケース>
+- チケット番号はそのまま使用（例: PJ-123）
+- 説明部分は英語に翻訳してケバブケース（小文字、ハイフン区切り）にする
+- 余計な説明は不要。ブランチ名のみを1行で出力
+
+チケット名: ${ticket_name}"
+
+    # 追加指示がある場合は追加
+    if [ -n "$additional_instruction" ]; then
+      prompt="${prompt}
+
+追加指示: ${additional_instruction}"
+    fi
+
+    branch_name=$(claude -p "$prompt" --model claude-haiku-4-5-20251001 2>/dev/null)
+
+    if [ -z "$branch_name" ]; then
+      echo "ブランチ名の生成に失敗しました"
+      return 1
+    fi
+
+    printf "\e[33m${branch_name}\e[m\n"
+
+    # 選択肢を表示
+    printf "\n[y]チェックアウト [r]再生成 [q]終了 > "
+    read answer
+
+    case "$answer" in
+      y|Y)
+        print -s "git checkout -b \"$branch_name\""
+        git checkout -b "$branch_name"
+        return 0
+        ;;
+      r|R)
+        printf "追加の指示を入力 > "
+        read additional_instruction
+        ;;
+      q|Q|"")
+        return 0
+        ;;
+    esac
+  done
+}
+
 alias cww='_fzf_cloud_watch_log_tail'
 _fzf_cloud_watch_log_tail() {
   # ロググループ一覧を取得 → 1行ずつに整形 → fzf で選択
