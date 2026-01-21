@@ -1803,20 +1803,50 @@ _generate_branch_name() {
 
 alias cww='_fzf_cloud_watch_log_tail'
 _fzf_cloud_watch_log_tail() {
-  # ロググループ一覧を取得 → 1行ずつに整形 → fzf で選択
-  local log_group
-  log_group=$(
+  # ロググループ一覧を取得 → 1行ずつに整形 → fzf で複数選択可能
+  local log_groups
+  log_groups=$(
     aws logs describe-log-groups \
       --query 'logGroups[].logGroupName' \
       --output text \
       | tr '\t' '\n' \
-      | fzf --prompt="Select log group> "
+      | fzf --prompt="Select log groups (TAB: multi-select)> " -m
   ) || return
 
   # 何も選ばなかったら終了
-  [ -z "$log_group" ] && return
+  [ -z "$log_groups" ] && return
 
-  local execCommand="aws logs tail $log_group --follow --since 1h --format short"
-  print -s "$execCommand"
-  printf "\e[33m${execCommand}\e[m\n" && eval $execCommand
+  # 選択されたロググループを配列に変換
+  local -a groups
+  groups=("${(@f)log_groups}")
+  local count=${#groups[@]}
+
+  if [ "$count" -eq 1 ]; then
+    # 1つだけ選択された場合は従来の動作
+    local execCommand="aws logs tail '${groups[1]}' --follow --since 1h --format short"
+    print -s "$execCommand"
+    printf "\e[33m${execCommand}\e[m\n" && eval $execCommand
+  else
+    # 複数選択された場合はtmuxペインで分割
+    if [ -z "$TMUX" ]; then
+      echo "Error: 複数ログの表示にはtmuxセッションが必要です"
+      return 1
+    fi
+
+    echo "選択されたロググループ (${count}個):"
+    for g in "${groups[@]}"; do
+      echo "  - $g"
+    done
+
+    # 最初のロググループ用に新しいウィンドウを作成
+    local execCommand="aws logs tail '${groups[1]}' --follow --since 1h --format short"
+    tmux new-window -n "logs" "$execCommand"
+
+    # 残りのロググループ用にペインを分割
+    for ((i = 2; i <= count; i++)); do
+      execCommand="aws logs tail '${groups[$i]}' --follow --since 1h --format short"
+      tmux split-window -t logs "$execCommand"
+      tmux select-layout -t logs tiled
+    done
+  fi
 }
