@@ -54,10 +54,10 @@ command! -bang -nargs=* Ag
 
 " Git管理下ファイル検索
 nmap <C-p> :GFiles<CR>
+" 全ファイル検索
+nmap <C-f> :Files<CR>
 " ファイル内検索
-nmap <C-f> :BLines<CR>
-" カレントディレクトリ配下のファイル検索
-nmap <Space>f :Files<CR>
+nmap <Space>f :BLines<CR>
 " コマンド履歴
 nmap <SPACE>c :History:<CR>
 " 検索単語履歴
