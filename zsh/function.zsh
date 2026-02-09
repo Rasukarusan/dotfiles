@@ -559,7 +559,12 @@ _tmux_commands() {
       done
       ;;
     'capture-window')
-      tmux capture-pane -pS - > ~/Desktop/tmux.txt
+      local i=1
+      while [[ -f ~/Desktop/tmux${i}.txt ]]; do
+        ((i++))
+      done
+      tmux capture-pane -pS - > ~/Desktop/tmux${i}.txt
+      echo "Saved to ~/Desktop/tmux${i}.txt"
       ;;
     *)
       tmux $command
