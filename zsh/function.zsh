@@ -1007,17 +1007,18 @@ _replace_all() {
   ag -l -0 "$1" | xargs -0 gsed -i -e "s/$1/$2/"
 }
 
-# fzfでrm
+# fzfでrm (git statusの変更ファイルを対象)
 alias rmm='_rmm'
 _rmm() {
-  for removeFile in $(find . -maxdepth 1 -type d \( -name node_modules -o -name .git \) -prune -o -type f \
-    | sort \
-    |  fzf-tmux -p80% \
-    --bind "f1:reload(find . -maxdepth 1 -type d \( -name node_modules -o -name .git \) -prune -o -type f | sort)" \
-    --bind "f2:reload(find . -maxdepth 2 -type d \( -name node_modules -o -name .git \) -prune -o -type f | sort)" \
-    --bind "f3:reload(find . -maxdepth 3 -type d \( -name node_modules -o -name .git \) -prune -o -type f | sort)" \
-    --bind "f5:reload(find . -type d \( -name node_modules -o -name .git \) -prune -o -type f | sort)" \
-    --preview='bat --color=always --style=numbers --line-range=:500 {}'
+  if ! git rev-parse --is-inside-work-tree &>/dev/null; then
+    echo "Not a git repository"
+    return 1
+  fi
+  for removeFile in $(git status --short | awk '{print $NF}' \
+    | fzf-tmux -p80% --multi \
+    --header='git status files' \
+    --bind "ctrl-r:reload(git status --short | awk '{print \$NF}')" \
+    --preview='bat --color=always --style=numbers --line-range=:500 {} 2>/dev/null || echo "(file not found or binary)"'
   )
   do
     echo "$removeFile"
