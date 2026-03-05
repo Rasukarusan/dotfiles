@@ -1257,6 +1257,31 @@ _fzf_vim_git_staged() {
   vim -p "${selected[@]}"
 }
 
+# agで検索してfzfで選択したファイルをvimで開く
+alias vimg='_fzf_vim_ag'
+_fzf_vim_ag() {
+  local query="$*"
+  [ -z "$query" ] && echo "Usage: vimg <search string>" && return 1
+
+  local selected=($(ag -l -- "$query" | fzf-tmux -p80% --multi \
+    --preview="line=\$(ag -n -- $(printf '%q' "$query") {} | head -1 | cut -d: -f1); start=\$((line > 3 ? line - 3 : 1)); end=\$((line + 3)); bat --color=always --highlight-line \$line -r \$start:\$end {}"))
+
+  [ -z "$selected" ] && return
+
+  local args=()
+  local first=true
+  for file in "${selected[@]}"; do
+    local line=$(ag -n -- "$query" "$file" | head -1 | cut -d: -f1)
+    if $first; then
+      args+=("+${line:-1}" "$file")
+      first=false
+    else
+      args+=("+tabedit +${line:-1} $file")
+    fi
+  done
+  vim -p "${args[@]}" "+tabfirst"
+}
+
 # plistファイルをjsonで出力
 alias plist_to_json='_plist_to_json'
 _plist_to_json() {
