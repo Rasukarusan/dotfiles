@@ -1204,7 +1204,7 @@ _fzf_carthage() {
 }
 
 # modifiedとuntrachedのファイルをfzfで選択して開く
-alias vimg='_fzf_vim_git_modified_untracked'
+alias vims='_fzf_vim_git_modified_untracked'
 _fzf_vim_git_modified_untracked() {
   local files=($((git ls-files -m -o --exclude-standard; git diff --staged --name-only) | sort -u | fzf-tmux -p80% --preview='git diff --exit-code {} >/dev/null && bat --color always {} || git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy') )
   [ -z "$files" ] && return
@@ -1212,7 +1212,7 @@ _fzf_vim_git_modified_untracked() {
 }
 
 # modifiedファイルをfzfで選択して開く
-alias vimgm='_fzf_vim_git_modified'
+alias vimm='_fzf_vim_git_modified'
 _fzf_vim_git_modified() {
   # まず -m -o --exclude-standard で modified/untracked を列挙
   # そのあと [[ -e ]] で実際に存在するものだけを残す
@@ -1236,16 +1236,6 @@ _fzf_vim_git_modified() {
 
   # vim を開く
   vim -p "${selected[@]}"
-}
-
-# ブランチ間の差分ファイルをfzfで選択して開く
-alias vimd='_fzf_vim_git_diff_branch'
-_fzf_vim_git_diff_branch(){
-  local parent=$(git show-branch | grep '*' | grep -v "$(git rev-parse --abbrev-ref HEAD)" | head -1 | awk -F'[]~^[]' '{print $2}')
-  local current=$(git branch --show-current)
-  local targets=($(git diff --name-only $parent $current | fzf-tmux -p80% --preview='git diff --exit-code {} >/dev/null && bat --color always {} || git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy'))
-  [ -z "$targets" ] && return
-  vim -p "${targets[@]}"
 }
 
 # plistファイルをjsonで出力
