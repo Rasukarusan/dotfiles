@@ -44,10 +44,6 @@ alias transj='trans -b ja:en'
 alias pcopy='pbpaste | pbcopy'
 # スプレッドシートから表をコピーしてRedmineのテーブル形式に整形したい時に使用(先頭と末尾に|を挿入,タブを|に置換)
 alias rtable='pbpaste | tr "\t" "|" | sed -e "s/^/|/g" -e "s/$/|/g" -e "/|\"/s/|$//g" -e "/\"|/s/^|//g" | tr -d \" | pbcopy'
-# modifiedのファイルを全てタブで開く
-alias vims='vim -p `git diff --name-only`'
-# Unite tabでコピーしたものをタブで開く
-alias vimt="vim -p `pbpaste | sed 's/(\/)//g' | awk -F ':' '{print $2}' | grep -v '\[' | tr '\n' ' '`"
 # 最終更新日が一番新しいもののファイル名を取得
 alias fin='echo `ls -t | head -n 1`'
 # less `fin`と打つのが面倒だったため関数化。finはコマンドとして残しておきたいので残す
@@ -64,7 +60,6 @@ alias p2e='vim ~/p2'
 alias pd='vimdiff ~/p1 ~/p2'
 alias pst='pstree | less -S'
 alias oo='open .'
-alias of='ls -1F | grep -v "/" | fzf --preview "bat --color=always {}" | xargs open'
 alias hosts='sudo vim /etc/hosts'
 alias mailque='postqueue -p'
 alias maildel='sudo postsuper -d ALL deferred'
