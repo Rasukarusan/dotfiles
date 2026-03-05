@@ -1204,7 +1204,7 @@ _fzf_carthage() {
 }
 
 # modifiedとuntrachedのファイルをfzfで選択して開く
-alias vims='_fzf_vim_git_modified_untracked'
+alias vima='_fzf_vim_git_modified_untracked'
 _fzf_vim_git_modified_untracked() {
   local files=($((git ls-files -m -o --exclude-standard; git diff --staged --name-only) | sort -u | fzf-tmux -p80% --preview='git diff --exit-code {} >/dev/null && bat --color always {} || git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy') )
   [ -z "$files" ] && return
@@ -1214,13 +1214,12 @@ _fzf_vim_git_modified_untracked() {
 # modifiedファイルをfzfで選択して開く
 alias vimm='_fzf_vim_git_modified'
 _fzf_vim_git_modified() {
-  # まず -m -o --exclude-standard で modified/untracked を列挙
-  # そのあと [[ -e ]] で実際に存在するものだけを残す
+  # modifiedファイルのみ列挙（-o を外してuntrackedを除外）
   local all files=()
   # read で１行ずつ取り出して存在チェック(deletedのファイルを除外するため)
   while IFS= read -r f; do
     [[ -e $f ]] && files+=("$f")
-  done < <(git ls-files -m -o --exclude-standard)
+  done < <(git ls-files -m)
 
   # 対象がなければ終了
   [ ${#files[@]} -eq 0 ] && return
@@ -1235,6 +1234,26 @@ _fzf_vim_git_modified() {
   [ -z "$selected" ] && return
 
   # vim を開く
+  vim -p "${selected[@]}"
+}
+
+# ステージング済みファイルをfzfで選択して開く
+alias vims='_fzf_vim_git_staged'
+_fzf_vim_git_staged() {
+  local files=()
+  while IFS= read -r f; do
+    [[ -e $f ]] && files+=("$f")
+  done < <(git diff --staged --name-only)
+
+  [ ${#files[@]} -eq 0 ] && return
+
+  local selected=($(printf '%s\n' "${files[@]}" | sort -u \
+    | fzf-tmux -p80% --preview='
+      git diff --staged --color=always $(git rev-parse --show-cdup){} | diff-so-fancy
+    '))
+
+  [ -z "$selected" ] && return
+
   vim -p "${selected[@]}"
 }
 
