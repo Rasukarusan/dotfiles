@@ -765,7 +765,7 @@ _edit_claude_files() {
   local createNewOption="新しいcommandを作成"
   local claudeFiles=$(find ~/dotfiles/claude -type f)
   # 文字数でソートする
-  local selection=$(echo -e "$createNewOption\n$(echo "$claudeFiles" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2-)" | fzf-tmux -p80% --preview "test '{}' = '$createNewOption' && echo '新しいコマンドファイルを作成します' || bat --color always {}")
+  local selection=$(echo -e "$createNewOption\n$(echo "$claudeFiles" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2-)" | fzf-tmux -p80% --preview "test '{}' = '$createNewOption' && echo '新しいコマンドファイルを作成します' || bat --terminal-width=80 --color always {}")
   test -z "$selection" && return
   if [[ "$selection" == "$createNewOption" ]]; then
     # 新しいコマンドを作成
@@ -1206,9 +1206,22 @@ _fzf_carthage() {
 # modifiedとuntrachedのファイルをfzfで選択して開く
 alias vima='_fzf_vim_git_modified_untracked'
 _fzf_vim_git_modified_untracked() {
-  local files=($((git ls-files -m -o --exclude-standard; git diff --staged --name-only) | sort -u | fzf-tmux -p80% --preview='git diff --exit-code {} >/dev/null && bat --color always {} || git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy') )
-  [ -z "$files" ] && return
-  vim -p "${files[@]}"
+  local files=()
+  while IFS= read -r f; do
+    [[ -e $f ]] && files+=("$f")
+  done < <((git ls-files -m -o --exclude-standard; git diff --staged --name-only) | sort -u)
+
+  [ ${#files[@]} -eq 0 ] && return
+
+  local selected=($(printf '%s\n' "${files[@]}" \
+    | fzf-tmux -p80% --preview='
+      git diff --exit-code {} >/dev/null && bat --color always {} \
+      || git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy
+    '))
+
+  [ -z "$selected" ] && return
+
+  vim -p "${selected[@]}"
 }
 
 # modifiedファイルをfzfで選択して開く
