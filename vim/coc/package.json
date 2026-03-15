@@ -13,7 +13,6 @@
     "coc-webview": ">=0.12.0",
     "coc-rust-analyzer": ">=0.81.0",
     "@yaegassy/coc-tailwindcss3": ">=0.5.26",
-    "coc-markmap": ">=0.8.0",
     "coc-word": ">=1.2.2",
     "coc-prettier": ">=11.0.0",
     "coc-pyright": ">=1.1.395"
