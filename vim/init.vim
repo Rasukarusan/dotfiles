@@ -409,8 +409,6 @@ cabbrev vh split
 cabbrev Env tabe libs/.env
 " coc-markdown-preview-enhancedのコマンド
 command! MarkdownPreview :CocCommand markdown-preview-enhanced.openPreview
-" coc-markmapのコマンド
-command! MarkMap :CocCommand markmap.watch
 " Hexモードでバイナリを開く
 command! BinaryMode :%!xxd
 
