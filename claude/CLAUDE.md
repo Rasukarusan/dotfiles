@@ -4,3 +4,4 @@
 
 - WebSearchはmcpのo4-miniを利用してください
 - ブラウザの動作確認はMCPのchrome dev toolsを利用すること
+- 追加指示を @~/dotfiles/claude/local/CLAUDE.md から読み込むこと
