@@ -2,3 +2,4 @@ zsh/.zshrc.local
 zsh/local
 vim/autoload/local.vim
 claude/local
+claude/commands/local
