@@ -114,4 +114,5 @@ alias cldr='cld --resume'
 alias cldc='cld --continue'
 alias rg="rg --hidden" # --no-ignoreで全検索
 alias tc="pbpaste | table-to-clipboard"
+alias aso="aws sso login"
 
