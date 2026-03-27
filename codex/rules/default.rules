@@ -1,0 +1,3 @@
+prefix_rule(pattern=["git", "remote", "-v"], decision="allow")
+prefix_rule(pattern=["/bin/zsh", "-lc", "git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || echo 'NO_UPSTREAM'"], decision="allow")
+prefix_rule(pattern=["/bin/zsh", "-lc", "gh auth status 2>&1 || true"], decision="allow")
