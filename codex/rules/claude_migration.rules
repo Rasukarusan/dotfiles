@@ -1,0 +1,17 @@
+# ---- deny（forbidden）----
+prefix_rule(pattern=["curl"], decision="forbidden")
+prefix_rule(pattern=["brew"], decision="forbidden")
+
+prefix_rule(pattern=["pnpm", "supabase", "db", "reset"], decision="forbidden")
+
+prefix_rule(pattern=["git", "add"], decision="forbidden")
+prefix_rule(pattern=["git", "commit"], decision="forbidden")
+prefix_rule(pattern=["git", "merge"], decision="forbidden")
+prefix_rule(pattern=["git", "push"], decision="forbidden")
+
+# ---- allow（allow）----
+prefix_rule(pattern=["npm"], decision="allow")
+prefix_rule(pattern=["tmux"], decision="allow")
+prefix_rule(pattern=["gh"], decision="allow")
+prefix_rule(pattern=["ls"], decision="allow")
+prefix_rule(pattern=["rg"], decision="allow")
