@@ -3,6 +3,131 @@ set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# ====================
+# Homebrew
+# ====================
+echo "==> Homebrew"
+if ! command -v brew &>/dev/null; then
+  echo "  Installing Homebrew..."
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
+# Tap
+echo "==> Homebrew tap"
+TAPS=(
+  homebrew/cask
+  homebrew/core
+  heroku/brew
+  Rasukarusan/tap
+  homebrew/cask-fonts
+  homebrew/cask-versions
+)
+for tap in "${TAPS[@]}"; do
+  brew tap "$tap" 2>/dev/null || true
+done
+
+# Formulae
+echo "==> Homebrew formulae"
+FORMULAE=(
+  autoconf bat carthage composer coreutils ctags curl diff-so-fancy
+  exiftool fish fzf fzf-chrome-active-tab gawk gcc git gitblamer global
+  gnu-sed go grep heroku imagemagick jq mas mitmproxy ncdu neovim nkf
+  node nodebrew pyenv pyenv-virtualenv python3 ripgrep ruby
+  the_silver_searcher tmux tree vim w3m watch wget yarn zsh swiftformat
+  cocoapods chromedriver tokei ffmpeg rga pastel git-ftp silicon git-delta
+  python-yq st jc gh gron lolcat flyctl azure-cli rust dasel kind
+)
+for pkg in "${FORMULAE[@]}"; do
+  brew install "$pkg" 2>/dev/null || true
+done
+
+# Cask
+echo "==> Homebrew cask"
+CASKS=(
+  google-chrome firefox google-japanese-ime visual-studio-code iterm2
+  hyper docker wireshark virtualbox sequel-ace ngrok java11 couleurs
+  keycastr another-redis-desktop-manager font-hackgen font-hackgen-nerd
+)
+for pkg in "${CASKS[@]}"; do
+  brew install --cask "$pkg" 2>/dev/null || true
+done
+
+# ====================
+# npm packages
+# ====================
+echo "==> npm packages"
+NPM_PACKAGES=(
+  typescript neovim dockerfile-language-server-nodejs eslint eslint_d
+  textlint textlint-rule-preset-jtf-style textlint-rule-preset-ja-technical-writing
+  textlint-rule-spellcheck-tech-word chokidar-cli
+)
+for pkg in "${NPM_PACKAGES[@]}"; do
+  npm install -g "$pkg" 2>/dev/null || true
+done
+
+# ====================
+# yarn global packages
+# ====================
+echo "==> yarn global packages"
+YARN_PACKAGES=(
+  tailwindcss-language-server
+)
+for pkg in "${YARN_PACKAGES[@]}"; do
+  yarn global add "$pkg" 2>/dev/null || true
+done
+
+# ====================
+# pip packages
+# ====================
+echo "==> pip packages"
+PIP_PACKAGES=(
+  jedi-language-server imgcat flake8 black
+)
+for pkg in "${PIP_PACKAGES[@]}"; do
+  pip install -U "$pkg" 2>/dev/null || true
+done
+
+# ====================
+# macOS defaults
+# ====================
+echo "==> macOS defaults"
+defaults write com.apple.iphonesimulator AllowFullscreenMode -bool TRUE
+defaults write com.apple.iphonesimulator ShowSingleTouches -bool TRUE
+defaults write com.apple.finder QuitMenuItem -bool TRUE
+defaults write com.apple.screencapture show-thumbnail -bool FALSE
+defaults write com.apple.screencapture name -string "screenshot_"
+killall SystemUIServer 2>/dev/null || true
+
+# ====================
+# chmod
+# ====================
+echo "==> chmod"
+chmod 755 /usr/local/share/zsh 2>/dev/null || true
+chmod 755 /usr/local/share/zsh/site-functions 2>/dev/null || true
+
+# ====================
+# Git clone
+# ====================
+echo "==> Git clone"
+clone() {
+  local repo="$1"
+  local dest="$2"
+  if [ -d "$dest" ]; then
+    echo "  skip: $dest (already exists)"
+  else
+    echo "  clone: $repo -> $dest"
+    git clone "$repo" "$dest"
+  fi
+}
+clone https://github.com/Rasukarusan/chrome-extension-packs.git "$HOME/Documents/chrome-extension-packs"
+clone https://github.com/Rasukarusan/keynote-template.git   "$HOME/Documents/keynote-template"
+clone https://github.com/Rasukarusan/scripts.git            "$HOME/scripts"
+clone https://github.com/Rasukarusan/articles.git           "$HOME/Documents/articles"
+
+# ====================
+# Symlinks
+# ====================
+
 # 必要なディレクトリを作成
 mkdir -p "$HOME/.zsh"
 mkdir -p "$HOME/.config/nvim/plugin"
@@ -42,7 +167,6 @@ link "$DOTFILES_DIR/zsh/.zshrc.local" "$HOME/.zshrc.local"
 # Terminal
 echo "==> Terminal"
 link "$DOTFILES_DIR/terminal/tmux.conf"             "$HOME/.tmux.conf"
-link "$DOTFILES_DIR/terminal/hyper.js"               "$HOME/.hyper.js"
 link "$DOTFILES_DIR/terminal/agignore"               "$HOME/.agignore"
 link "$DOTFILES_DIR/terminal/git/gitconfig"          "$HOME/.gitconfig"
 link "$DOTFILES_DIR/terminal/git/gitignore_global"   "$HOME/.gitignore_global"
