@@ -1445,14 +1445,11 @@ _git_worktree_from_pr() {
   local safe_branch_name=$(echo "$branch_name" | tr '/' '-')
   local worktree_path="${parent_dir}/${repo_name}-${safe_branch_name}"
 
-  # すでにworktreeが存在するか確認
-  if [ -d "$worktree_path" ]; then
-    printf "\e[33mWorktreeは既に存在します: ${worktree_path}\e[m\n"
-    printf "移動しますか？(y/N) > "
-    read answer
-    if [ "$answer" = 'y' ] || [ "$answer" = 'Y' ]; then
-      cd "$worktree_path"
-    fi
+  # すでにworktreeが存在するか確認（別パスも含む）
+  local existing_worktree=$(git worktree list | grep "\[${branch_name}\]" | awk '{print $1}')
+  if [ -n "$existing_worktree" ]; then
+    printf "\e[33mWorktreeが既に存在するため移動します: ${existing_worktree}\e[m\n"
+    cd "$existing_worktree"
     return
   fi
 
@@ -1492,14 +1489,11 @@ _git_worktree_checkout() {
   local safe_branch_name=$(echo "$branch_name" | tr '/' '-')
   local worktree_path="${parent_dir}/${repo_name}-${safe_branch_name}"
 
-  # すでにworktreeが存在するか確認
-  if [ -d "$worktree_path" ]; then
-    printf "\e[33mWorktreeは既に存在します: ${worktree_path}\e[m\n"
-    printf "移動しますか？(y/N) > "
-    read answer
-    if [ "$answer" = 'y' ] || [ "$answer" = 'Y' ]; then
-      cd "$worktree_path"
-    fi
+  # すでにworktreeが存在するか確認（別パスも含む）
+  local existing_worktree=$(git worktree list | grep "\[${branch_name}\]" | awk '{print $1}')
+  if [ -n "$existing_worktree" ]; then
+    printf "\e[33mWorktreeが既に存在するため移動します: ${existing_worktree}\e[m\n"
+    cd "$existing_worktree"
     return
   fi
 
