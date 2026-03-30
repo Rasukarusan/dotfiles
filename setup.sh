@@ -29,13 +29,13 @@ done
 # Formulae
 echo "==> Homebrew formulae"
 FORMULAE=(
-  autoconf bat carthage composer coreutils ctags curl diff-so-fancy
-  exiftool fish fzf fzf-chrome-active-tab gawk gcc git gitblamer global
-  gnu-sed go grep heroku imagemagick jq mas mitmproxy ncdu neovim nkf
+  autoconf bat composer coreutils ctags curl diff-so-fancy
+  exiftool fzf gawk gcc git gitblamer global
+  gnu-sed go grep imagemagick jq mas mitmproxy ncdu neovim nkf
   node nodebrew pyenv pyenv-virtualenv python3 ripgrep ruby
   the_silver_searcher tmux tree vim w3m watch wget yarn zsh swiftformat
   cocoapods chromedriver tokei ffmpeg rga pastel git-ftp silicon git-delta
-  python-yq st jc gh gron lolcat flyctl azure-cli rust dasel kind
+  python-yq st jc gh gron lolcat azure-cli rust dasel kind
 )
 for pkg in "${FORMULAE[@]}"; do
   brew install "$pkg" 2>/dev/null || true
@@ -45,7 +45,7 @@ done
 echo "==> Homebrew cask"
 CASKS=(
   google-chrome firefox google-japanese-ime visual-studio-code iterm2
-  hyper docker wireshark virtualbox sequel-ace ngrok java11 couleurs
+  docker wireshark virtualbox sequel-ace ngrok java11 couleurs
   keycastr another-redis-desktop-manager font-hackgen font-hackgen-nerd
 )
 for pkg in "${CASKS[@]}"; do
@@ -185,13 +185,6 @@ link "$DOTFILES_DIR/vim/coc/package.json"      "$HOME/.config/coc/extensions/pac
 link "$DOTFILES_DIR/vim/UltiSnips"             "$HOME/.config/nvim/UltiSnips"
 link "$DOTFILES_DIR/vim/autoload"              "$HOME/.config/nvim/myautoload"
 link "$DOTFILES_DIR/vim/lua"                   "$HOME/.config/nvim/lua"
-
-# Claude (~/.config/claude)
-echo "==> ~/.config/claude"
-mkdir -p "$HOME/.config/claude"
-link "$DOTFILES_DIR/claude/CLAUDE.md"     "$HOME/.config/claude/CLAUDE.md"
-link "$DOTFILES_DIR/claude/settings.json" "$HOME/.config/claude/settings.json"
-link "$DOTFILES_DIR/claude/commands"      "$HOME/.config/claude/commands"
 
 # Claude (~/.claude)
 echo "==> ~/.claude"
