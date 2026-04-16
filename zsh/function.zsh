@@ -1848,6 +1848,36 @@ _generate_branch_name() {
   done
 }
 
+# fzfでブランチを選択し、コミットを複数選択してcherry-pickコマンドを出力
+alias cherr='_git_cherry_pick_fzf'
+_git_cherry_pick_fzf() {
+  # ブランチ選択
+  local branch=$(git branch -a | tr -d " " \
+    | fzf-tmux -p80% --prompt "CHERRY-PICK FROM>" \
+      --preview "git log --oneline --color=always {}" \
+    | head -n 1 | sed -e "s/^\*\s*//g" | perl -pe "s/remotes\/origin\///g")
+  [ -z "$branch" ] && return
+
+  # 選択したブランチのコミットを複数選択
+  local commits=($(git log --oneline --color=always "$branch" \
+    | fzf-tmux -p80% --ansi --multi \
+      --prompt "SELECT COMMITS (TAB: multi-select)>" \
+      --preview "git show --color=always {1}" \
+      --preview-window=right:50% \
+    | awk '{print $1}'))
+  [ -z "$commits" ] && return
+
+  # 選択順を時系列順（古い→新しい）に並び替え
+  local ordered=($(for c in "${commits[@]}"; do
+    echo "$(git log -1 --format='%ct' "$c") $c"
+  done | sort -n | awk '{print $2}'))
+
+  # コマンドを組み立ててコマンドラインに出力（実行はしない）
+  local cmd="git cherry-pick ${ordered[*]}"
+  printf "\e[33m${cmd}\e[m\n"
+  print -z "$cmd"
+}
+
 alias cww='_fzf_cloud_watch_log_tail'
 _fzf_cloud_watch_log_tail() {
   # ロググループ一覧を取得 → 1行ずつに整形 → fzf で複数選択可能
