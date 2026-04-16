@@ -73,3 +73,5 @@ export PATH="$HOME/Library/Android/sdk/platform-tools:$PATH"
 export PATH="$HOME/dotfiles/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
+# /add-dir先のCLAUDE.mdを読み込むようにする
+export CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1
