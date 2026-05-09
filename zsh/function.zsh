@@ -1436,14 +1436,14 @@ _git_worktree_from_pr() {
   local branch_name=$(gh pr view "$pr_number" --json headRefName -q '.headRefName')
   [ -z "$branch_name" ] && echo "ブランチ名を取得できませんでした" && return
 
-  # リポジトリ名と親ディレクトリを取得
+  # リポジトリ名とworktree集約ディレクトリを取得
   local repo_root=$(git rev-parse --show-toplevel)
   local repo_name=$(basename "$repo_root")
-  local parent_dir=$(dirname "$repo_root")
+  local parent_dir="${HOME}/any/worktree/${repo_name}"
 
   # ブランチ名の/を-に置換（ディレクトリ名として使用するため）
   local safe_branch_name=$(echo "$branch_name" | tr '/' '-')
-  local worktree_path="${parent_dir}/${repo_name}-${safe_branch_name}"
+  local worktree_path="${parent_dir}/${safe_branch_name}"
 
   # すでにworktreeが存在するか確認（別パスも含む）
   local existing_worktree=$(git worktree list | grep "\[${branch_name}\]" | awk '{print $1}')
@@ -1456,6 +1456,9 @@ _git_worktree_from_pr() {
   # リモートブランチをfetch
   printf "\e[36mリモートブランチをfetch中...\e[m\n"
   git fetch origin "$branch_name"
+
+  # 集約ディレクトリを作成
+  mkdir -p "$parent_dir"
 
   # worktree作成
   printf "\e[36mWorktreeを作成中: ${worktree_path}\e[m\n"
@@ -1480,14 +1483,14 @@ _git_worktree_checkout() {
   local branch_name=$(echo "$branch_line" | perl -pe "s/remotes\/origin\///g")
   [ -z "$branch_name" ] && echo "ブランチ名を取得できませんでした" && return
 
-  # リポジトリ名と親ディレクトリを取得
+  # リポジトリ名とworktree集約ディレクトリを取得
   local repo_root=$(git rev-parse --show-toplevel)
   local repo_name=$(basename "$repo_root")
-  local parent_dir=$(dirname "$repo_root")
+  local parent_dir="${HOME}/any/worktree/${repo_name}"
 
   # ブランチ名の/を-に置換（ディレクトリ名として使用するため）
   local safe_branch_name=$(echo "$branch_name" | tr '/' '-')
-  local worktree_path="${parent_dir}/${repo_name}-${safe_branch_name}"
+  local worktree_path="${parent_dir}/${safe_branch_name}"
 
   # すでにworktreeが存在するか確認（別パスも含む）
   local existing_worktree=$(git worktree list | grep "\[${branch_name}\]" | awk '{print $1}')
@@ -1502,6 +1505,9 @@ _git_worktree_checkout() {
     printf "\e[36mリモートブランチをfetch中...\e[m\n"
     git fetch origin "$branch_name"
   fi
+
+  # 集約ディレクトリを作成
+  mkdir -p "$parent_dir"
 
   # worktree作成
   printf "\e[36mWorktreeを作成中: ${worktree_path}\e[m\n"
