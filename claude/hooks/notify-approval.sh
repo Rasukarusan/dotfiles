@@ -12,18 +12,26 @@ if [ -z "$TOOL_NAME" ]; then
   exit 0
 fi
 
-if [ -n "$COMMAND" ]; then
-  DETAIL="$COMMAND"
-elif [ -n "$FILE_PATH" ]; then
-  DETAIL="$FILE_PATH"
-elif [ -n "$MESSAGE" ]; then
-  DETAIL="$MESSAGE"
+if [ "$TOOL_NAME" = "AskUserQuestion" ]; then
+  QUESTION=$(echo "$INPUT" | jq -r '.tool_input.questions[0].question // empty')
+  DETAIL="$QUESTION"
+  SUBTITLE="質問への回答待ち"
 else
-  DETAIL=""
+  if [ -n "$COMMAND" ]; then
+    DETAIL="$COMMAND"
+  elif [ -n "$FILE_PATH" ]; then
+    DETAIL="$FILE_PATH"
+  elif [ -n "$MESSAGE" ]; then
+    DETAIL="$MESSAGE"
+  else
+    DETAIL=""
+  fi
+  SUBTITLE="${TOOL_NAME} の承認を待っています"
 fi
 
-SUBTITLE="${TOOL_NAME} の承認を待っています"
+DETAIL_ESCAPED=$(printf '%s' "$DETAIL" | sed 's/\\/\\\\/g; s/"/\\"/g')
+SUBTITLE_ESCAPED=$(printf '%s' "$SUBTITLE" | sed 's/\\/\\\\/g; s/"/\\"/g')
 
-osascript -e "display notification \"${DETAIL}\" with title \"Claude Code\" subtitle \"${SUBTITLE}\""
+osascript -e "display notification \"${DETAIL_ESCAPED}\" with title \"Claude Code\" subtitle \"${SUBTITLE_ESCAPED}\""
 
 exit 0
