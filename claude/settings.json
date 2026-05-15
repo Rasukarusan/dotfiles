@@ -64,6 +64,17 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/notify-approval.sh"
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
