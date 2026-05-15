@@ -24,7 +24,8 @@
       "Bash(git merge:*)",
       "Bash(git push:*)",
       "Bash(brew:*)"
-    ]
+    ],
+    "defaultMode": "auto"
   },
   "hooks": {
     "UserPromptSubmit": [
@@ -70,6 +71,7 @@
     "command": "bash ~/.claude/statusline.sh"
   },
   "alwaysThinkingEnabled": true,
+  "effortLevel": "xhigh",
   "skipDangerousModePermissionPrompt": true,
-  "effortLevel": "xhigh"
+  "skipAutoPermissionPrompt": true
 }
