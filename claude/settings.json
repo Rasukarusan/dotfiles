@@ -19,8 +19,6 @@
     "deny": [
       "Bash(curl:*)",
       "Bash(pnpm supabase db reset)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
       "Bash(git merge:*)",
       "Bash(git push:*)",
       "Bash(brew:*)"
