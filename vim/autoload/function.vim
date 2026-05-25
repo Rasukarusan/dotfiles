@@ -573,6 +573,11 @@ command! Black call s:change_background_black()
 " はてぶに下書き投稿
 " =============================================
 function! s:hatena_post_entry() abort
+  let l:script_dir = expand('~/Documents/github/hatena-scripts')
+  if !isdirectory(l:script_dir)
+    echoerr 'hatena-scriptsが見つかりません: ' . l:script_dir
+    return
+  endif
   let title = substitute(getline(1), '^# ', '', '')
   let content = join(getline(3, '$'), "\n")
   " '&'を一番最初に変換する必要がある。後の変換と競合してしまうため。
