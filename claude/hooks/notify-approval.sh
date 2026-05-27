@@ -29,9 +29,13 @@ else
   SUBTITLE="${TOOL_NAME} の承認を待っています"
 fi
 
-DETAIL_ESCAPED=$(printf '%s' "$DETAIL" | sed 's/\\/\\\\/g; s/"/\\"/g')
-SUBTITLE_ESCAPED=$(printf '%s' "$SUBTITLE" | sed 's/\\/\\\\/g; s/"/\\"/g')
-
-osascript -e "display notification \"${DETAIL_ESCAPED}\" with title \"Claude Code\" subtitle \"${SUBTITLE_ESCAPED}\""
+NOTIFIER="$HOME/.claude/bin/claude-notify.app"
+if [ -x "$NOTIFIER/Contents/MacOS/claude-notify" ]; then
+  open "$NOTIFIER" --args -title "Claude Code" -subtitle "$SUBTITLE" -message "$DETAIL"
+else
+  DETAIL_ESCAPED=$(printf '%s' "$DETAIL" | sed 's/\\/\\\\/g; s/"/\\"/g')
+  SUBTITLE_ESCAPED=$(printf '%s' "$SUBTITLE" | sed 's/\\/\\\\/g; s/"/\\"/g')
+  osascript -e "display notification \"${DETAIL_ESCAPED}\" with title \"Claude Code\" subtitle \"${SUBTITLE_ESCAPED}\""
+fi
 
 exit 0
