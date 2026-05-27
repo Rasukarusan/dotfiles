@@ -27,9 +27,13 @@ else
   TITLE="Claude Code"
 fi
 
-BODY_ESCAPED=$(printf '%s' "$LAST_TEXT" | sed 's/\\/\\\\/g; s/"/\\"/g' | awk 'BEGIN{ORS=""} {if (NR>1) printf "\\n"; print}')
-TITLE_ESCAPED=$(printf '%s' "$TITLE" | sed 's/\\/\\\\/g; s/"/\\"/g')
-
-osascript -e "display notification \"${BODY_ESCAPED}\" with title \"${TITLE_ESCAPED}\""
+NOTIFIER="$HOME/.claude/bin/claude-notify.app"
+if [ -x "$NOTIFIER/Contents/MacOS/claude-notify" ]; then
+  open "$NOTIFIER" --args -title "$TITLE" -message "$LAST_TEXT"
+else
+  BODY_ESCAPED=$(printf '%s' "$LAST_TEXT" | sed 's/\\/\\\\/g; s/"/\\"/g' | awk 'BEGIN{ORS=""} {if (NR>1) printf "\\n"; print}')
+  TITLE_ESCAPED=$(printf '%s' "$TITLE" | sed 's/\\/\\\\/g; s/"/\\"/g')
+  osascript -e "display notification \"${BODY_ESCAPED}\" with title \"${TITLE_ESCAPED}\""
+fi
 
 exit 0
