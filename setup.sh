@@ -196,6 +196,12 @@ link "$DOTFILES_DIR/claude/docs"         "$HOME/.claude/docs"
 link "$DOTFILES_DIR/claude/settings.json" "$HOME/.claude/settings.json"
 link "$DOTFILES_DIR/claude/skills"        "$HOME/.claude/skills"
 link "$DOTFILES_DIR/claude/statusline.sh" "$HOME/.claude/statusLine.sh"
+link "$DOTFILES_DIR/claude/hooks"        "$HOME/.claude/hooks"
+
+# claude-notify (通知アプリのビルド)
+echo "==> claude-notify"
+mkdir -p "$HOME/.claude/bin"
+bash "$DOTFILES_DIR/claude/bin/build-claude-notify.sh"
 
 # ~/.codex
 echo "==> ~/.codex"
