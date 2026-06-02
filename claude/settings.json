@@ -25,6 +25,7 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "claude-opus-4-8",
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -80,7 +81,7 @@
     "command": "bash ~/.claude/statusline.sh"
   },
   "alwaysThinkingEnabled": true,
-  "effortLevel": "xhigh",
+  "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true,
   "skipAutoPermissionPrompt": true
 }
