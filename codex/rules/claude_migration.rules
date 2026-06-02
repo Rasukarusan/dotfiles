@@ -4,8 +4,6 @@ prefix_rule(pattern=["brew"], decision="forbidden")
 
 prefix_rule(pattern=["pnpm", "supabase", "db", "reset"], decision="forbidden")
 
-prefix_rule(pattern=["git", "add"], decision="forbidden")
-prefix_rule(pattern=["git", "commit"], decision="forbidden")
 prefix_rule(pattern=["git", "merge"], decision="forbidden")
 prefix_rule(pattern=["git", "push"], decision="forbidden")
 
