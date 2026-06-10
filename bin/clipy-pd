@@ -1,0 +1,135 @@
+#!/usr/bin/env python3
+"""Clipyのクリップボード履歴を使ってp1/p2を用意するヘルパー。
+
+サブコマンド:
+  (引数なし)            直近の異なるテキスト2件を 古→~/p1, 新→~/p2 に書き出す
+  --list                履歴を "ファイル名<TAB>1行プレビュー" で新しい順に出力 (fzf用)
+  --show NAME           指定clip(.dataファイル名)の全文を出力 (fzfのpreview用)
+  --write OLD NEW       指定2件を p1=OLD, p2=NEW に書き出す (ファイル名で指定)
+
+普段通り2回コピーしたあと `pd` を実行すれば、p1/p2を手で打たずに比較できる。
+"""
+import glob
+import os
+import plistlib
+import sys
+
+CLIPY_DIR = os.path.expanduser("~/Library/Application Support/Clipy")
+P1 = os.path.expanduser("~/p1")
+P2 = os.path.expanduser("~/p2")
+
+
+def extract_string(path):
+    """Clipyの.dataファイル(NSKeyedArchiver)からstringValueを取り出す。
+    テキストでなければNoneを返す。"""
+    try:
+        with open(path, "rb") as f:
+            pl = plistlib.load(f)
+        objs = pl["$objects"]
+        root = objs[pl["$top"]["root"].data]
+        sv = root.get("stringValue")
+        if sv is None:
+            return None
+        s = objs[sv.data]
+        if isinstance(s, str) and s != "$null":
+            return s
+    except Exception:
+        return None
+    return None
+
+
+def data_files_newest_first():
+    return sorted(
+        glob.glob(os.path.join(CLIPY_DIR, "*.data")),
+        key=os.path.getmtime,
+        reverse=True,
+    )
+
+
+def oneline(s, limit=120):
+    """改行・タブを潰した1行プレビュー文字列。"""
+    head = " ".join(s.split())
+    return head[:limit] + ("…" if len(head) > limit else "")
+
+
+def path_of(name):
+    """ファイル名(UUID.data) からフルパスを得る。"""
+    return os.path.join(CLIPY_DIR, os.path.basename(name))
+
+
+def cmd_default():
+    """直近の異なるテキスト2件を古→p1/新→p2へ。"""
+    texts = []
+    for f in data_files_newest_first():
+        s = extract_string(f)
+        if s is None or s in texts:
+            continue
+        texts.append(s)
+        if len(texts) >= 2:
+            break
+    if len(texts) < 2:
+        sys.stderr.write(
+            f"比較できるテキスト履歴が2件ありません(見つかったのは{len(texts)}件)\n"
+        )
+        return 1
+    newer, older = texts[0], texts[1]
+    _write(older, newer)
+    sys.stderr.write(f"p1 (古): {oneline(older, 50)}\n")
+    sys.stderr.write(f"p2 (新): {oneline(newer, 50)}\n")
+    return 0
+
+
+def cmd_list():
+    """履歴を "ファイル名<TAB>プレビュー" で新しい順に出力。"""
+    for f in data_files_newest_first():
+        s = extract_string(f)
+        if s is None:
+            continue
+        sys.stdout.write(f"{os.path.basename(f)}\t{oneline(s)}\n")
+    return 0
+
+
+def cmd_show(name):
+    s = extract_string(path_of(name))
+    if s is None:
+        return 1
+    sys.stdout.write(s)
+    return 0
+
+
+def cmd_write(old_name, new_name):
+    older = extract_string(path_of(old_name))
+    newer = extract_string(path_of(new_name))
+    if older is None or newer is None:
+        sys.stderr.write("指定したclipのテキストを取得できませんでした\n")
+        return 1
+    _write(older, newer)
+    return 0
+
+
+def _write(older, newer):
+    with open(P1, "w") as f:
+        f.write(older)
+    with open(P2, "w") as f:
+        f.write(newer)
+
+
+def main(argv):
+    if not os.path.isdir(CLIPY_DIR):
+        sys.stderr.write("Clipyの履歴ディレクトリが見つかりません\n")
+        return 1
+    if not argv:
+        return cmd_default()
+    sub = argv[0]
+    if sub == "--list":
+        return cmd_list()
+    if sub == "--show" and len(argv) >= 2:
+        return cmd_show(argv[1])
+    if sub == "--write" and len(argv) >= 3:
+        return cmd_write(argv[1], argv[2])
+    sys.stderr.write(f"不明な引数: {' '.join(argv)}\n")
+    return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
