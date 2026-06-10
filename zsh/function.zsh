@@ -1933,3 +1933,32 @@ _fzf_cloud_watch_log_tail() {
     done
   fi
 }
+
+# Clipyの履歴を使って2件のテキストをvimdiffで比較する
+#   pd       fzfで履歴一覧から比較する2件を選択 (Tabで2件選ぶ)
+#   pd -a    直近の異なる2件を自動選択 (古→p1, 新→p2)
+alias pd='_clipy_diff'
+_clipy_diff() {
+  if [[ "$1" == "-a" ]]; then
+    clipy-pd
+    vimdiff ~/p1 ~/p2
+    return
+  fi
+
+  local selected
+  selected=$(clipy-pd --list | fzf --multi --delimiter='\t' --with-nth=2.. \
+    --preview 'clipy-pd --show {1}' --preview-window=down,50% \
+    --prompt='比較する2件を選択> ' \
+    --header='Tabで2件選択 → Enterで確定 (新しい順)')
+  [[ -z "$selected" ]] && return
+
+  local -a names
+  names=("${(@f)$(printf '%s\n' "$selected" | cut -f1)}")
+  if (( ${#names[@]} != 2 )); then
+    echo "2件選択してください (選択: ${#names[@]}件)"
+    return 1
+  fi
+  # fzfの出力は表示順(新しい順)。1件目=新, 2件目=古 → p1=古, p2=新
+  clipy-pd --write "${names[2]}" "${names[1]}"
+  vimdiff ~/p1 ~/p2
+}
