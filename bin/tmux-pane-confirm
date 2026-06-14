@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+#
+# display-panes のテンプレートから呼ばれる。引数 $1 = 選択された pane ID (%%)。
+#
+# prefix+s (display-panes) を claude が動いているペインで実行して番号を選ぶと、
+# そのペイン(claude)に「pane{番号}を確認して」と入力する。
+# claude 以外のペインから実行した場合は通常どおりそのペインへ移動する。
+set -euo pipefail
+
+sel_id="${1:-}"
+[ -z "$sel_id" ] && exit 0
+
+# 選択されたペインの表示番号(pane_index)
+n="$(tmux display-message -p -t "$sel_id" '#{pane_index}' 2>/dev/null || true)"
+
+# display-panes を起動した(=現在アクティブな)ペイン
+src="$(tmux display-message -p '#{pane_id}' 2>/dev/null || true)"
+
+# アクティブペインで claude が動いているか判定
+is_claude=0
+if [ -n "$src" ]; then
+  tty="$(tmux display-message -p -t "$src" '#{pane_tty}' 2>/dev/null || true)"
+  if [ -n "$tty" ] &&
+    ps -t "${tty#/dev/}" -o command= 2>/dev/null | grep -qiE '(^|/| )claude( |$)'; then
+    is_claude=1
+  fi
+fi
+
+if [ "$is_claude" = 1 ] && [ -n "$n" ]; then
+  tmux send-keys -t "$src" -l "pane${n}を確認して"
+else
+  tmux select-pane -t "$sel_id"
+fi
