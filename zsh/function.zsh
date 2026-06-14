@@ -1973,3 +1973,29 @@ _claude_resume() {
   [[ -z "$sid" ]] && return 0
   claude --resume "$sid"
 }
+
+# 現windowを 左1・右上2・右下3 の3ペイン構成に整える(冪等) (pa)
+# 何もしていない(シェルだけの)ペインは削除、実行中(nvim/claude等)のペインは残して整列。
+alias pa='_layout_tmux_pane'
+_layout_tmux_pane() {
+  [ -z "$TMUX" ] && return
+  local anchor="$TMUX_PANE"
+  local shell_re='^(-?zsh|-?bash|-?sh|-?fish|login)$'
+  # 1. アイドル(シェルのみ)ペインを削除。実行元ペインは必ず残す。
+  tmux list-panes -t "$anchor" -F '#{pane_id} #{pane_current_command}' | while read -r pid cmd; do
+    [ "$pid" = "$anchor" ] && continue
+    [[ "$cmd" =~ $shell_re ]] && tmux kill-pane -t "$pid" 2>/dev/null
+  done
+  # 2. 3ペインに満たなければ実行元ペインを分割して追加
+  local guard=0
+  while [ "$(tmux list-panes -t "$anchor" | grep -c .)" -lt 3 ] && [ "$guard" -lt 5 ]; do
+    (( guard++ ))
+    tmux split-window -t "$anchor" -c '#{pane_current_path}' || break
+  done
+  # 3. 左大・右スタックに整列(=左1・右上2・右下3、左幅50%)
+  tmux set-window-option -t "$anchor" main-pane-width '50%' >/dev/null 2>&1
+  tmux select-layout -t "$anchor" main-vertical
+  # 4. 左端ペインにフォーカス
+  local leftmost=$(tmux list-panes -t "$anchor" -F '#{pane_left} #{pane_id}' | sort -n | head -1 | awk '{print $2}')
+  [ -n "$leftmost" ] && tmux select-pane -t "$leftmost"
+}
