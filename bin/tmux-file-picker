@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+#
+# tmux popup 内で fzf を使ってファイルを選び、呼び出し元のペインに書き戻すスクリプト。
+#
+# - 呼び出し元のペインで claude / codex / gemini が動いていれば、選択パスに
+#   `@` プレフィックスを付けて送り込む（AI CLI のファイルメンション用）。
+# - popup の中で C-s を押すと「ファイル名検索」と「grep(rg) 検索」を行き来できる。
+#   grep 中は bat でハイライト付きプレビューを表示する。
+# - Tab で複数選択、Enter で確定、Esc で中止。
+#
+# 使い方(tmux.conf):
+#   bind f display-popup -E -d "#{pane_current_path}" -w 90% -h 90% "tmux-file-picker"
+#
+# 参考: https://github.com/raine/tmux-file-picker
+set -euo pipefail
+
+# 呼び出し元ペインの id。
+# display-popup のコマンド引数では #{pane_id} が展開されないため、
+# 引数が無い/未展開のままなら popup の裏の(=呼び出し元)ペインを取得する。
+TARGET_PANE="${1:-}"
+case "$TARGET_PANE" in
+  "" | *'#{'*)
+    TARGET_PANE="$(tmux display-message -p '#{pane_id}' 2>/dev/null || true)"
+    ;;
+esac
+
+# ファイル一覧と grep のコマンド。.git 配下は除外し、隠しファイルも対象にする。
+RG_FILES="rg --files --hidden --follow --glob '!.git/*'"
+RG_GREP="rg --column --line-number --no-heading --color=always --smart-case --hidden --glob '!.git/*'"
+
+# プレビュー
+PREVIEW_FILE='bat --color=always --style=numbers -- {} 2>/dev/null || cat -- {}'
+PREVIEW_GREP='bat --color=always --style=numbers --highlight-line {2} -- {1} 2>/dev/null'
+
+# モードごとのクエリを退避しておく一時ファイル
+tmpdir="$(mktemp -d)"
+trap 'rm -rf "$tmpdir"' EXIT
+qf="$tmpdir/query_files"
+qg="$tmpdir/query_grep"
+: >"$qf"
+: >"$qg"
+
+# fzf 起動。開始時はファイル名検索モード（change バインドは無効化しておく）。
+selected="$(
+  FZF_DEFAULT_COMMAND="$RG_FILES" fzf \
+    --ansi \
+    --multi \
+    --height=100% \
+    --layout=reverse \
+    --border \
+    --delimiter=: \
+    --prompt='Files> ' \
+    --header='C-s: Files<->Grep  /  Tab: 複数選択  /  Enter: 確定  /  Esc: 中止' \
+    --preview="$PREVIEW_FILE" \
+    --preview-window='right,60%,border-left' \
+    --bind="start:unbind(change)" \
+    --bind="change:reload(sleep 0.1; $RG_GREP {q} || true)" \
+    --bind="ctrl-s:transform:
+      case \$FZF_PROMPT in
+        Files*)
+          echo \"change-prompt(Grep> )+change-preview($PREVIEW_GREP)+change-preview-window(right,60%,border-left,+{2}/3)+disable-search+rebind(change)+transform-query(echo {q} > $qf; cat $qg)+reload($RG_GREP {q} || true)\" ;;
+        *)
+          echo \"change-prompt(Files> )+change-preview($PREVIEW_FILE)+change-preview-window(right,60%,border-left)+enable-search+unbind(change)+transform-query(echo {q} > $qg; cat $qf)+reload($RG_FILES)\" ;;
+      esac
+    "
+)" || exit 0
+
+[[ -z "$selected" ]] && exit 0
+
+# 選択結果からファイルパスだけを取り出す。
+# grep モードは `path:line:col:text`、ファイルモードは `path` なので
+# 先頭の : より前を取れば両対応できる。重複は除去する。
+files=()
+while IFS= read -r f; do
+  files+=("$f")
+done < <(printf '%s\n' "$selected" | sed 's/:.*//' | awk 'NF && !seen[$0]++')
+[[ ${#files[@]} -eq 0 ]] && exit 0
+
+# 呼び出し元ペインで AI CLI が動いているか判定する。
+ai=0
+if [[ -n "$TARGET_PANE" ]]; then
+  tty="$(tmux display-message -p -t "$TARGET_PANE" '#{pane_tty}' 2>/dev/null || true)"
+  if [[ -n "$tty" ]] &&
+    ps -t "${tty#/dev/}" -o command= 2>/dev/null | grep -qiE '(^|/| )(claude|codex|gemini)( |$)'; then
+    ai=1
+  fi
+fi
+
+# 送り込む文字列を組み立てる。AI CLI なら各パスに @ を付ける。
+out=""
+for f in "${files[@]}"; do
+  if [[ $ai -eq 1 ]]; then
+    out+="@$f "
+  else
+    out+="$f "
+  fi
+done
+
+# 呼び出し元が分からなければ標準出力に出すだけ。
+if [[ -z "$TARGET_PANE" ]]; then
+  printf '%s' "$out"
+  exit 0
+fi
+
+# -l でリテラル送信（@ やパスがそのまま入る）。Enter は送らず、ユーザーが確認できるようにする。
+tmux send-keys -t "$TARGET_PANE" -l "$out"
