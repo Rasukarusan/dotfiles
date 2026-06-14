@@ -8,14 +8,22 @@
 
 ## tmux pane操作
 
-ユーザーが「tmuxのpane」「○番のpane」等に言及した場合、以下の手順で特定すること:
+ユーザーが言う「○番のpane」は、prefix+s (`display-panes`) で表示される `pane_index`。
+自分のwindow内のpane N の中身は、**事前のlist-panesなしで次の1コマンドで直接取得する**:
 
-1. 自分のwindow内のpane一覧は引数なしの `list-panes` で取得する（`▶` が現在のpane）
-   ```bash
-   tmux list-panes -F "#{?pane_active,▶ ,  }#{window_index}.#{pane_index} #{pane_current_path} #{pane_current_command} #{pane_title}"
-   ```
-2. 全window/session横断で見る場合は `-a` を付ける
-3. paneの中身は `tmux capture-pane -t {window}.{pane} -p | tail -50` で確認する
-4. 自分のpane IDだけ必要なら `echo $TMUX_PANE`
+```bash
+tmux capture-pane -p -t :.N          # 表示中の画面(エラーはたいていこれで足りる)
+tmux capture-pane -p -S -500 -t :.N  # 直近500行さかのぼる(エラーが流れて見えない時)
+tmux capture-pane -p -S - -t :.N     # スクロールバック全体
+```
 
-「○番のpane」と言われた場合、まず自分のwindow内のpaneを指している前提で確認すること。
+`:.N` は自分のpaneのwindowを基準に解決される（`:` =現window, `.N` =pane index）。
+
+見つからない/別window・別sessionの場合のみ、横断検索してから capture する:
+
+```bash
+tmux list-panes -a -F "#{session_name}:#{window_index}.#{pane_index} #{pane_id} #{pane_current_command} #{pane_title}"
+# 目的の pane_id (%NN) を見つけて: tmux capture-pane -p -t %NN
+```
+
+自分のpane IDは `$TMUX_PANE`。
