@@ -1962,3 +1962,16 @@ _clipy_diff() {
   clipy-pd --write "${names[2]}" "${names[1]}"
   vimdiff ~/p1 ~/p2
 }
+
+# 過去の Claude Code 会話を fzf(popup) で選んで resume する (cldr)
+# popup内: Enter=resume / C-r=現プロジェクト / C-s=worktree / C-a=全リポジトリ
+# 履歴の取り出し・プレビューは自作の claude-resume-picker に委譲。
+alias cldr='_claude_resume'
+_claude_resume() {
+  local out cwd sid
+  out=$(claude-resume-picker) || return 0
+  [[ -z "$out" ]] && return 0
+  cwd=${out%%$'\t'*}
+  sid=${out#*$'\t'}
+  cd "$cwd" && claude --resume "$sid"
+}
