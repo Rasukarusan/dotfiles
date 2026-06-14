@@ -1,0 +1,141 @@
+#!/usr/bin/env bash
+#
+# 過去の Claude Code 会話履歴を fzf(popup) で一覧・プレビューし、選んだものを
+# `claude --resume` で再開するためのピッカー。chathist/glow は使わず自作。
+#
+# 履歴は ~/.claude/projects/<エンコードされたcwd>/<session-id>.jsonl に保存される。
+# ディレクトリ名は cwd の英数字以外を - に置換したもの(非可逆)。スコープ判定は
+# 同じ規則でエンコードして突き合わせる。
+#
+# サブコマンド:
+#   claude-resume-picker                      対話モード。選択結果 "cwd<TAB>sessionId" を出力
+#   claude-resume-picker list <scope> [cwd]   fzf 用の一覧を出力 (内部用/reload用)
+#   claude-resume-picker preview <jsonl>      プレビュー本文を出力 (内部用)
+#
+# scope: current(現プロジェクト) / worktree(同リポジトリの全worktree) / all(全リポジトリ)
+set -euo pipefail
+
+PROJECTS_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects"
+
+# cwd -> プロジェクトディレクトリ名 (英数字以外を - に)
+encode_path() {
+  printf '%s' "$1" | sed 's/[^a-zA-Z0-9]/-/g'
+}
+
+# スコープに応じて対象プロジェクトディレクトリ(絶対パス)を列挙する
+scope_dirs() {
+  local scope="$1" base="$2" p enc
+  case "$scope" in
+    all)
+      find "$PROJECTS_DIR" -mindepth 1 -maxdepth 1 -type d
+      ;;
+    worktree)
+      if git -C "$base" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        git -C "$base" worktree list --porcelain | awk '/^worktree /{print $2}'
+      else
+        printf '%s\n' "$base"
+      fi | while IFS= read -r p; do
+        enc="$PROJECTS_DIR/$(encode_path "$p")"
+        [ -d "$enc" ] && printf '%s\n' "$enc"
+      done
+      ;;
+    *) # current
+      enc="$PROJECTS_DIR/$(encode_path "$base")"
+      [ -d "$enc" ] && printf '%s\n' "$enc"
+      ;;
+  esac
+}
+
+# 1セッション(jsonl)の "branch<TAB>title" を取り出す
+session_meta() {
+  jq -rs '
+    def clean: gsub("[\n\t]+";" ");
+    (map(select(.type=="ai-title").aiTitle)|last) as $t
+    | (map(select(.type=="last-prompt").lastPrompt)|last) as $lp
+    | (map(select(.gitBranch!=null).gitBranch)|last) as $br
+    | (map(select(.type=="user")
+          | .message.content
+          | if type=="string" then .
+            else (map(select(.type=="text") | .text? // "")|join(" ")) end)
+       | map(select(. != null and . != "" and (startswith("<")|not)))
+       | .[0]) as $u
+    | (($t // $u // $lp // "(untitled)") | clean) as $title
+    | [($br // "-"), $title] | @tsv
+  ' "$1" 2>/dev/null
+}
+
+# fzf 用の一覧を出力する。各行: <jsonlパス>\t<日時>\t<branch>\t<title>
+cmd_list() {
+  local scope="${1:-current}" base="${2:-$PWD}"
+  local dir f epoch disp meta br title
+  scope_dirs "$scope" "$base" | while IFS= read -r dir; do
+    [ -d "$dir" ] || continue
+    find "$dir" -maxdepth 1 -name '*.jsonl' -type f 2>/dev/null
+  done | while IFS= read -r f; do
+    [ -s "$f" ] || continue
+    epoch=$(stat -f '%m' "$f")
+    disp=$(stat -f '%Sm' -t '%m/%d %H:%M' "$f")
+    meta=$(session_meta "$f")
+    br=${meta%%$'\t'*}
+    title=${meta#*$'\t'}
+    [ -z "$title" ] && title="(untitled)"
+    printf '%s\t%s\t%s\t[%s] %s\n' "$epoch" "$f" "$disp" "$br" "$title"
+  done | sort -t$'\t' -k1,1nr | cut -f2-
+}
+
+# プレビュー本文(会話のトランスクリプト)を Markdown で出力
+cmd_preview() {
+  local f="$1"
+  [ -s "$f" ] || { echo "(no content)"; return; }
+  jq -r '
+    select(.type=="user" or .type=="assistant")
+    | (.message.role) as $role
+    | (.message.content) as $c
+    | (if ($c|type)=="string" then $c
+       elif ($c|type)=="array" then
+         [ $c[] | if .type=="text" then .text
+                  elif .type=="tool_use" then "🔧 **"+(.name//"tool")+"**"
+                  else empty end ] | join("\n\n")
+       else "" end) as $text
+    | select(($text|type)=="string" and $text != ""
+             and ($text|ltrimstr(" ")|startswith("<")|not))
+    | "\n" + (if $role=="user" then "👦 " else "🤖 " end) + $text
+  ' "$f" 2>/dev/null | bat --color=always -l md --style=plain --paging=never 2>/dev/null \
+    || jq -r '.' "$f" 2>/dev/null
+}
+
+# 対話モード
+cmd_interactive() {
+  local base="$PWD"
+  local self="$0"
+  local header='Enter: resume / C-r: 現プロジェクト / C-s: worktree / C-a: 全リポジトリ'
+  local fzf_opts=(
+    --ansi
+    --delimiter='\t'
+    --with-nth='2..'
+    --no-multi
+    --prompt='resume(current)> '
+    --header="$header"
+    --preview="$self preview {1}"
+    --preview-window='right,60%,border-left,wrap'
+    --bind="ctrl-r:change-prompt(resume(current)> )+reload($self list current $(printf %q "$base"))"
+    --bind="ctrl-s:change-prompt(resume(worktree)> )+reload($self list worktree $(printf %q "$base"))"
+    --bind="ctrl-a:change-prompt(resume(all)> )+reload($self list all $(printf %q "$base"))"
+  )
+  [ -n "${TMUX:-}" ] && fzf_opts+=(--tmux 'center,90%,90%')
+
+  local sel file sid cwd
+  sel=$(cmd_list current "$base" | fzf "${fzf_opts[@]}") || return 0
+  [ -z "$sel" ] && return 0
+  file=${sel%%$'\t'*}
+  sid=$(basename "$file" .jsonl)
+  cwd=$(jq -r 'select(.cwd!=null) | .cwd' "$file" 2>/dev/null | head -1)
+  [ -z "$cwd" ] && cwd="$base"
+  printf '%s\t%s\n' "$cwd" "$sid"
+}
+
+case "${1:-}" in
+  list) shift; cmd_list "$@" ;;
+  preview) shift; cmd_preview "$@" ;;
+  *) cmd_interactive ;;
+esac
