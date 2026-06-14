@@ -20,9 +20,8 @@ project_dir() {
   printf '%s/%s' "$PROJECTS_DIR" "$(printf '%s' "$1" | sed 's/[^a-zA-Z0-9]/-/g')"
 }
 
-# 1セッション(jsonl)の表示ラベルを取り出す。
-# customTitle(ユーザー命名)があれば「📌 名前」のみ(ブランチ名は出さない)。
-# 無ければ「[branch] タイトル」。タイトルは ai-title → 最初の発言 → 最終プロンプト。
+# 1セッション(jsonl)の表示ラベル「[branch] タイトル」を取り出す。
+# タイトルは customTitle(ユーザー命名,📌付き) → ai-title → 最初の発言 → 最終プロンプト。
 session_meta() {
   jq -rs '
     def clean: gsub("[\n\t]+";" ");
@@ -36,8 +35,8 @@ session_meta() {
             else (map(select(.type=="text") | .text? // "")|join(" ")) end)
        | map(select(. != null and . != "" and (startswith("<")|not)))
        | .[0]) as $u
-    | (if $ct != null then "📌 " + $ct
-       else "[" + ($br // "-") + "] " + ($t // $u // $lp // "(untitled)") end | clean)
+    | (if $ct != null then "📌 " + $ct else ($t // $u // $lp // "(untitled)") end) as $title
+    | ("[" + ($br // "-") + "] " + $title | clean)
   ' "$1" 2>/dev/null
 }
 
@@ -89,7 +88,7 @@ cmd_interactive() {
     --prompt='resume> '
     --header='Enter: resume'
     --preview="$self preview {1}"
-    --preview-window='right,60%,border-left,wrap'
+    --preview-window='right,50%,border-left,wrap'
   )
   [ -n "${TMUX:-}" ] && fzf_opts+=(--tmux 'center,90%,90%')
 
