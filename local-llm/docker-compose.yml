@@ -1,0 +1,53 @@
+services:
+  # ローカルLLM本体。OpenAI互換APIを提供する
+  ollama:
+    image: ollama/ollama:latest
+    container_name: local-llm-ollama
+    # 127.0.0.1 のみに束縛 = 外部マシンからは一切アクセス不可
+    ports:
+      - "127.0.0.1:${OLLAMA_PORT:-11434}:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  # 初回起動時に .env の MODEL を自動取得して終了する使い捨てコンテナ
+  model-init:
+    image: ollama/ollama:latest
+    container_name: local-llm-init
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    entrypoint: ["/bin/sh", "-c", "ollama pull ${MODEL:-qwen2.5:7b}"]
+    restart: "no"
+
+  # 任意: ブラウザUI（不要なら下記サービスごと削除してよい）
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: local-llm-webui
+    depends_on:
+      ollama:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${WEBUI_PORT:-3300}:8080"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      # ログイン/サインアップを無効化（シングルユーザーモード）
+      - WEBUI_AUTH=false
+      # 外部への利用統計送信を無効化
+      - ANONYMIZED_TELEMETRY=false
+      - SCARF_NO_ANALYTICS=true
+      - DO_NOT_TRACK=true
+    volumes:
+      - webui-data:/app/backend/data
+    restart: unless-stopped
+
+volumes:
+  ollama-data:
+  webui-data:
