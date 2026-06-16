@@ -1,13 +1,13 @@
 zsh + tmux + neovim
 ====
 
-Build environment by Ansible.
+Build environment by shell script.
 
 ## Setup
 
 ```shell
-# Install Homebrew and run ansible
-$ sh initial.sh
+# Install Homebrew, packages, macOS defaults and symlinks
+$ bash setup.sh
 ```
 
 ## After setup
