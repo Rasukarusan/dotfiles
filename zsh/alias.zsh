@@ -13,7 +13,6 @@ alias lm='ls -l "$@" | awk '"'"'{k=0;for(i=0;i<=8;i++)k+=((substr($1,i+2,1)~/[rw
 alias grep='grep --color=auto -i'
 alias ...='cd ../../'
 alias ....='cd ../../../'
-alias history='history -i 1'
 alias time='/usr/bin/time -p'
 alias ssh='TERM=xterm ssh'
 alias tree='tree -N -a -I ".DS_Store|.git|node_modules|vendor|.next|dist"'
