@@ -15,10 +15,12 @@ $ bash setup.sh
 Should run following command in `nvim`.
 
 ```vim
-:call dein#install()
-:CocInstall
+:PlugInstall
 :checkhealth
 ```
+
+coc.nvim extensions are listed in `vim/coc/package.json` and installed
+automatically on the first `nvim` launch.
 
 ## Chrome Setup
 
