@@ -1999,3 +1999,9 @@ _layout_tmux_pane() {
   local leftmost=$(tmux list-panes -t "$anchor" -F '#{pane_left} #{pane_id}' | sort -n | head -1 | awk '{print $2}')
   [ -n "$leftmost" ] && tmux select-pane -t "$leftmost"
 }
+
+# historyを日時付き(年なし)で表示する
+# 例: 1234  06-16 13:52  git status
+history() {
+  builtin fc -il "${1:-1}" | sed -E 's/^([[:space:]]*[0-9]+[[:space:]]+)[0-9]{4}-/\1/'
+}
