@@ -19,4 +19,6 @@ augroup FernSettings
   autocmd FileType fern set nonumber
   " この中で設定しないとデフォルトキーマップを上書きできない
   autocmd FileType fern nnoremap <buffer> R <Plug>(fern-action-reload:all)
+  " - で一つ上の階層へ(ルートを親ディレクトリに移動)
+  autocmd FileType fern nmap <buffer> - <Plug>(fern-action-leave)
 augroup END
