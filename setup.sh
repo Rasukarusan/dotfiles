@@ -203,6 +203,10 @@ echo "==> claude-notify"
 mkdir -p "$HOME/.claude/bin"
 bash "$DOTFILES_DIR/claude/bin/build-claude-notify.sh"
 
+# my-karabiner (ターミナルでCtrl+S押下時に入力ソースをABCへ切り替える常駐ツール)
+echo "==> my-karabiner"
+bash "$DOTFILES_DIR/bin/my-karabiner/build.sh"
+
 # ~/.codex
 echo "==> ~/.codex"
 mkdir -p "$HOME/.codex"
