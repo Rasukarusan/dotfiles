@@ -26,3 +26,5 @@ PROMPT="
 %F{cyan}%~%f"
 PROMPT=${PROMPT}'%F{green}  ${BRANCH_NAME} ${GIT_NON_DIFF}%F{red}${GIT_HAS_DIFF} 
 %f$ '
+# 右側に現在時刻を表示(コマンド実行ごとに更新)
+RPROMPT='%F{8}%*%f'
