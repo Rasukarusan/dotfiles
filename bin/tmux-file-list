@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+#
+# tmux-file-picker 用のファイル一覧を出力する。
+#
+# - 第1引数: 起点ディレクトリ。無ければ環境変数 QROOT が指すファイルの中身を、
+#   それも無ければ "." を起点にする。
+#   (fzf の reload からは引数なしで呼び、QROOT 経由で「1つ上の階層へ」を切り替える)
+# - 基本は .gitignore を尊重しつつ、隠しファイル(.xxx)も表示する。
+# - QSHOWIGNORE が指すファイルの中身が "1" のときだけ --no-ignore を付け、
+#   git 管理外(.env, dist など gitignore されたもの)も表示する(トグル)。
+# - .git と node_modules は常に除外する。
+#   .git は .gitignore に書かれないが --hidden で中身が出るため。
+#   node_modules はトグル ON(--no-ignore) のとき gitignore が効かず大量に出て
+#   一覧が埋まるため、ここで明示的に除外しておく。
+set -uo pipefail
+
+root="${1:-}"
+if [[ -z "$root" ]]; then
+  if [[ -n "${QROOT:-}" && -r "${QROOT:-}" ]]; then
+    root="$(cat "$QROOT")"
+  else
+    root="."
+  fi
+fi
+
+args=(--files --hidden --follow -g '!.git' -g '!node_modules')
+
+# トグルが ON なら gitignore を無視して全部表示する。
+if [[ -n "${QSHOWIGNORE:-}" && -r "${QSHOWIGNORE:-}" && "$(cat "$QSHOWIGNORE")" == "1" ]]; then
+  args+=(--no-ignore)
+fi
+
+# 起点が "." のときはパス引数を渡さず、"./" プレフィックスの付かない相対パスにする。
+# 1つ上(".." や "../..")へ移動したときだけ、その分のプレフィックスを付ける。
+if [[ "$root" != "." ]]; then
+  args+=(-- "$root")
+fi
+
+rg "${args[@]}" || true

@@ -24,9 +24,14 @@ case "$TARGET_PANE" in
     ;;
 esac
 
-# ファイル一覧と grep のコマンド。.git 配下は除外し、隠しファイルも対象にする。
-RG_FILES="rg --files --hidden --follow --glob '!.git/*'"
-RG_GREP="rg --column --line-number --no-heading --color=always --smart-case --hidden --glob '!.git/*'"
+# このスクリプトと同じディレクトリにある tmux-file-list を絶対パスで参照する。
+# ファイル一覧の生成(隠しファイル表示・.env 例外・.git/node_modules 除外・起点の上移動)は
+# すべて tmux-file-list 側に任せる。
+SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LIST="$SELF_DIR/tmux-file-list"
+
+# grep のコマンド。.git / node_modules は除外し、隠しファイルも対象にする。
+RG_GREP="rg --column --line-number --no-heading --color=always --smart-case --hidden -g '!.git' -g '!node_modules'"
 
 # プレビュー
 PREVIEW_FILE='bat --color=always --style=numbers -- {} 2>/dev/null || cat -- {}'
@@ -40,9 +45,20 @@ qg="$tmpdir/query_grep"
 : >"$qf"
 : >"$qg"
 
+# ファイル一覧の起点ディレクトリ。Ctrl+- を押すたびに 1 つ上の階層へ書き換える。
+# tmux-file-list は引数なしで呼ばれるとこのファイルから起点を読む。
+# export して fzf(とその reload で起動する子シェル)に渡す。
+export QROOT="$tmpdir/root"
+printf '.' >"$QROOT"
+
+# git 管理外(gitignore 済み)も表示するかのトグル状態。"1"=表示, "0"=非表示。
+# Ctrl+o を押すたびに反転させる。tmux-file-list がこのファイルを読む。
+export QSHOWIGNORE="$tmpdir/showignore"
+printf '0' >"$QSHOWIGNORE"
+
 # fzf 起動。開始時はファイル名検索モード（change バインドは無効化しておく）。
 selected="$(
-  FZF_DEFAULT_COMMAND="$RG_FILES" fzf \
+  FZF_DEFAULT_COMMAND="$LIST" fzf \
     --ansi \
     --multi \
     --height=100% \
@@ -50,17 +66,37 @@ selected="$(
     --border \
     --delimiter=: \
     --prompt='Files> ' \
-    --header='C-s: Files<->Grep  /  Tab: 複数選択  /  Enter: 確定  /  Esc: 中止' \
+    --header='Ctrl+-: 1つ上へ  /  Ctrl+o: git管理外も表示' \
     --preview="$PREVIEW_FILE" \
     --preview-window='right,60%,border-left' \
     --bind="start:unbind(change)" \
     --bind="change:reload(sleep 0.1; $RG_GREP {q} || true)" \
+    --bind="ctrl-_:transform:
+      case \$FZF_PROMPT in
+        Files*)
+          cur=\$(cat '$QROOT' 2>/dev/null || echo .)
+          if [ \"\$cur\" = '.' ]; then nx='..'; else nx=\"../\$cur\"; fi
+          printf '%s' \"\$nx\" > '$QROOT'
+          echo \"reload($LIST)+change-prompt(Files[\$nx]> )\" ;;
+        *) echo ignore ;;
+      esac
+    " \
+    --bind="ctrl-o:transform:
+      case \$FZF_PROMPT in
+        Files*)
+          cur=\$(cat '$QSHOWIGNORE' 2>/dev/null || echo 0)
+          if [ \"\$cur\" = '1' ]; then nx='0'; else nx='1'; fi
+          printf '%s' \"\$nx\" > '$QSHOWIGNORE'
+          echo \"reload($LIST)\" ;;
+        *) echo ignore ;;
+      esac
+    " \
     --bind="ctrl-s:transform:
       case \$FZF_PROMPT in
         Files*)
           echo \"change-prompt(Grep> )+change-preview($PREVIEW_GREP)+change-preview-window(right,60%,border-left,+{2}/3)+disable-search+rebind(change)+transform-query(echo {q} > $qf; cat $qg)+reload($RG_GREP {q} || true)\" ;;
         *)
-          echo \"change-prompt(Files> )+change-preview($PREVIEW_FILE)+change-preview-window(right,60%,border-left)+enable-search+unbind(change)+transform-query(echo {q} > $qg; cat $qf)+reload($RG_FILES)\" ;;
+          echo \"change-prompt(Files> )+change-preview($PREVIEW_FILE)+change-preview-window(right,60%,border-left)+enable-search+unbind(change)+transform-query(echo {q} > $qg; cat $qf)+reload($LIST)\" ;;
       esac
     "
 )" || exit 0
