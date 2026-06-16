@@ -253,15 +253,29 @@ command! -range RemoveSpace <line1>,<line2>call s:remove_space()
 " =============================================
 " 指定のデータをレジスタに登録する
 " =============================================
+" HOME配下を ~ に短縮したフルパス
+function! s:FullPath(path) abort
+    return substitute(a:path, $HOME, '~', 'g')
+endfunction
+
+" git管理ルートからの相対パス（リポジトリ外は ~ 短縮フルパス）
+function! s:GitRelativePath(path) abort
+    let dir = fnamemodify(a:path, ':h')
+    let root = systemlist('git -C ' . shellescape(dir) . ' rev-parse --show-toplevel')[0]
+    if v:shell_error == 0 && !empty(root)
+        return substitute(a:path, '^' . escape(root, '/') . '/', '', '')
+    endif
+    return s:FullPath(a:path)
+endfunction
+
 function! s:Clip(data, ...) abort
     " 第2引数があれば、それを区切り線付与のフラグとして使用（1なら付与する）
     let useSeparate = (a:0 >= 1 ? a:1 : 0)
-    let pattern = $HOME . '/[^/]\+/[^/]\+/'
     if useSeparate
         let separate = "\n---------------------------------\n"
-        let clipdata = separate . substitute(a:data, pattern, '', 'g') . separate
+        let clipdata = separate . a:data . separate
     else
-        let clipdata = substitute(a:data, pattern, '', 'g')
+        let clipdata = a:data
     endif
     let @* = clipdata
     let oneline = substitute(clipdata, "\n", " ", "g")
@@ -271,32 +285,11 @@ function! s:Clip(data, ...) abort
     echo "clipped: " . oneline
 endfunction
 
-function! s:ClipNum(line1, line2) abort
-    let path = expand('%:p')
-    let pattern = $HOME . '/[^/]\+/[^/]\+/'
-    let relative_path = substitute(path, pattern, '', 'g')
-
-    if a:line1 == a:line2
-        " 単一行の場合
-        let clipdata = relative_path . '#' . a:line1
-    else
-        " 複数行の場合
-        let clipdata = relative_path . '#' . a:line1 . '-' . a:line2
-    endif
-
-    let @* = clipdata
-    echo 'clipped: ' . clipdata
-endfunction
-
-" ClipPath と ClipFile は引数なしで呼ぶ（区切り線なし）
-command! -nargs=0 ClipPath call s:Clip(expand('%:p'))
+" ClipPath はgit管理ルートからの相対パス、ClipFullPath は ~ 短縮フルパス（区切り線なし）
+command! -nargs=0 ClipPath call s:Clip(s:GitRelativePath(expand('%:p')))
 nnoremap <S-C><S-P> :ClipPath<CR>
+command! -nargs=0 ClipFullPath call s:Clip(s:FullPath(expand('%:p')))
 command! -nargs=0 ClipFile call s:Clip(expand('%:t'))
-" ClipNum は選択範囲の行番号付きパスをクリップボードにコピー
-command! -nargs=0 -range ClipNum call s:ClipNum(<line1>, <line2>)
-vnoremap <S-C><S-N> :ClipNum<CR>
-" ClipAll のみ引数を渡して区切り線付きにする
-command! -nargs=0 ClipAll call s:Clip(expand('%:p') . "\n" . join(getline(1, '$'), "\n"), 1)
 nnoremap %% :ClipAll<CR>
 
 " memoを新しいタブで開く
