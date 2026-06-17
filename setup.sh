@@ -207,6 +207,10 @@ bash "$DOTFILES_DIR/claude/bin/build-claude-notify.sh"
 echo "==> my-karabiner"
 bash "$DOTFILES_DIR/bin/my-karabiner/build.sh"
 
+# tmux-ime (tmuxペインのclaude有無で入力ソースを切替する imselect をビルド)
+echo "==> tmux-ime"
+bash "$DOTFILES_DIR/bin/tmux-ime/build.sh"
+
 # ~/.codex
 echo "==> ~/.codex"
 mkdir -p "$HOME/.codex"
