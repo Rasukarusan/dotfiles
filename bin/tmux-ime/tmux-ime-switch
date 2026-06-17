@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+#
+# tmux の after-select-pane フックから呼ばれる。
+# 選択されたペインで claude が動いていれば日本語(かな)、そうでなければ
+# 英字(ABC)に入力ソースを切り替える。
+#
+#   引数 $1 = 対象ペインの tty (#{pane_tty})
+#
+# claude 判定はリポジトリ既存の tmux-pane-confirm / tmux-file-picker と同方式。
+set -euo pipefail
+
+tty="${1:-}"
+imselect="$HOME/.local/bin/imselect"
+[ -x "$imselect" ] || exit 0
+
+is_claude=0
+if [ -n "$tty" ] &&
+  ps -t "${tty#/dev/}" -o command= 2>/dev/null | grep -qiE '(^|/| )claude( |$)'; then
+  is_claude=1
+fi
+
+if [ "$is_claude" = 1 ]; then
+  exec "$imselect" ja
+else
+  exec "$imselect" abc
+fi
