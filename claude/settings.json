@@ -20,7 +20,9 @@
       "Bash(pnpm supabase db reset)",
       "Bash(git merge:*)",
       "Bash(git push:*)",
-      "Bash(brew:*)"
+      "Bash(brew:*)",
+      "Bash(terraform apply)",
+      "Bash(terraform destroy)"
     ],
     "defaultMode": "auto"
   },
