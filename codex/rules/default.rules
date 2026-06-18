@@ -20,3 +20,6 @@ prefix_rule(pattern=["pnpm", "--filter=@qast/authz", "run", "lint"], decision="a
 prefix_rule(pattern=["sort"], decision="allow")
 prefix_rule(pattern=["git", "ls-files", "libraries/authz/dist", "libraries/authz/temp"], decision="allow")
 prefix_rule(pattern=["pnpm", "exec", "prettier", "--check", "apps/app-graphql-server/src/modules/ai-settings/usecases/ai-setting-update.usecase.ts", "apps/app-graphql-server/src/modules/ai-settings/usecases/ai-setting-update.usecase.spec.ts"], decision="allow")
+prefix_rule(pattern=["nc"], decision="allow")
+prefix_rule(pattern=["qast"], decision="allow")
+prefix_rule(pattern=["cargo", "build"], decision="allow")
