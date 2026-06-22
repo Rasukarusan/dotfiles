@@ -27,6 +27,18 @@
     "defaultMode": "auto"
   },
   "hooks": {
+    "PermissionRequest": [
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "crit plan-hook",
+            "timeout": 345600
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "matcher": "",
