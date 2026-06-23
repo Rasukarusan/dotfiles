@@ -211,6 +211,10 @@ bash "$DOTFILES_DIR/bin/my-karabiner/build.sh"
 echo "==> tmux-ime"
 bash "$DOTFILES_DIR/bin/tmux-ime/build.sh"
 
+# mdtree (カレントディレクトリをGitHub風ファイルツリーUIでブラウザ表示するCLIをビルド)
+echo "==> mdtree"
+bash "$DOTFILES_DIR/bin/mdtree/build.sh"
+
 # ~/.codex
 echo "==> ~/.codex"
 mkdir -p "$HOME/.codex"

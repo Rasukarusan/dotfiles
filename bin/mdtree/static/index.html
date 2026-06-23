@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mdtree</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div id="app">
+    <aside id="sidebar">
+      <div class="sidebar-header">
+        <span class="repo-name" id="repo-name">…</span>
+      </div>
+      <div class="filter-box">
+        <input type="text" id="filter" placeholder="ファイルを絞り込み…" autocomplete="off" spellcheck="false">
+      </div>
+      <nav id="tree" class="tree"></nav>
+    </aside>
+    <div id="resizer"></div>
+    <main id="main">
+      <header id="breadcrumb" class="breadcrumb"></header>
+      <article id="content" class="content markdown-body">
+        <div class="empty-state">
+          <p>左のツリーからファイルを選択してください</p>
+        </div>
+      </article>
+    </main>
+  </div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
