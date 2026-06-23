@@ -30,7 +30,7 @@ done
 echo "==> Homebrew formulae"
 FORMULAE=(
   autoconf bat composer coreutils ctags curl diff-so-fancy
-  exiftool fzf gawk gcc git gitblamer global
+  exiftool fzf gawk gcc git gitblamer global glow
   gnu-sed go grep imagemagick jq mas mitmproxy ncdu neovim nkf
   node nodebrew pyenv pyenv-virtualenv python3 ripgrep ruby
   the_silver_searcher tmux tree vim w3m watch wget yarn zsh swiftformat
