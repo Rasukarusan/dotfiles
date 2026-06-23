@@ -42,7 +42,7 @@ _look() {
     | sed 's/\.\///g' \
     | grep -v -e '.jpg' -e '.gif' -e '.png' -e '.jpeg' \
     | sort -r \
-    | fzf-tmux -p80% --select-1 --prompt 'vim ' --preview 'bat --color always {}' --preview-window=right:70%
+    | fzf-tmux -p80% --select-1 --prompt 'vim ' --preview 'fzf-preview {}' --preview-window=right:70%
   ))
   [ "$target_files" = "" ] && return
   vim -p ${target_files[@]}
@@ -109,7 +109,7 @@ _git_add(){
       --bind "U:reload(git ls-files --others --exclude-standard)+change-prompt(untracked)" \
       --bind "M:reload(git ls-files --modified)+change-prompt(modified)" \
       --bind "A:reload(git ls-files --modified --others --exclude-standard)+change-prompt(all)" \
-      --preview "git diff --exit-code {} >/dev/null && bat --color always {} || git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy" \
+      --preview "git diff --exit-code {} >/dev/null && fzf-preview {} || git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy" \
       --preview-window=right:50% \
     ))
   [ -z "$files" ] && return
@@ -140,7 +140,7 @@ _git_diff(){
     { git -C $path_working_tree_root ls-files --modified; \
       git -C $path_working_tree_root ls-files --others --exclude-standard; } \
     | sort -u \
-    | fzf-tmux -p80% --select-1 --prompt "SELECT FILES>" --preview 'if git ls-files --error-unmatch $(git rev-parse --show-cdup){} &>/dev/null; then git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy; else bat --color=always --style=numbers --line-range=:500 --style=numbers,changes $(git rev-parse --show-cdup){} 2>/dev/null || cat $(git rev-parse --show-cdup){}; fi' --preview-window=right:50% ))
+    | fzf-tmux -p80% --select-1 --prompt "SELECT FILES>" --preview 'if git ls-files --error-unmatch $(git rev-parse --show-cdup){} &>/dev/null; then git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy; else fzf-preview $(git rev-parse --show-cdup){}; fi' --preview-window=right:50% ))
   [ -z "$files" ] && return
   for file in "${files[@]}";do
     if git ls-files --error-unmatch ${path_working_tree_root}${file} &>/dev/null; then
@@ -205,12 +205,12 @@ _article_commands() {
 _write_article() {
   local ARTICLE_DIR=/Users/`whoami`/Documents/github/articles
   if [ "$1" = '-a' ];then
-    local targetFile=$(find $ARTICLE_DIR -name "*.md" | fzf-tmux -p80% --delimiter 'articles' --with-nth  -1 --preview "bat --color=always --style=numbers --line-range=:500 {}")
+    local targetFile=$(find $ARTICLE_DIR -name "*.md" | fzf-tmux -p80% --delimiter 'articles' --with-nth  -1 --preview "fzf-preview {}")
     [ -z "$targetFile" ] && return
     vim $targetFile
     return
   fi
-  local article=`ls ${ARTICLE_DIR}/*.md | xargs -I {} basename {} | fzf-tmux -p80% --preview "bat --color=always --style=numbers --line-range=:500 ${ARTICLE_DIR}/{}"`
+  local article=`ls ${ARTICLE_DIR}/*.md | xargs -I {} basename {} | fzf-tmux -p80% --preview "fzf-preview ${ARTICLE_DIR}/{}"`
 
   # 何も選択しなかった場合は終了
   if [ -z "$article" ]; then
@@ -286,7 +286,7 @@ _pull_article() {
 alias map='_write_mindmap'
 _write_mindmap() {
   local dir=/Users/`whoami`/Documents/github/mindmap-view/data
-  local mindmap=`(echo 00000000.md && ls ${dir}/*.md | xargs -I {} basename {}) | fzf-tmux -p80% --preview "bat --color=always --style=numbers --line-range=:500 ${dir}/{}"`
+  local mindmap=`(echo 00000000.md && ls ${dir}/*.md | xargs -I {} basename {}) | fzf-tmux -p80% --preview "fzf-preview ${dir}/{}"`
   test -z "$mindmap" && return
 
   if [ "$mindmap" = "00000000.md" ]; then
@@ -444,7 +444,7 @@ _docker_commands() {
         | sed '/^\.$/d' \
         | fzf-tmux -p80% \
           --prompt='送信したいファイルを選択してください' \
-          --preview='file {} | awk -F ":" "{print \$2}" | grep directory >/dev/null && tree --charset=C -NC {} || bat --color always {}'
+          --preview='file {} | awk -F ":" "{print \$2}" | grep directory >/dev/null && tree --charset=C -NC {} || fzf-preview {}'
       ))
       [ "${#targetFiles[@]}" -eq 0 ] && return
       docker ps --format "{{.Names}}" | fzf-tmux -p80% | while read container;do
@@ -743,7 +743,7 @@ _edit_vim_files() {
   local xvimrc=~/dotfiles/vim/xvimrc
   local vimrcLocal=~/.vimrc.local
   # 文字数でソートする
-  local editFile=$(echo "${nvimFiles}\n${xvimrc}\n${vimrcLocal}" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf-tmux -p80% --preview "bat --color always {}")
+  local editFile=$(echo "${nvimFiles}\n${xvimrc}\n${vimrcLocal}" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf-tmux -p80% --preview "fzf-preview {}")
   test -z "$editFile" && return
   vim $editFile
 }
@@ -753,7 +753,7 @@ alias zshrc='_edit_zsh_files'
 _edit_zsh_files() {
   local zshFiles=$(find ~/dotfiles/zsh -type f && echo ~/.zshrc.local)
   # 文字数でソートする
-  local editFiles=($(echo "$zshFiles" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf-tmux -p80% --preview "bat --color always {}"))
+  local editFiles=($(echo "$zshFiles" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf-tmux -p80% --preview "fzf-preview {}"))
   test -z "$editFiles" && return
   vim -p "${editFiles[@]}"
 }
@@ -765,7 +765,7 @@ _edit_claude_files() {
   local createNewOption="新しいcommandを作成"
   local claudeFiles=$(find ~/dotfiles/claude -type f)
   # 文字数でソートする
-  local selection=$(echo -e "$createNewOption\n$(echo "$claudeFiles" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2-)" | fzf-tmux -p80% --preview "test '{}' = '$createNewOption' && echo '新しいコマンドファイルを作成します' || bat --terminal-width=80 --color always {}")
+  local selection=$(echo -e "$createNewOption\n$(echo "$claudeFiles" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2-)" | fzf-tmux -p80% --preview "test '{}' = '$createNewOption' && echo '新しいコマンドファイルを作成します' || fzf-preview {}")
   test -z "$selection" && return
   if [[ "$selection" == "$createNewOption" ]]; then
     # 新しいコマンドを作成
@@ -825,7 +825,7 @@ _git_stash_with_name() {
 }
 
 _git_stash_each_file() {
-  local targets=($(git ls-files -m -o --exclude-standard | sort | fzf --preview='bat --color=always --style=numbers --line-range=:500 {}'))
+  local targets=($(git ls-files -m -o --exclude-standard | sort | fzf --preview='fzf-preview {}'))
   [ -z "$targets" ] && return
   echo "保存名を入力してくだい"
   read name
@@ -950,7 +950,7 @@ _fzf_vim() {
   for excludeDir in ${excludeDirs[@]}; do
     excludeCmd="$excludeCmd -type d -name "$excludeDir" -prune -o "
   done
-  local files=($(eval find . $excludeCmd -type f -o -type l | fzf --preview "bat --color always {}"))
+  local files=($(eval find . $excludeCmd -type f -o -type l | fzf --preview "fzf-preview {}"))
   [ -z "$files" ] && return
   vim -p "${files[@]}"
 }
@@ -959,7 +959,7 @@ _fzf_vim() {
 # vi"g"ではなく"p"にしているのは、vimのキーバインド(Ctrl-p)と合わせたかったため
 alias vip='_fzf_vim_git'
 _fzf_vim_git() {
-  local files=($(git ls-files | fzf --preview "bat --color always {}"))
+  local files=($(git ls-files | fzf --preview "fzf-preview {}"))
   [ -z "$files" ] && return
   vim -p "${files[@]}"
 }
@@ -1018,7 +1018,7 @@ _rmm() {
     | fzf-tmux -p80% --multi \
     --header='git status files' \
     --bind "ctrl-r:reload(git status --short | awk '{print \$NF}')" \
-    --preview='bat --color=always --style=numbers --line-range=:500 {} 2>/dev/null || echo "(file not found or binary)"'
+    --preview='fzf-preview {} 2>/dev/null || echo "(file not found or binary)"'
   )
   do
     echo "$removeFile"
@@ -1215,7 +1215,7 @@ _fzf_vim_git_modified_untracked() {
 
   local selected=($(printf '%s\n' "${files[@]}" \
     | fzf-tmux -p80% --preview='
-      git diff --exit-code {} >/dev/null && bat --color always {} \
+      git diff --exit-code {} >/dev/null && fzf-preview {} \
       || git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy
     '))
 
@@ -1240,7 +1240,7 @@ _fzf_vim_git_modified() {
   # fzf で選択
   local selected=($(printf '%s\n' "${files[@]}" | sort -u \
     | fzf-tmux -p80% --preview='
-      git diff --exit-code {} >/dev/null && bat --color always {} \
+      git diff --exit-code {} >/dev/null && fzf-preview {} \
       || git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy
     '))
 
@@ -1624,7 +1624,7 @@ function _record_ios_simulator() {
 # ファイルを列挙してコマンドラインに出すだけで、移動先のディレクトリは自身で入力する
 alias mvv='_move_multiple_file'
 function _move_multiple_file() {
-  local targets=($(ls -1 | fzf --preview 'bat --color always {}'))
+  local targets=($(ls -1 | fzf --preview 'fzf-preview {}'))
   [ -z "$targets" ] && return
   print -z "mv ${targets[@]} "
 }
@@ -1772,7 +1772,7 @@ _open_env() {
   local find_result=$(find . -name ".env" -type f)
   local target_files=($(echo "$find_result" \
     | sed 's/\.\///g' \
-    | fzf-tmux -p80% --select-1 --prompt 'vim ' --preview 'bat --color always {}' --preview-window=right:70%
+    | fzf-tmux -p80% --select-1 --prompt 'vim ' --preview 'fzf-preview {}' --preview-window=right:70%
   ))
   [ "$target_files" = "" ] && return
   vim -p ${target_files[@]}
