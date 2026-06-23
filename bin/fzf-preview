@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# fzfのpreview用。拡張子で振り分ける。
+#   .md       -> glow (なければ bat)
+#   ディレクトリ -> tree (なければ ls)
+#   それ以外    -> bat (なければ cat)
+# 使い方: fzf ... --preview 'fzf-preview {}'
+set -u
+
+target="${1:-}"
+[ -z "$target" ] && exit 0
+
+# 末尾の改行や引用符を除去
+target="${target%\"}"
+target="${target#\"}"
+
+if [ -d "$target" ]; then
+  if command -v tree >/dev/null 2>&1; then
+    tree -C "$target"
+  else
+    ls -la "$target"
+  fi
+  exit 0
+fi
+
+if [ ! -e "$target" ]; then
+  exit 0
+fi
+
+case "$target" in
+  *.md|*.markdown)
+    if command -v glow >/dev/null 2>&1; then
+      # fzfのpreviewは非TTYのためglowが色を落とす。CLICOLOR_FORCEで強制的に色付けする
+      CLICOLOR_FORCE=1 glow -s dark "$target"
+    else
+      bat --color=always --style=numbers "$target"
+    fi
+    ;;
+  *)
+    if command -v bat >/dev/null 2>&1; then
+      bat --color=always --style=numbers --line-range=:500 "$target"
+    else
+      cat "$target"
+    fi
+    ;;
+esac
