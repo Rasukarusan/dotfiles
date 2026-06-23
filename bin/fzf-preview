@@ -3,11 +3,31 @@
 #   .md       -> glow (なければ bat)
 #   ディレクトリ -> tree (なければ ls)
 #   それ以外    -> bat (なければ cat)
+#   -          -> stdin を Markdown として描画 (動的生成した本文用)
 # 使い方: fzf ... --preview 'fzf-preview {}'
+#         cmd | fzf-preview -
 set -u
+
+# Markdown を描画する。引数は ファイルパス または - (stdin)。glow優先・batフォールバック。
+# fzfのpreviewは非TTYのためglowが色を落とす。CLICOLOR_FORCEで強制的に色付けする。
+render_md() {
+  if command -v glow >/dev/null 2>&1; then
+    CLICOLOR_FORCE=1 glow -s dark "$1"
+  elif command -v bat >/dev/null 2>&1; then
+    bat --color=always -l md --style=plain --paging=never "$1"
+  else
+    cat "$1"
+  fi
+}
 
 target="${1:-}"
 [ -z "$target" ] && exit 0
+
+# stdin を Markdown として描画
+if [ "$target" = "-" ]; then
+  render_md -
+  exit 0
+fi
 
 # 末尾の改行や引用符を除去
 target="${target%\"}"
@@ -28,12 +48,7 @@ fi
 
 case "$target" in
   *.md|*.markdown)
-    if command -v glow >/dev/null 2>&1; then
-      # fzfのpreviewは非TTYのためglowが色を落とす。CLICOLOR_FORCEで強制的に色付けする
-      CLICOLOR_FORCE=1 glow -s dark "$target"
-    else
-      bat --color=always --style=numbers "$target"
-    fi
+    render_md "$target"
     ;;
   *)
     if command -v bat >/dev/null 2>&1; then
