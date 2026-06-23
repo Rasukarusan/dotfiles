@@ -93,20 +93,21 @@ async function openFile(path) {
 }
 
 // ---- Mermaid 図の描画 -----------------------------------------------------
-// goldmark-mermaid が出力した <pre class="mermaid"> を、CDN の mermaid.js で描画する。
-// ライブラリは初回の図表示時に動的 import で遅延ロードする。
+// goldmark-mermaid が出力した <pre class="mermaid"> を、同梱の mermaid.js で描画する。
+// mermaid 本体は index.html の <script> で読み込み済み(window.mermaid)。
 
-let mermaidLib = null;
+let mermaidReady = false;
 
 async function renderMermaid() {
   const nodes = contentEl.querySelectorAll('pre.mermaid:not([data-processed])');
   if (!nodes.length) return;
+  if (!window.mermaid) return; // 読み込み失敗時は素のテキストのまま残す
   try {
-    if (!mermaidLib) {
-      mermaidLib = (await import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs')).default;
-      mermaidLib.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
+    if (!mermaidReady) {
+      window.mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
+      mermaidReady = true;
     }
-    await mermaidLib.run({ nodes });
+    await window.mermaid.run({ nodes });
   } catch (err) {
     nodes.forEach((n) => {
       n.dataset.processed = 'error';
