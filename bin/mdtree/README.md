@@ -19,7 +19,7 @@ mdtree -no-open     # ブラウザを自動で開かない
 - 左サイドバー: ディレクトリツリー（展開/折りたたみ、絞り込み検索、幅リサイズ可能）
 - 右ペイン: 選択ファイルのプレビュー
   - `.md` / `.markdown` … goldmark で GitHub 風にレンダリング（GFM・テーブル・タスクリスト対応）
-  - Mermaid（` ```mermaid ` ブロック）… 図として描画（sequenceDiagram・flowchart など。mermaid.js を CDN から読み込むため要ネット接続）
+  - Mermaid（` ```mermaid ` ブロック）… 図として描画（sequenceDiagram・flowchart など。mermaid.js をバイナリに同梱しオフラインで動作）
   - その他のテキスト … chroma でシンタックスハイライト
   - バイナリ … プレビュー不可の旨を表示
 - `.git` / `node_modules` / `vendor` / `dist` / `.next` などは除外
