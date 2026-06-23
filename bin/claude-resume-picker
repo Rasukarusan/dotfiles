@@ -56,11 +56,16 @@ cmd_list() {
   done | sort -t$'\t' -k1,1nr | cut -f2-
 }
 
-# プレビュー本文(会話のトランスクリプト)を Markdown で出力
+# プレビュー本文(会話のトランスクリプト)を Markdown で出力。
+# glow の全文描画は重い(数千行で1秒超)ため、先頭をすぐ描画し残りを後追いで描画する。
+# fzf は preview の出力をストリーム表示するので、2回に分けて流すと体感が大きく速くなる。
+# 行数で切るとコードブロック途中で崩れるので、メッセージ境界(👦/🤖 行)で分割する。
+PREVIEW_HEAD_LINES=100
 cmd_preview() {
   local f="$1"
   [ -s "$f" ] || { echo "(no content)"; return; }
-  jq -r '
+  local md
+  md=$(jq -r '
     select(.type=="user" or .type=="assistant")
     | (.message.role) as $role
     | (.message.content) as $c
@@ -73,7 +78,23 @@ cmd_preview() {
     | select(($text|type)=="string" and $text != ""
              and ($text|ltrimstr(" ")|startswith("<")|not))
     | "\n" + (if $role=="user" then "👦 " else "🤖 " end) + $text
-  ' "$f" 2>/dev/null | fzf-preview -
+  ' "$f" 2>/dev/null)
+  [ -z "$md" ] && { jq -r '.' "$f" 2>/dev/null; return; }
+
+  # PREVIEW_HEAD_LINES 行以降で最初のメッセージ境界(👦/🤖 行)を分割点にする。
+  local split
+  split=$(printf '%s\n' "$md" \
+    | grep -nE '^(👦|🤖)' \
+    | awk -F: -v n="$PREVIEW_HEAD_LINES" '$1>n {print $1-1; exit}')
+
+  if [ -n "$split" ]; then
+    # head/tail はパイプを早期クローズし printf に SIGPIPE を起こす(pipefail+set -e で中断)。
+    # sed は stdin を読み切るので安全。
+    printf '%s\n' "$md" | sed -n "1,${split}p"        | fzf-preview -  # 先頭: 即描画
+    printf '%s\n' "$md" | sed -n "$((split+1)),\$p"   | fzf-preview -  # 残り: 後追い描画
+  else
+    printf '%s\n' "$md" | fzf-preview -
+  fi
 }
 
 # 対話モード。選択した sessionId を出力する。
