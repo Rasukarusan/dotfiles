@@ -36,8 +36,6 @@ export FZF_DEFAULT_OPTS='
   --multi
   --bind ctrl-a:select-all,ctrl-d:deselect-all,ctrl-t:toggle-all
   '
-# Ctrl-Tのファイル選択時のプレビュー。拡張子で振り分け(.md->glow / dir->tree / 他->bat)
-export FZF_CTRL_T_OPTS="--preview 'fzf-preview {}' --preview-window=right:60%"
 export MY_TARGET_GIT_DIR=(
   ~/dotfiles
   ~/scripts
