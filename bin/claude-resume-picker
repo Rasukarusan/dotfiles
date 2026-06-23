@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # 過去の Claude Code 会話履歴を fzf(popup) で一覧・プレビューし、選んだものを
-# `claude --resume` で再開するためのピッカー。chathist/glow は使わず自作。
+# `claude --resume` で再開するためのピッカー。一覧/抽出は自作、プレビュー描画は fzf-preview(glow)。
 #
 # `claude --resume` と同じく、カレントディレクトリのセッションのみを対象にする。
 # 履歴は ~/.claude/projects/<エンコードされたcwd>/<session-id>.jsonl に保存される
@@ -73,8 +73,7 @@ cmd_preview() {
     | select(($text|type)=="string" and $text != ""
              and ($text|ltrimstr(" ")|startswith("<")|not))
     | "\n" + (if $role=="user" then "👦 " else "🤖 " end) + $text
-  ' "$f" 2>/dev/null | bat --color=always -l md --style=plain --paging=never 2>/dev/null \
-    || jq -r '.' "$f" 2>/dev/null
+  ' "$f" 2>/dev/null | fzf-preview -
 }
 
 # 対話モード。選択した sessionId を出力する。
