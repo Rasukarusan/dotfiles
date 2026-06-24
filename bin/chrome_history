@@ -7,6 +7,13 @@
 # ▶sh chromeHistory.sh [PATTERN]
 # 第一引数にgrepしたい単語を入力することが可能。grep時はURL、タイトル、日付込の出力からgrepする。
 #
+# [オプション]
+#   (なし)      本日の履歴をfzfで表示
+#   PATTERN     PATTERNでgrepして表示
+#   -a          全日付の履歴をfzfで表示
+#   -d          日付をfzfで選択し、その日の履歴を表示
+#   -s          日付をfzfで選択し、その日の履歴をClaude(claude -p)で日報風に要約
+#
 # 例：Redmineの閲覧履歴だけ抽出したい場合
 # ▶sh chromeHistory.sh neprj
 #
@@ -88,14 +95,59 @@ function show_by_date() {
     show $select_date
 }
 
+function summarize_by_date() {
+    local chrome_history=$(export_chrome_history)
+    # 要約したい日付を選択する(show_by_dateと同じ選び方)
+    local select_date=$(
+        echo "$chrome_history" \
+        | awk -F '\t' '{print $3}' \
+        | awk -F ' ' '{print $1}' \
+        | grep -P '^[0-9]{4}-.*' \
+        | sort -ur \
+        | xargs -I {} gdate '+%Y-%m-%d (%a)' -d {} \
+        | fzf-tmux -p80%
+    )
+    [ -z "$select_date" ] && return
+    # 選択した文字列(例: 2026-06-25 (Wed))から日付部分だけ取り出す
+    local date_only=$(echo "$select_date" | awk '{print $1}')
+
+    # その日の閲覧履歴を「時刻\tタイトル」で抽出し、タイトル重複を除いて時系列に並べる
+    local day_history=$(
+        echo "$chrome_history" \
+        | grep -P "\t$date_only " \
+        | awk -F '\t' '{split($3,d," "); print d[2]"\t"$2}' \
+        | awk -F '\t' '!seen[$2]++' \
+        | sort
+    )
+    if [ -z "$day_history" ]; then
+        echo "履歴が見つかりませんでした: $date_only"
+        return
+    fi
+
+    echo "🤖 $select_date の閲覧履歴をClaudeで要約中..." 1>&2
+    local prompt="以下は私が $date_only にChromeで閲覧したページの履歴(時刻とタイトル)です。
+この履歴から、その日に何を調べ・何の作業をしていたかを推測し、日報風の箇条書きでまとめてください。
+
+- テーマ/トピックごとにグルーピングし、見出しを付ける
+- 各項目は1行で簡潔に
+- 単なるページ名の羅列ではなく「何をしていたか」として書く
+- 前置きや締めの文章は不要。箇条書きだけを出力する
+
+--- 閲覧履歴 ---
+$day_history"
+    claude -p "$prompt"
+}
+
 function main() {
     if [ "$1" = '-d' ]; then # 日付ごと
       show_by_date
+    elif [ "$1" = '-s' ]; then # 日付ごとにClaudeで要約
+      summarize_by_date
     elif [ "$1" = '-a' ]; then # 全日付
       show
     elif [ -z "$1" ]; then # 本日
       show $(gdate '+%Y-%m-%d')
-    else 
+    else
       show "$1"
     fi
 }
