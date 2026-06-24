@@ -763,7 +763,7 @@ alias cll='_edit_claude_files'
 _edit_claude_files() {
   # 新しいコマンド作成オプションを追加
   local createNewOption="新しいcommandを作成"
-  local claudeFiles=$(find ~/dotfiles/claude -type f)
+  local claudeFiles=$(find ~/dotfiles/claude ~/dotfiles/codex -type f)
   # 文字数でソートする
   local selection=$(echo -e "$createNewOption\n$(echo "$claudeFiles" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2-)" | fzf-tmux -p80% --preview "test '{}' = '$createNewOption' && echo '新しいコマンドファイルを作成します' || fzf-preview {}")
   test -z "$selection" && return
