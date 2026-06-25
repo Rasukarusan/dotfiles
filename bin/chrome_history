@@ -126,16 +126,22 @@ function summarize_by_date() {
 
     echo "🤖 $select_date の閲覧履歴をClaudeで要約中..." 1>&2
     local prompt="以下は私が $date_only にChromeで閲覧したページの履歴(時刻とタイトル)です。
-この履歴から、その日に何を調べ・何の作業をしていたかを推測し、日報風の箇条書きでまとめてください。
+この履歴から、その日に何を調べ・何の作業をしていたかを推測し、日報風にまとめてください。
 
-- テーマ/トピックごとにグルーピングし、見出しを付ける
-- 各項目は1行で簡潔に
+- 出力は必ずMarkdown形式にする
+- テーマ/トピックごとにグルーピングし、'## 見出し' を付ける
+- 各項目は '- ' から始まる箇条書きで1行ずつ簡潔に
 - 単なるページ名の羅列ではなく「何をしていたか」として書く
-- 前置きや締めの文章は不要。箇条書きだけを出力する
+- 前置きや締めの文章は不要。Markdownの本文だけを出力する
 
 --- 閲覧履歴 ---
 $day_history"
-    claude -p "$prompt"
+    # Claudeの出力はMarkdownなのでglowで整形して表示(glowが無ければそのまま出力)
+    if command -v glow >/dev/null 2>&1; then
+        claude -p "$prompt" | glow -
+    else
+        claude -p "$prompt"
+    fi
 }
 
 function main() {
