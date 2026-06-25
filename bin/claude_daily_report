@@ -1,0 +1,180 @@
+#!/bin/sh
+
+#
+# Claude Code の「その日触ったセッション」を読み取り、claude -p で日報風に要約するスクリプト
+#
+# [使い方]
+#   ▶clds            セッションのある日付をfzfで選んで要約
+#   ▶clds 2026-06-24 指定日のセッションを要約(fzfをスキップ)
+#
+# [仕組み]
+# ~/.claude/projects/<プロジェクト>/<session>.jsonl から、指定日(JST)に入力した
+# ユーザー発言(typed)とセッションのAIタイトルを抽出し、claude -p に渡して日報を生成する。
+# 出力はMarkdownなのでglowで整形して表示する(glowが無ければ素の出力)。
+#
+
+PROJECTS_DIR="$HOME/.claude/projects"
+
+if [ ! -d "$PROJECTS_DIR" ]; then
+    echo "Claudeのプロジェクトディレクトリが見つかりません: $PROJECTS_DIR" 1>&2
+    exit 1
+fi
+
+# 引数があればその日付、無ければセッションのある日付をfzfで選ばせる
+if [ -n "$1" ]; then
+    TARGET_DATE="$1"
+else
+    selected=$(
+        python3 - "$PROJECTS_DIR" <<'PY' | fzf-tmux -p80% --prompt='日報を出す日付> '
+import sys, os, json, glob
+from datetime import datetime, timezone, timedelta
+from collections import Counter
+
+projects_dir = sys.argv[1]
+JST = timezone(timedelta(hours=9))
+counts = Counter()  # date -> 発言数
+for path in glob.glob(os.path.join(projects_dir, '*', '*.jsonl')):
+    try:
+        for line in open(path, encoding='utf-8'):
+            try:
+                d = json.loads(line)
+            except Exception:
+                continue
+            if d.get('type') != 'user':
+                continue
+            origin = d.get('origin') or {}
+            m = d.get('message') or {}
+            content = m.get('content')
+            if origin.get('kind') != 'human' or not isinstance(content, str):
+                continue
+            ts = d.get('timestamp')
+            if not ts:
+                continue
+            try:
+                day = datetime.fromisoformat(ts.replace('Z', '+00:00')).astimezone(JST)
+            except Exception:
+                continue
+            counts[day.strftime('%Y-%m-%d (%a)')] += 1
+    except Exception:
+        continue
+for label in sorted(counts, reverse=True):
+    print(f"{label}\t{counts[label]} prompts")
+PY
+    )
+    [ -z "$selected" ] && exit 0
+    TARGET_DATE=$(echo "$selected" | awk '{print $1}')
+fi
+
+# 指定日のセッション素材(プロジェクト/タイトル/発言)をPythonで抽出する
+material=$(
+    python3 - "$PROJECTS_DIR" "$TARGET_DATE" <<'PY'
+import sys, os, json, glob
+from datetime import datetime, timezone, timedelta
+
+projects_dir, target_date = sys.argv[1], sys.argv[2]
+JST = timezone(timedelta(hours=9))
+
+def local_date(ts):
+    if not ts:
+        return None
+    try:
+        dt = datetime.fromisoformat(ts.replace('Z', '+00:00'))
+        return dt.astimezone(JST).strftime('%Y-%m-%d')
+    except Exception:
+        return None
+
+def local_time(ts):
+    try:
+        dt = datetime.fromisoformat(ts.replace('Z', '+00:00'))
+        return dt.astimezone(JST).strftime('%H:%M')
+    except Exception:
+        return '--:--'
+
+sessions = []  # {project, title, prompts:[(time, text)]}
+for path in glob.glob(os.path.join(projects_dir, '*', '*.jsonl')):
+    title = None
+    project = os.path.basename(os.path.dirname(path))
+    prompts = []
+    try:
+        with open(path, encoding='utf-8') as fh:
+            for line in fh:
+                try:
+                    d = json.loads(line)
+                except Exception:
+                    continue
+                t = d.get('type')
+                if t == 'ai-title':
+                    title = d.get('aiTitle') or title
+                    continue
+                if t != 'user':
+                    continue
+                if local_date(d.get('timestamp')) != target_date:
+                    continue
+                origin = d.get('origin') or {}
+                m = d.get('message') or {}
+                content = m.get('content')
+                # 人が実際にタイプした発言だけを対象にする(ツール結果やコマンド出力は除外)
+                if origin.get('kind') != 'human' or not isinstance(content, str):
+                    continue
+                text = content.strip()
+                if not text or text.startswith('<'):
+                    continue
+                text = ' '.join(text.split())
+                if len(text) > 300:
+                    text = text[:300] + '…'
+                prompts.append((local_time(d.get('timestamp')), text))
+    except Exception:
+        continue
+    if prompts:
+        sessions.append({'project': project, 'title': title, 'prompts': prompts})
+
+if not sessions:
+    sys.exit(2)
+
+# プロジェクト名の整形: 先頭の "-Users-<user>-" を落として読みやすくする
+def pretty(project):
+    parts = project.lstrip('-').split('-')
+    if len(parts) >= 2 and parts[0] == 'Users':
+        parts = parts[2:]
+    return '/'.join(parts) if parts else project
+
+out = []
+for s in sorted(sessions, key=lambda x: x['prompts'][0][0]):
+    head = f"## [{pretty(s['project'])}] {s['title'] or '(無題)'}"
+    out.append(head)
+    for tm, text in s['prompts']:
+        out.append(f"- {tm} {text}")
+    out.append('')
+print('\n'.join(out))
+PY
+)
+status=$?
+
+if [ "$status" -eq 2 ]; then
+    echo "$TARGET_DATE のClaudeセッションは見つかりませんでした。" 1>&2
+    exit 0
+elif [ "$status" -ne 0 ]; then
+    echo "セッションの抽出に失敗しました。" 1>&2
+    exit 1
+fi
+
+echo "🤖 $TARGET_DATE のClaudeセッションを要約中..." 1>&2
+
+prompt="以下は私が $TARGET_DATE にClaude Codeで行ったセッションの記録です。
+各セッションは '## [プロジェクト] タイトル' と、その下に時刻付きの私の指示(発言)が並んでいます。
+この記録から、その日にClaudeを使って何を進めたかを推測し、日報風にまとめてください。
+
+- 出力は必ずMarkdown形式にする
+- プロジェクト/テーマごとにグルーピングし、'## 見出し' を付ける
+- 各項目は '- ' から始まる箇条書きで1行ずつ簡潔に
+- 単なる指示の引き写しではなく「何を実現/前進させたか」として書く
+- 前置きや締めの文章は不要。Markdownの本文だけを出力する
+
+--- セッション記録 ---
+$material"
+
+if command -v glow >/dev/null 2>&1; then
+    claude -p "$prompt" | glow -
+else
+    claude -p "$prompt"
+fi
