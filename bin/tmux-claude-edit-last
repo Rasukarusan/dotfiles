@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+#
+# claude ペインで押すと、そのペインのカレントディレクトリに対応する
+# 最新の Claude Code セッションログ(~/.claude/projects/<encoded-cwd>/<id>.jsonl)
+# から「最後のユーザー発言」を取り出し、$EDITOR(popup) で編集する。
+# 編集して保存・終了すると、その内容を呼び出し元ペインのプロンプト欄へ
+# ブラケットペーストで流し込む（Enter は送らないので、ユーザーが確認して送信できる）。
+#
+# 使い方(tmux.conf):
+#   bind e display-popup -E -d '#{pane_current_path}' -w 80% -h 80% 'tmux-claude-edit-last'
+#
+# - popup は -d で呼び出し元の cwd を引き継ぐため、$PWD = 呼び出し元の cwd。
+#   これを元にセッションログのディレクトリを特定する(claude-resume-picker と同じ規則)。
+# - 貼り戻し先ペインの id は、display-popup のコマンド引数では #{pane_id} が
+#   展開されないため、display-message のフォールバックで取得する(tmux-file-picker と同じ)。
+set -euo pipefail
+
+PROJECTS_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects"
+
+# 貼り戻し先(呼び出し元)ペインの id。
+TARGET_PANE="${1:-}"
+case "$TARGET_PANE" in
+  "" | *'#{'*)
+    TARGET_PANE="$(tmux display-message -p '#{pane_id}' 2>/dev/null || true)"
+    ;;
+esac
+
+# 呼び出し元の cwd -> セッションログのディレクトリ(英数字以外を - に置換)。
+base="$PWD"
+proj="$PROJECTS_DIR/$(printf '%s' "$base" | sed 's/[^a-zA-Z0-9]/-/g')"
+if [ ! -d "$proj" ]; then
+  tmux display-message "claude session not found: $base"
+  exit 0
+fi
+
+# 最新の jsonl(現在のセッション)を mtime で選ぶ。
+file="$(
+  find "$proj" -maxdepth 1 -name '*.jsonl' -type f -print0 2>/dev/null \
+    | xargs -0 stat -f '%m %N' 2>/dev/null \
+    | sort -nr | head -1 | cut -d' ' -f2-
+)"
+if [ -z "$file" ] || [ ! -s "$file" ]; then
+  tmux display-message "no claude session log in $proj"
+  exit 0
+fi
+
+# 最後の「claude(assistant)の回答」を取り出す。
+# - content が文字列ならそのまま、配列なら text パートだけ連結(tool_use 等は無視)。
+# - text のない回答(ツール呼び出しのみ)は空になり除外され、その前の回答に遡る。
+last="$(
+  jq -rs '
+    [ .[]
+      | select(.type=="assistant")
+      | .message.content
+      | if type=="string" then .
+        else (map(select(.type=="text") | .text? // "") | join("\n")) end
+    ]
+    | map(select(. != null and (. | gsub("\\s";"") | length) > 0))
+    | last // ""
+  ' "$file" 2>/dev/null || true
+)"
+
+tmpdir="$(mktemp -d)"
+trap 'rm -rf "$tmpdir"' EXIT
+tmpf="$tmpdir/prompt.md"
+printf '%s' "$last" >"$tmpf"
+
+# popup の中は擬似端末なので $EDITOR をそのまま起動できる。
+"${EDITOR:-vim}" "$tmpf" || true
+
+# 末尾の改行を落とす（プロンプトに余分な空行を入れないため）。
+content="$(cat "$tmpf")"
+content="${content%$'\n'}"
+[ -z "$content" ] && exit 0
+[ -n "$TARGET_PANE" ] || exit 0
+
+# ブラケットペースト(-p)で流し込む。Enter は送らない。-d で使用後バッファを削除。
+printf '%s' "$content" | tmux load-buffer -b claude-edit -
+tmux paste-buffer -p -d -b claude-edit -t "$TARGET_PANE"
