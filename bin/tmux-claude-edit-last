@@ -1,21 +1,56 @@
 #!/usr/bin/env bash
 #
-# claude ペインで押すと、そのペインのカレントディレクトリに対応する
-# 最新の Claude Code セッションログ(~/.claude/projects/<encoded-cwd>/<id>.jsonl)
-# から「最後のユーザー発言」を取り出し、$EDITOR(popup) で編集する。
+# claude ペインで押すと、そのペインで起動している Claude Code セッションの
+# 「最後の claude(assistant) 回答」を取り出し、$EDITOR(popup) で編集する。
 # 編集して保存・終了すると、その内容を呼び出し元ペインのプロンプト欄へ
 # ブラケットペーストで流し込む（Enter は送らないので、ユーザーが確認して送信できる）。
 #
 # 使い方(tmux.conf):
-#   bind e display-popup -E -d '#{pane_current_path}' -w 80% -h 80% 'tmux-claude-edit-last'
+#   bind e display-popup -E -d '#{pane_current_path}' -w 80% -h 80% \
+#     'tmux-claude-edit-last #{pane_id}'
 #
 # - popup は -d で呼び出し元の cwd を引き継ぐため、$PWD = 呼び出し元の cwd。
 #   これを元にセッションログのディレクトリを特定する(claude-resume-picker と同じ規則)。
-# - 貼り戻し先ペインの id は、display-popup のコマンド引数では #{pane_id} が
-#   展開されないため、display-message のフォールバックで取得する(tmux-file-picker と同じ)。
+# - 貼り戻し先ペインの id は引数で受け取る。display-popup で #{pane_id} が
+#   展開されない環境では引数が空(あるいは未展開文字列)になるため、
+#   display-message のフォールバックで取得する(tmux-file-picker と同じ)。
+#
+# セッション特定の考え方:
+#   ~/.claude/projects/<encoded-cwd>/ には同じ cwd で起動した複数セッションの
+#   jsonl が並ぶ。単純に mtime 最新を選ぶと、別ペインで動いている claude の
+#   セッションを拾ってしまう。そこで
+#     (1) 呼び出し元ペインで本当に claude が起動しているかを判定し、
+#     (2) 各セッションの「最後の claude 回答」を呼び出し元ペインの表示内容と
+#         照合して、このペインに属する jsonl を選ぶ。回答末尾はペイン最下部に
+#         必ず表示されているため、長時間セッションでも取りこぼしにくい。
+#         (markdown 記号や空白は描画で落ちるので、両辺とも文字・数字以外を
+#          除去してから照合する。)
 set -euo pipefail
 
 PROJECTS_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects"
+
+# ペイン $1 で claude が起動しているか(env TMUX_PANE が一致する claude プロセスが
+# あるか)を判定する。claude は自プロセスの env に TMUX_PANE=<起動ペイン> を持つ。
+pane_has_claude() {
+  local target="$1" pid pane
+  [ -n "$target" ] || return 1
+  for pid in $(pgrep -x claude 2>/dev/null || true); do
+    pane="$(
+      ps -Eww -p "$pid" 2>/dev/null \
+        | tr ' ' '\n' | grep -m1 '^TMUX_PANE=' | cut -d= -f2 || true
+    )"
+    [ "$pane" = "$target" ] && return 0
+  done
+  return 1
+}
+
+# --check <pane>: 判定のみ(起動していれば 0、していなければ 1)。
+# tmux.conf の if-shell から呼び、popup を開く前に空振りを弾くために使う
+# (popup が開いて即閉じるチラつきを防ぐ)。
+if [ "${1:-}" = "--check" ]; then
+  pane_has_claude "${2:-}"
+  exit $?
+fi
 
 # 貼り戻し先(呼び出し元)ペインの id。
 TARGET_PANE="${1:-}"
@@ -25,6 +60,17 @@ case "$TARGET_PANE" in
     ;;
 esac
 
+if [ -z "$TARGET_PANE" ]; then
+  tmux display-message "呼び出し元ペインを特定できませんでした"
+  exit 0
+fi
+
+# --- (1) このペインで claude が起動しているかを判定 ---
+if ! pane_has_claude "$TARGET_PANE"; then
+  tmux display-message "このペインで claude が起動していません"
+  exit 0
+fi
+
 # 呼び出し元の cwd -> セッションログのディレクトリ(英数字以外を - に置換)。
 base="$PWD"
 proj="$PROJECTS_DIR/$(printf '%s' "$base" | sed 's/[^a-zA-Z0-9]/-/g')"
@@ -33,21 +79,25 @@ if [ ! -d "$proj" ]; then
   exit 0
 fi
 
-# 最新の jsonl(現在のセッション)を mtime で選ぶ。
-file="$(
+# 候補 jsonl を mtime 新しい順に並べる。
+sorted="$(
   find "$proj" -maxdepth 1 -name '*.jsonl' -type f -print0 2>/dev/null \
     | xargs -0 stat -f '%m %N' 2>/dev/null \
-    | sort -nr | head -1 | cut -d' ' -f2-
+    | sort -nr | cut -d' ' -f2-
 )"
-if [ -z "$file" ] || [ ! -s "$file" ]; then
+if [ -z "$sorted" ]; then
   tmux display-message "no claude session log in $proj"
   exit 0
 fi
 
+# 文字・数字以外(空白・記号・markdown 記法)を除去する正規化フィルタ。
+# 描画で落ちる `**` `#` `-` などや折り返し改行を無視して照合するため。
+norm() { perl -CS -pe 's/[^\p{L}\p{N}]//g' 2>/dev/null || true; }
+
 # 最後の「claude(assistant)の回答」を取り出す。
 # - content が文字列ならそのまま、配列なら text パートだけ連結(tool_use 等は無視)。
 # - text のない回答(ツール呼び出しのみ)は空になり除外され、その前の回答に遡る。
-last="$(
+extract_last_assistant() {
   jq -rs '
     [ .[]
       | select(.type=="assistant")
@@ -57,8 +107,45 @@ last="$(
     ]
     | map(select(. != null and (. | gsub("\\s";"") | length) > 0))
     | last // ""
-  ' "$file" 2>/dev/null || true
-)"
+  ' "$1" 2>/dev/null || true
+}
+
+# --- (2) このペインのセッション jsonl を特定 ---
+# ペインのスクロールバック全体を正規化(照合用)。
+pane_norm="$(tmux capture-pane -p -S - -t "$TARGET_PANE" 2>/dev/null | norm)"
+
+file=""
+last=""
+if [ -n "$pane_norm" ]; then
+  count=0
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    # 直近に使ったセッションが対象なので、mtime 上位のみ調べる(重い jq を抑制)。
+    count=$((count + 1))
+    [ "$count" -gt 15 ] && break
+    text="$(extract_last_assistant "$f")"
+    [ -n "$text" ] || continue
+    # 回答末尾 120 文字(記号・空白除去)がペインに出ていれば、それがこのペイン。
+    tailk="$(printf '%s' "$text" | norm | perl -CS -pe '$_=substr($_,-120) if length($_)>120' 2>/dev/null || true)"
+    if [ -n "$tailk" ] && printf '%s' "$pane_norm" | grep -Fqe "$tailk"; then
+      file="$f"
+      last="$text"
+      break
+    fi
+  done <<EOF
+$sorted
+EOF
+fi
+
+# 照合できなければ従来どおり mtime 最新にフォールバック。
+if [ -z "$file" ]; then
+  file="$(printf '%s\n' "$sorted" | head -1)"
+  last="$(extract_last_assistant "$file")"
+fi
+if [ -z "$file" ] || [ ! -s "$file" ]; then
+  tmux display-message "no claude session log in $proj"
+  exit 0
+fi
 
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT
