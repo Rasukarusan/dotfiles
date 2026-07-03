@@ -112,6 +112,7 @@ alias cld='claude --permission-mode auto'
 alias cldd='claude --dangerously-skip-permissions'
 alias cldc='cld --continue'
 alias clds='claude_daily_report' # その日のClaudeセッションを日報風に要約
+alias codexc='codex resume --last' # 直近のCodexセッションを継続
 alias rg="rg --hidden" # --no-ignoreで全検索
 alias tc="pbpaste | table-to-clipboard"
 alias aso="aws sso login"

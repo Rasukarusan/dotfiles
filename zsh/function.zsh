@@ -1974,6 +1974,17 @@ _claude_resume() {
   claude --resume "$sid"
 }
 
+# 過去の Codex CLI 会話を fzf(popup) で選んで resume する (codexr)
+# カレントディレクトリのセッションのみ対象。履歴の取り出し・プレビューは
+# 自作の codex-resume-picker に委譲。
+alias codexr='_codex_resume'
+_codex_resume() {
+  local sid
+  sid=$(codex-resume-picker) || return 0
+  [[ -z "$sid" ]] && return 0
+  codex resume "$sid"
+}
+
 # 現windowを 左1・右上2・右下3 の3ペイン構成に整える(冪等) (pa)
 # 何もしていない(シェルだけの)ペインは削除、実行中(nvim/claude等)のペインは残して整列。
 alias pa='_layout_tmux_pane'
