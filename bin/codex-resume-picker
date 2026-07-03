@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+#
+# 過去の Codex CLI 会話履歴を fzf(popup) で一覧・プレビューし、選んだものを
+# `codex resume <session-id>` で再開するためのピッカー。claude-resume-picker の Codex 版。
+#
+# `codex resume` と同じく、カレントディレクトリのセッションのみを対象にする。
+# 履歴は ~/.codex/sessions/<YYYY>/<MM>/<DD>/rollout-<timestamp>-<uuid>.jsonl に保存され、
+# 各ファイルの先頭行(session_meta)に cwd / session_id / git.branch が入っている。
+#
+# サブコマンド:
+#   codex-resume-picker                対話モード。選択した sessionId を出力
+#   codex-resume-picker list [cwd]     fzf 用の一覧を出力 (内部用)
+#   codex-resume-picker preview <jsonl>  プレビュー本文を出力 (内部用)
+set -euo pipefail
+
+SESSIONS_DIR="${CODEX_HOME:-$HOME/.codex}/sessions"
+
+# 1セッション(jsonl)の表示ラベル「[branch] タイトル」を取り出す。
+# タイトルは最初の意味のあるユーザー発言(画像タグ・タグ始まりを除いた先頭)。
+session_meta() {
+  local f="$1" br title
+  # branch は先頭行の session_meta から取得
+  br=$(head -1 "$f" 2>/dev/null \
+       | jq -r 'if .type=="session_meta" then (.payload.git.branch // "-") else "-" end' 2>/dev/null)
+  [ -z "$br" ] && br="-"
+  # タイトル: 最初のまともな user_message。改行はスペース化、先頭の [Image #N] を除去。
+  title=$(jq -rc 'select(.type=="event_msg" and .payload.type=="user_message")
+                  | .payload.message // ""
+                  | gsub("[\n\t]+";" ")
+                  | gsub("^(\\[Image #[0-9]+\\] *)+";"")
+                  | gsub("^ +";"")' "$f" 2>/dev/null \
+          | grep -vE '^(<|$)' | sed -n '1p')
+  [ -z "$title" ] && title="(untitled)"
+  printf '[%s] %s' "$br" "$title"
+}
+
+# fzf 用の一覧を出力する。各行: <sessionId>\t<jsonlパス>\t<日時>\t<ラベル>
+cmd_list() {
+  local base="${1:-$PWD}"
+  local f epoch disp sid cwd label
+  [ -d "$SESSIONS_DIR" ] || return 0
+  find "$SESSIONS_DIR" -type f -name 'rollout-*.jsonl' 2>/dev/null | while IFS= read -r f; do
+    [ -s "$f" ] || continue
+    # 先頭行の session_meta で cwd / session_id を判定 (カレントディレクトリのみ対象)
+    IFS=$'\t' read -r cwd sid < <(head -1 "$f" 2>/dev/null \
+      | jq -r 'select(.type=="session_meta") | .payload | "\(.cwd // "")\t\(.session_id // .id // "")"' 2>/dev/null)
+    [ "$cwd" = "$base" ] || continue
+    [ -n "$sid" ] || continue
+    epoch=$(stat -f '%m' "$f")
+    disp=$(stat -f '%Sm' -t '%m/%d %H:%M' "$f")
+    label=$(session_meta "$f")
+    printf '%s\t%s\t%s\t%s\t%s\n' "$epoch" "$sid" "$f" "$disp" "$label"
+  done | sort -t$'\t' -k1,1nr | cut -f2-
+}
+
+# プレビュー本文(会話のトランスクリプト)を Markdown で出力。
+# claude-resume-picker と同様、先頭をすぐ描画し残りを後追いで描画して体感を速くする。
+PREVIEW_HEAD_LINES=100
+cmd_preview() {
+  local f="$1"
+  [ -s "$f" ] || { echo "(no content)"; return; }
+  local md
+  md=$(jq -r '
+    select(.type=="event_msg" and (.payload.type=="user_message" or .payload.type=="agent_message"))
+    | (.payload.type) as $t
+    | (.payload.message // "") as $text
+    | select(($text|type)=="string" and $text != "")
+    | "\n" + (if $t=="user_message" then "👦 " else "🤖 " end) + $text
+  ' "$f" 2>/dev/null)
+  [ -z "$md" ] && { jq -r '.' "$f" 2>/dev/null; return; }
+
+  # PREVIEW_HEAD_LINES 行以降で最初のメッセージ境界(👦/🤖 行)を分割点にする。
+  local split
+  split=$(printf '%s\n' "$md" \
+    | grep -nE '^(👦|🤖)' \
+    | awk -F: -v n="$PREVIEW_HEAD_LINES" '$1>n {print $1-1; exit}')
+
+  if [ -n "$split" ]; then
+    # head/tail はパイプを早期クローズし printf に SIGPIPE を起こす(pipefail+set -e で中断)。
+    # sed は stdin を読み切るので安全。
+    printf '%s\n' "$md" | sed -n "1,${split}p"        | fzf-preview -  # 先頭: 即描画
+    printf '%s\n' "$md" | sed -n "$((split+1)),\$p"   | fzf-preview -  # 残り: 後追い描画
+  else
+    printf '%s\n' "$md" | fzf-preview -
+  fi
+}
+
+# 対話モード。選択した sessionId を出力する。
+cmd_interactive() {
+  local self="$0"
+  local fzf_opts=(
+    --ansi
+    --delimiter='\t'
+    --with-nth='3..'
+    --no-multi
+    --prompt='resume> '
+    --header='Enter: resume'
+    --preview="$self preview {2}"
+    --preview-window='right,50%,border-left,wrap'
+  )
+  [ -n "${TMUX:-}" ] && fzf_opts+=(--tmux 'center,90%,90%')
+
+  local sel
+  sel=$(cmd_list "$PWD" | fzf "${fzf_opts[@]}") || return 0
+  [ -z "$sel" ] && return 0
+  printf '%s' "${sel%%$'\t'*}"
+}
+
+case "${1:-}" in
+  list) shift; cmd_list "$@" ;;
+  preview) shift; cmd_preview "$@" ;;
+  *) cmd_interactive ;;
+esac
