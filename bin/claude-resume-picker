@@ -8,8 +8,9 @@
 # (ディレクトリ名は cwd の英数字以外を - に置換したもの)。
 #
 # サブコマンド:
-#   claude-resume-picker                対話モード。選択した sessionId を出力
-#   claude-resume-picker list [cwd]     fzf 用の一覧を出力 (内部用)
+#   claude-resume-picker                  対話モード。選択した sessionId を出力
+#   claude-resume-picker list [cwd]       fzf 用の一覧を出力 (内部用)
+#   claude-resume-picker list-pinned [cwd] 📌のみに絞った一覧を出力 (内部用, Ctrl-P)
 #   claude-resume-picker preview <jsonl>  プレビュー本文を出力 (内部用)
 set -euo pipefail
 
@@ -97,6 +98,11 @@ cmd_preview() {
   fi
 }
 
+# 一覧のうちピン留め(📌)されたものだけを出力する (list コマンドの3列目=labelで絞り込み)。
+cmd_list_pinned() {
+  cmd_list "${1:-$PWD}" | awk -F'\t' '$3 ~ /📌/'
+}
+
 # 対話モード。選択した sessionId を出力する。
 cmd_interactive() {
   local self="$0"
@@ -106,9 +112,11 @@ cmd_interactive() {
     --with-nth='2..'
     --no-multi
     --prompt='resume> '
-    --header='Enter: resume'
+    --header='Enter: resume / Ctrl-P: 📌のみ / Ctrl-A: 全件'
     --preview="$self preview {1}"
     --preview-window='right,50%,border-left,wrap'
+    --bind="ctrl-p:reload($self list-pinned '$PWD')+change-prompt(📌resume> )"
+    --bind="ctrl-a:reload($self list '$PWD')+change-prompt(resume> )"
   )
   [ -n "${TMUX:-}" ] && fzf_opts+=(--tmux 'center,90%,90%')
 
@@ -121,6 +129,7 @@ cmd_interactive() {
 
 case "${1:-}" in
   list) shift; cmd_list "$@" ;;
+  list-pinned) shift; cmd_list_pinned "$@" ;;
   preview) shift; cmd_preview "$@" ;;
   *) cmd_interactive ;;
 esac
