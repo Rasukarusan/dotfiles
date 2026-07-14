@@ -1974,6 +1974,15 @@ _claude_resume() {
   claude --resume "$sid"
 }
 
+# 過去の Claude Code 会話を fzf(popup) で選んでアーカイブする (clda)
+# カレントディレクトリのセッションのみ対象。Tabで複数選択可。
+# 実体はプロジェクトディレクトリ内の .archived/ へファイル移動するだけ(可逆)。
+# cldr 側では Ctrl-X でその場アーカイブ、Ctrl-R でアーカイブ一覧から復元(resume)できる。
+alias clda='_claude_archive'
+_claude_archive() {
+  claude-resume-picker archive
+}
+
 # 過去の Codex CLI 会話を fzf(popup) で選んで resume する (codexr)
 # カレントディレクトリのセッションのみ対象。履歴の取り出し・プレビューは
 # 自作の codex-resume-picker に委譲。

@@ -8,10 +8,19 @@
 # (ディレクトリ名は cwd の英数字以外を - に置換したもの)。
 #
 # サブコマンド:
-#   claude-resume-picker                  対話モード。選択した sessionId を出力
-#   claude-resume-picker list [cwd]       fzf 用の一覧を出力 (内部用)
-#   claude-resume-picker list-pinned [cwd] 📌のみに絞った一覧を出力 (内部用, Ctrl-P)
-#   claude-resume-picker preview <jsonl>  プレビュー本文を出力 (内部用)
+#   claude-resume-picker                    対話モード。選択した sessionId を出力
+#   claude-resume-picker archive             アーカイブ専用の対話モード(複数選択可, cldra)
+#   claude-resume-picker list [cwd]          fzf 用の一覧を出力 (内部用)
+#   claude-resume-picker list-pinned [cwd]   📌のみに絞った一覧を出力 (内部用, Ctrl-P)
+#   claude-resume-picker list-archived [cwd] アーカイブ済み一覧を出力 (内部用, Ctrl-R)
+#   claude-resume-picker archive-file <jsonl>   1件を .archived/ へ移動 (内部用, Ctrl-X)
+#   claude-resume-picker unarchive-file <jsonl> .archived/ から元の場所へ戻す (内部用)
+#   claude-resume-picker preview <jsonl>     プレビュー本文を出力 (内部用)
+#
+# アーカイブは Claude Code 純正機能ではなく自作の規約: セッション jsonl を
+# 同一プロジェクトディレクトリ内の .archived/ サブフォルダへ移動するだけ。
+# list 系は -maxdepth 1 で探索するため、移動するだけで一覧から隠れる
+# (cldr の一覧からも `claude --resume` の対象からも外れる)。mv なので可逆。
 set -euo pipefail
 
 PROJECTS_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/projects"
@@ -41,11 +50,9 @@ session_meta() {
   ' "$1" 2>/dev/null
 }
 
-# fzf 用の一覧を出力する。各行: <jsonlパス>\t<日時>\t<ラベル>
-cmd_list() {
-  local base="${1:-$PWD}"
-  local dir f epoch disp label
-  dir="$(project_dir "$base")"
+# 指定ディレクトリ直下(-maxdepth 1)の jsonl を一覧化する。各行: <jsonlパス>\t<日時>\t<ラベル>
+list_sessions_in_dir() {
+  local dir="$1" f epoch disp label
   [ -d "$dir" ] || return 0
   find "$dir" -maxdepth 1 -name '*.jsonl' -type f 2>/dev/null | while IFS= read -r f; do
     [ -s "$f" ] || continue
@@ -55,6 +62,39 @@ cmd_list() {
     [ -z "$label" ] && label="(untitled)"
     printf '%s\t%s\t%s\t%s\n' "$epoch" "$f" "$disp" "$label"
   done | sort -t$'\t' -k1,1nr | cut -f2-
+}
+
+# fzf 用の一覧を出力する(アクティブなセッションのみ、.archived/ は含まない)。
+cmd_list() {
+  local base="${1:-$PWD}"
+  list_sessions_in_dir "$(project_dir "$base")"
+}
+
+# アーカイブ済み(.archived/配下)の一覧を出力する。
+cmd_list_archived() {
+  local base="${1:-$PWD}"
+  list_sessions_in_dir "$(project_dir "$base")/.archived"
+}
+
+# 1件を .archived/ へ移動する。
+cmd_archive_file() {
+  local f="$1"
+  [ -f "$f" ] || { echo "not found: $f" >&2; return 1; }
+  local dir archdir
+  dir="$(dirname "$f")"
+  archdir="$dir/.archived"
+  mkdir -p "$archdir"
+  mv "$f" "$archdir/"
+}
+
+# .archived/ 配下の1件を親ディレクトリ(元の場所)へ戻す。
+cmd_unarchive_file() {
+  local f="$1"
+  [ -f "$f" ] || { echo "not found: $f" >&2; return 1; }
+  local archdir dir
+  archdir="$(dirname "$f")"
+  dir="$(dirname "$archdir")"
+  mv "$f" "$dir/"
 }
 
 # プレビュー本文(会話のトランスクリプト)を Markdown で出力。
@@ -112,11 +152,13 @@ cmd_interactive() {
     --with-nth='2..'
     --no-multi
     --prompt='resume> '
-    --header='Enter: resume / Ctrl-P: 📌のみ / Ctrl-A: 全件'
+    --header='Enter: resume / Ctrl-P: 📌のみ / Ctrl-A: 全件 / Ctrl-X: アーカイブ / Ctrl-R: アーカイブ一覧(復元)'
     --preview="$self preview {1}"
     --preview-window='right,50%,border-left,wrap'
     --bind="ctrl-p:reload($self list-pinned '$PWD')+change-prompt(📌resume> )"
     --bind="ctrl-a:reload($self list '$PWD')+change-prompt(resume> )"
+    --bind="ctrl-x:execute-silent($self archive-file {1})+reload($self list '$PWD')"
+    --bind="ctrl-r:reload($self list-archived '$PWD')+change-prompt(📦archived(復元)> )"
   )
   [ -n "${TMUX:-}" ] && fzf_opts+=(--tmux 'center,90%,90%')
 
@@ -124,12 +166,49 @@ cmd_interactive() {
   sel=$(cmd_list "$PWD" | fzf "${fzf_opts[@]}") || return 0
   [ -z "$sel" ] && return 0
   file=${sel%%$'\t'*}
+  # アーカイブ一覧(.archived/)から選んだ場合は、resume前に元の場所へ戻す。
+  if [[ "$file" == */.archived/*.jsonl ]]; then
+    "$self" unarchive-file "$file"
+    file="$(dirname "$(dirname "$file")")/$(basename "$file")"
+  fi
   basename "$file" .jsonl
+}
+
+# アーカイブ専用の対話モード(cldra)。Tab で複数選択し、Enter でまとめてアーカイブする。
+cmd_interactive_archive() {
+  local self="$0"
+  local fzf_opts=(
+    --ansi
+    --delimiter='\t'
+    --with-nth='2..'
+    --multi
+    --prompt='archive> '
+    --header='Tab: 複数選択 / Enter: 選択したセッションをアーカイブ / Ctrl-P: 📌のみ / Ctrl-A: 全件'
+    --preview="$self preview {1}"
+    --preview-window='right,50%,border-left,wrap'
+    --bind="ctrl-p:reload($self list-pinned '$PWD')+change-prompt(📌archive> )"
+    --bind="ctrl-a:reload($self list '$PWD')+change-prompt(archive> )"
+  )
+  [ -n "${TMUX:-}" ] && fzf_opts+=(--tmux 'center,90%,90%')
+
+  local sel line file
+  sel=$(cmd_list "$PWD" | fzf "${fzf_opts[@]}") || return 0
+  [ -z "$sel" ] && return 0
+  while IFS= read -r line; do
+    file=${line%%$'\t'*}
+    [ -n "$file" ] && cmd_archive_file "$file"
+  done <<< "$sel"
+  echo "アーカイブしました:" >&2
+  printf '%s\n' "$sel" | cut -f3- >&2
 }
 
 case "${1:-}" in
   list) shift; cmd_list "$@" ;;
   list-pinned) shift; cmd_list_pinned "$@" ;;
+  list-archived) shift; cmd_list_archived "$@" ;;
+  archive-file) shift; cmd_archive_file "$@" ;;
+  unarchive-file) shift; cmd_unarchive_file "$@" ;;
+  archive) cmd_interactive_archive ;;
   preview) shift; cmd_preview "$@" ;;
   *) cmd_interactive ;;
 esac
