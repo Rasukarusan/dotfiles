@@ -132,13 +132,16 @@ _mdtree_fzf() {
       return 1
     fi
     printf '%s\n%s\n' "$pid" "$port" > "$state_file"
-    open "http://127.0.0.1:$port/"
   fi
 
   curl -s -o /dev/null -X POST \
     -H 'Content-Type: application/json' \
     -d "$(jq -n --arg path "$rel" '{path: $path}')" \
     "http://127.0.0.1:$port/api/open"
+
+  # 既存タブが閉じられていても表示できるよう、daemonを使い回す場合も毎回開く。
+  # 既にタブが開いていれば大抵は既存タブがそのまま前面に来るか、新規タブが増える程度。
+  open "http://127.0.0.1:$port/"
 
   # fzfでの選択はコマンドとして実行されないためzshのヒストリーに残らない。
   # 上矢印+Enterでそのまま同じファイルを再オープンできるよう、実行可能な
