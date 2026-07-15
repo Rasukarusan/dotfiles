@@ -5,13 +5,23 @@ const contentEl = document.getElementById('content');
 const breadcrumbEl = document.getElementById('breadcrumb');
 const repoNameEl = document.getElementById('repo-name');
 const filterEl = document.getElementById('filter');
+const showAllEl = document.getElementById('show-all-files');
 
 let currentPath = null;
 
 // ---- ツリー描画 -----------------------------------------------------------
 
+function fileExt(name) {
+  return name.includes('.') ? name.split('.').pop().toLowerCase() : '';
+}
+
+function isMarkdown(name) {
+  const ext = fileExt(name);
+  return ext === 'md' || ext === 'markdown';
+}
+
 function fileIcon(name) {
-  const ext = name.includes('.') ? name.split('.').pop().toLowerCase() : '';
+  const ext = fileExt(name);
   if (ext === 'md' || ext === 'markdown') return '📝';
   if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico'].includes(ext)) return '🖼️';
   if (['json', 'yml', 'yaml', 'toml'].includes(ext)) return '⚙️';
@@ -24,7 +34,8 @@ function renderTree(node, container, depth) {
     if (child.isDir) {
       const details = document.createElement('details');
       details.className = 'dir';
-      if (depth < 1) details.open = true; // 最上位だけ開いておく
+      // 最上位も含めて閉じておく。表示すべきファイルがあれば openFile() 側で
+      // その親フォルダだけを展開する。
 
       const summary = document.createElement('summary');
       summary.style.paddingLeft = (depth * 14 + 8) + 'px';
@@ -40,6 +51,7 @@ function renderTree(node, container, depth) {
       a.className = 'file';
       a.dataset.path = child.path;
       a.dataset.name = child.name.toLowerCase();
+      a.dataset.md = isMarkdown(child.name) ? '1' : '0';
       a.style.paddingLeft = (depth * 14 + 22) + 'px';
       a.innerHTML = `<span class="icon">${fileIcon(child.name)}</span><span class="label">${escapeHtml(child.name)}</span>`;
       a.addEventListener('click', (e) => {
@@ -129,27 +141,34 @@ function cssEscape(s) {
 
 // ---- フィルタ -------------------------------------------------------------
 
-filterEl.addEventListener('input', () => {
+// テキスト検索(絞り込み)と「すべてのファイルを表示」チェックボックス(既定は md のみ表示)を
+// 合わせて適用する。テキスト検索中は既存どおり全ディレクトリを展開する。
+function applyFilters() {
   const q = filterEl.value.trim().toLowerCase();
+  const showAll = showAllEl.checked;
+  const searching = !!q;
+
+  treeEl.classList.toggle('filtering', searching);
+
   const files = treeEl.querySelectorAll('.file');
-  if (!q) {
-    treeEl.classList.remove('filtering');
-    files.forEach((f) => (f.style.display = ''));
-    treeEl.querySelectorAll('details').forEach((d) => (d.style.display = ''));
-    return;
-  }
-  treeEl.classList.add('filtering');
-  // まず全ディレクトリを開く
-  treeEl.querySelectorAll('details').forEach((d) => { d.open = true; d.style.display = ''; });
   files.forEach((f) => {
-    f.style.display = f.dataset.name.includes(q) ? '' : 'none';
+    const matchesQuery = !q || f.dataset.name.includes(q);
+    const matchesType = showAll || f.dataset.md === '1';
+    f.style.display = matchesQuery && matchesType ? '' : 'none';
   });
-  // マッチを含まないディレクトリは隠す
-  treeEl.querySelectorAll('details').forEach((d) => {
+
+  const dirs = treeEl.querySelectorAll('details');
+  if (searching) {
+    dirs.forEach((d) => { d.open = true; });
+  }
+  dirs.forEach((d) => {
     const visible = d.querySelector('.file:not([style*="none"])');
     d.style.display = visible ? '' : 'none';
   });
-});
+}
+
+filterEl.addEventListener('input', applyFilters);
+showAllEl.addEventListener('change', applyFilters);
 
 // ---- サイドバーのリサイズ -------------------------------------------------
 
@@ -168,6 +187,23 @@ filterEl.addEventListener('input', () => {
 
 // ---- 初期化 ---------------------------------------------------------------
 
+// サーバーが選択中のファイルを切り替えたら(mdd での新しい選択、または別タブでの操作)
+// リロードなしで追従して開く。
+async function openPushedFile(path) {
+  if (!path) return;
+  if (!isMarkdown(path)) {
+    showAllEl.checked = true; // md以外のファイルを開く場合はサイドバーでも見えるようにする
+    applyFilters();
+  }
+  await openFile(path);
+}
+
+function connectEvents() {
+  const es = new EventSource('/api/events');
+  es.onmessage = (e) => { openPushedFile(e.data); };
+  // 接続が切れてもブラウザ標準の EventSource が自動的に再接続を試みる。
+}
+
 (async function init() {
   try {
     const res = await fetch('/api/tree');
@@ -175,6 +211,17 @@ filterEl.addEventListener('input', () => {
     repoNameEl.textContent = tree.name;
     document.title = tree.name + ' — mdtree';
     renderTree(tree, treeEl, 0);
+    applyFilters();
+
+    // サーバー常駐中に選択されていたファイルを復元する(リロードしても消えない)。
+    try {
+      const cur = await (await fetch('/api/current')).json();
+      await openPushedFile(cur.file);
+    } catch (err) {
+      // 取得に失敗しても致命的ではないので無視する。
+    }
+
+    connectEvents();
   } catch (err) {
     treeEl.innerHTML = `<div class="error">ツリーの取得に失敗しました</div>`;
   }
