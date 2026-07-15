@@ -24,6 +24,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"sync"
 
 	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/alecthomas/chroma/v2/lexers"
@@ -52,6 +53,21 @@ var ignored = map[string]bool{
 // root は表示対象のルート絶対パス。サーバ全体で共有する。
 var root string
 
+// currentFile はブラウザに表示させたいファイルの root からの相対パス(空なら未選択)。
+// サーバーは常駐させ、`/api/open` で切り替えるたびに SSE (`/api/events`) 経由で
+// 接続中の全クライアントへ即座にプッシュする。ブラウザをリロードしても
+// `/api/current` から今の値を取得できるので表示が消えない。
+var (
+	currentMu   sync.Mutex
+	currentFile string
+)
+
+// subscribers は /api/events に接続中の各クライアントへの通知チャネル。
+var (
+	subMu       sync.Mutex
+	subscribers = map[chan string]bool{}
+)
+
 // md はコードブロックをハイライトする goldmark インスタンス。
 var md = goldmark.New(
 	goldmark.WithExtensions(
@@ -76,12 +92,17 @@ var md = goldmark.New(
 func main() {
 	port := flag.Int("port", 0, "listen port (0 = auto)")
 	noOpen := flag.Bool("no-open", false, "do not open the browser automatically")
-	flag.Parse()
+	file := flag.String("file", "", "file to open automatically on startup (relative path)")
+	// flag.Parse は最初の非フラグ引数でパースを打ち切るため、`mdtree <dir> -file x` のように
+	// ディレクトリを先に書くと以降のフラグが無視される。フラグと位置引数を先に振り分けておく。
+	flagArgs, posArgs := partitionArgs(os.Args[1:])
+	flag.CommandLine.Parse(flagArgs)
+	currentFile = filepath.ToSlash(*file)
 
 	// 表示対象ディレクトリを決定(引数 > カレント)。
 	target := "."
-	if flag.NArg() > 0 {
-		target = flag.Arg(0)
+	if len(posArgs) > 0 {
+		target = posArgs[0]
 	}
 	abs, err := filepath.Abs(target)
 	if err != nil {
@@ -111,6 +132,9 @@ func main() {
 	})
 	mux.HandleFunc("/api/tree", handleTree)
 	mux.HandleFunc("/api/render", handleRender)
+	mux.HandleFunc("/api/current", handleCurrent)
+	mux.HandleFunc("/api/open", handleOpen)
+	mux.HandleFunc("/api/events", handleEvents)
 
 	// 空きポートを取得してから listen。-port 指定時はそれを使う。
 	ln, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", *port))
@@ -239,6 +263,87 @@ func handleRender(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+// handleCurrent は現在ブラウザに表示させたいファイルを返す。ページ読み込み直後に呼ばれ、
+// サーバー常駐中に(別のタブ/リロード後でも)表示状態を復元するために使う。
+func handleCurrent(w http.ResponseWriter, r *http.Request) {
+	currentMu.Lock()
+	file := currentFile
+	currentMu.Unlock()
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	json.NewEncoder(w).Encode(map[string]string{"file": file})
+}
+
+// handleOpen は表示ファイルを切り替え、接続中の全クライアントへ SSE でプッシュする。
+// サーバーを再起動せずにファイルを切り替えられるようにするための API。
+func handleOpen(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	var body struct {
+		Path string `json:"path"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.Path == "" {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	path := filepath.ToSlash(body.Path)
+	if _, ok := resolve(path); !ok {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	currentMu.Lock()
+	currentFile = path
+	currentMu.Unlock()
+	broadcast(path)
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// broadcast は接続中の全 SSE クライアントへ path を送る。バッファが詰まっている購読者はスキップする。
+func broadcast(path string) {
+	subMu.Lock()
+	defer subMu.Unlock()
+	for ch := range subscribers {
+		select {
+		case ch <- path:
+		default:
+		}
+	}
+}
+
+// handleEvents は Server-Sent Events で表示ファイルの切り替えをブラウザへプッシュする。
+// これによりページをリロードしなくても `mdd` での新しい選択が即座に反映される。
+func handleEvents(w http.ResponseWriter, r *http.Request) {
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		http.Error(w, "streaming unsupported", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+
+	ch := make(chan string, 4)
+	subMu.Lock()
+	subscribers[ch] = true
+	subMu.Unlock()
+	defer func() {
+		subMu.Lock()
+		delete(subscribers, ch)
+		subMu.Unlock()
+	}()
+
+	for {
+		select {
+		case path := <-ch:
+			fmt.Fprintf(w, "data: %s\n\n", path)
+			flusher.Flush()
+		case <-r.Context().Done():
+			return
+		}
+	}
+}
+
 // highlightCode は chroma でソースをハイライトした HTML を返す。レキサ不明時は素のエスケープ。
 func highlightCode(path, source string) string {
 	lexer := lexers.Match(filepath.Base(path))
@@ -272,6 +377,29 @@ func isBinary(data []byte) bool {
 		n = 8000
 	}
 	return bytes.IndexByte(data[:n], 0) != -1
+}
+
+// partitionArgs は引数を「フラグ(値付きも含む)」と「位置引数」に振り分ける。
+// 呼び出し順(`mdtree -file x dir` / `mdtree dir -file x`)に依存させないための前処理。
+func partitionArgs(args []string) (flagArgs, posArgs []string) {
+	valueFlags := map[string]bool{"-port": true, "--port": true, "-file": true, "--file": true}
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		if a == "--" {
+			posArgs = append(posArgs, args[i+1:]...)
+			break
+		}
+		if strings.HasPrefix(a, "-") {
+			flagArgs = append(flagArgs, a)
+			if !strings.Contains(a, "=") && valueFlags[a] && i+1 < len(args) {
+				i++
+				flagArgs = append(flagArgs, args[i])
+			}
+			continue
+		}
+		posArgs = append(posArgs, a)
+	}
+	return
 }
 
 // openBrowser は OS に応じたコマンドでブラウザを開く。

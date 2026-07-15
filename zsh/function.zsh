@@ -48,6 +48,104 @@ _look() {
   vim -p ${target_files[@]}
 }
 
+# fzfでファイルを選び、mdtreeサーバー(ディレクトリごとに常駐)にその場でファイルを開かせる。
+# サーバーは既に起動していれば使い回し、なければバックグラウンドで起動してブラウザを開く。
+# Ctrl-C やターミナルを閉じてもサーバーは生き続け、ブラウザのリロードでも表示は消えない。
+alias mdd='_mdtree_fzf'
+_mdtree_fzf() {
+  local input="${1:-.}"
+  local abs_dir rel
+
+  if [ -f "$input" ]; then
+    # ファイルが直接渡された場合はfzfをスキップして即座にそれを開く。
+    # CWD配下のファイルならCWDをルートにして(`mdd .`で選ぶのと同じdaemonを再利用できる)、
+    # CWD外ならファイルの親ディレクトリをルートにする。
+    local abs_file
+    abs_file="$(cd "$(dirname "$input")" 2>/dev/null && pwd)/$(basename "$input")"
+    if [ -z "$abs_file" ] || [ "$abs_file" = "/" ]; then
+      echo "mdd: ファイルが見つかりません: $input" >&2
+      return 1
+    fi
+    case "$abs_file" in
+      "$PWD"/*)
+        abs_dir="$PWD"
+        rel="${abs_file#$PWD/}"
+        ;;
+      *)
+        abs_dir="$(dirname "$abs_file")"
+        rel="$(basename "$abs_file")"
+        ;;
+    esac
+  elif [ -d "$input" ]; then
+    abs_dir=$(cd "$input" 2>/dev/null && pwd)
+    if [ -z "$abs_dir" ]; then
+      echo "mdd: ディレクトリが見つかりません: $input" >&2
+      return 1
+    fi
+    rel=$(
+      cd "$abs_dir" || exit 1
+      find . -type f \
+        -not -path './.git/*' \
+        -not -path './node_modules/*' \
+        -not -path './vendor/*' \
+        -not -path './.next/*' \
+        -not -path './dist/*' \
+        -not -name '.DS_Store' \
+      | sed 's/\.\///g' \
+      | fzf-tmux -p80% --prompt 'mdd ' --preview 'fzf-preview {}' --preview-window=right:70%
+    )
+    [ -z "$rel" ] && return
+  else
+    echo "mdd: ファイルまたはディレクトリが見つかりません: $input" >&2
+    return 1
+  fi
+
+  local state_dir="$HOME/.cache/mdtree"
+  mkdir -p "$state_dir"
+  local key=$(echo -n "$abs_dir" | shasum | cut -d' ' -f1)
+  local state_file="$state_dir/$key.state"
+  local log_file="$state_dir/$key.log"
+
+  local pid="" port=""
+  if [ -f "$state_file" ]; then
+    pid=$(sed -n '1p' "$state_file")
+    port=$(sed -n '2p' "$state_file")
+    if [ -z "$pid" ] || ! kill -0 "$pid" 2>/dev/null; then
+      pid=""; port=""
+    fi
+  fi
+
+  if [ -z "$port" ]; then
+    : > "$log_file"
+    nohup mdtree -no-open "$abs_dir" >"$log_file" 2>&1 < /dev/null &
+    disown
+    pid=$!
+    local i=0
+    while [ $i -lt 50 ]; do
+      port=$(grep -o 'http://127\.0\.0\.1:[0-9]*' "$log_file" | head -1 | sed 's/.*://')
+      [ -n "$port" ] && break
+      sleep 0.1
+      i=$((i + 1))
+    done
+    if [ -z "$port" ]; then
+      echo "mdd: サーバーの起動に失敗しました($log_file を確認してください)" >&2
+      return 1
+    fi
+    printf '%s\n%s\n' "$pid" "$port" > "$state_file"
+    open "http://127.0.0.1:$port/"
+  fi
+
+  curl -s -o /dev/null -X POST \
+    -H 'Content-Type: application/json' \
+    -d "$(jq -n --arg path "$rel" '{path: $path}')" \
+    "http://127.0.0.1:$port/api/open"
+
+  # fzfでの選択はコマンドとして実行されないためzshのヒストリーに残らない。
+  # 上矢印+Enterでそのまま同じファイルを再オープンできるよう、実行可能な
+  # `mdd <ファイルパス>` の形でヒストリーに追記する。
+  print -s "mdd '$abs_dir/$rel'"
+}
+
 # remoteに設定されているURLを開く
 # PRがある場合はPRを開く
 alias gro='_git_remote_open'
