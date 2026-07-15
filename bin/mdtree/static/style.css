@@ -42,7 +42,7 @@ html, body {
 .repo-name::before { content: "📚"; }
 
 .filter-box { padding: 8px 10px; border-bottom: 1px solid var(--border); }
-.filter-box input {
+.filter-box input[type="text"] {
   width: 100%;
   padding: 5px 8px;
   border: 1px solid var(--border);
@@ -51,7 +51,25 @@ html, body {
   background: var(--bg);
   outline: none;
 }
-.filter-box input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(9,105,218,.2); }
+.filter-box input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(9,105,218,.2); }
+.show-all-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: normal;
+  color: var(--muted, #57606a);
+  cursor: pointer;
+  user-select: none;
+}
+.show-all-toggle input[type="checkbox"] {
+  flex: none;
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  cursor: pointer;
+}
 
 .tree {
   flex: 1;
