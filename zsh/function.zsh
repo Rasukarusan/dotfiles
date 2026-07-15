@@ -1670,9 +1670,9 @@ _github_pr_involves() {
     local repos=("$@")
   fi
   for repo in "${repos[@]}";do
-    gh pr list --repo "$repo" --search "NOT bump in:title is:open is:pr involves:@me" --json number,title,url,reviewDecision,author --template '{{range .}}【'"$repo"'】#{{.number}}{{"\t"}}{{.title}}{{"\t"}}{{.url}}{{"\t"}}{{.author.login}}{{"\n"}}{{end}}'
-
+    gh pr list --repo "$repo" --search "NOT bump in:title is:open is:pr involves:@me" --json number,title,url,reviewDecision,author --template '{{range .}}【'"$repo"'】#{{.number}}{{"\t"}}{{.title}}{{"\t"}}{{.url}}{{"\t"}}{{.author.login}}{{"\n"}}{{end}}' &
   done
+  wait
 }
 
 # 直近2週間で自分がコメントしたPRを出力
