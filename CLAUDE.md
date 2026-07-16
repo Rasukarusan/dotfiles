@@ -27,7 +27,7 @@ neovim 初回起動後に `:PlugInstall` と `:checkhealth` を実行する。co
 | `terminal/git/gitconfig` | `~/.gitconfig` | git 設定 |
 | `vim/init.vim` | `~/.vimrc`, `~/.config/nvim/init.vim` | neovim 設定 |
 | `claude/*` | `~/.claude/*` | Claude Code 設定一式 |
-| `claude/CLAUDE.md`, `claude/commands`, `codex/rules` | `~/.codex/*` | Codex は Claude 設定を再利用 |
+| `claude/CLAUDE.md`, `claude/commands`, `claude/skills/*`, `codex/rules` | `~/.codex/*` | Codex は Claude 設定とカスタムスキルを再利用 |
 
 ### zsh/
 - `zshrc` が各ファイルを source する。実体は `alias.zsh`（エイリアス）、`function.zsh`（90以上の関数、多くが fzf 連携で `_` 始まり）、`exports.zsh`（環境変数）、`settings.zsh`、`zsh-my-theme.zsh`。
