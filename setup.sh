@@ -218,16 +218,12 @@ bash "$DOTFILES_DIR/bin/mdtree/build.sh"
 # ~/.codex
 echo "==> ~/.codex"
 mkdir -p "$HOME/.codex"
-mkdir -p "$HOME/.codex/skills"
 link "$DOTFILES_DIR/claude/CLAUDE.md" "$HOME/.codex/AGENTS.md"
 link "$DOTFILES_DIR/claude/commands"  "$HOME/.codex/prompts"
 link "$DOTFILES_DIR/codex/rules"      "$HOME/.codex/rules"
 
 # Claude Code のカスタムスキルを Codex でも共有する
-for skill_dir in "$DOTFILES_DIR/claude/skills"/*; do
-  [ -d "$skill_dir" ] || continue
-  skill_name="$(basename "$skill_dir")"
-  link "$skill_dir" "$HOME/.codex/skills/$skill_name"
-done
+mkdir -p "$HOME/.agents"
+link "$DOTFILES_DIR/claude/skills" "$HOME/.agents/skills"
 
 echo "Done."
