@@ -34,12 +34,28 @@ html, body {
 }
 
 .sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 12px 14px;
   border-bottom: 1px solid var(--border);
   font-weight: 600;
 }
-.repo-name { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+.repo-name { display: flex; align-items: center; gap: 6px; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .repo-name::before { content: "📚"; }
+
+.icon-btn {
+  flex: none;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 13px;
+  padding: 3px 7px;
+  border-radius: 5px;
+  line-height: 1;
+}
+.icon-btn:hover { background: var(--hover); color: var(--text); }
 
 .filter-box { padding: 8px 10px; border-bottom: 1px solid var(--border); }
 .filter-box input[type="text"] {
@@ -135,9 +151,15 @@ details[open] > summary .twisty { transform: rotate(90deg); }
 /* ---- Main ---- */
 #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 
-.breadcrumb {
+.breadcrumb-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 10px 20px;
   border-bottom: 1px solid var(--border);
+}
+.breadcrumb {
+  flex: 1;
   font-size: 13px;
   color: var(--muted);
   white-space: nowrap;
@@ -145,6 +167,10 @@ details[open] > summary .twisty { transform: rotate(90deg); }
 }
 .breadcrumb .crumb.current { color: var(--text); font-weight: 600; }
 .breadcrumb .sep { margin: 0 6px; color: var(--border); }
+
+/* ---- サイドバー折りたたみ ---- */
+#app.sidebar-collapsed #sidebar,
+#app.sidebar-collapsed #resizer { display: none; }
 
 .content {
   flex: 1;
