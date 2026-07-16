@@ -172,6 +172,26 @@ showAllEl.addEventListener('change', applyFilters);
 
 // ---- サイドバーのリサイズ -------------------------------------------------
 
+(function setupSidebarToggle() {
+  const appEl = document.getElementById('app');
+  const collapseBtn = document.getElementById('sidebar-collapse');
+  const expandBtn = document.getElementById('sidebar-expand');
+  const STORAGE_KEY = 'mdtree-sidebar-collapsed';
+
+  function setCollapsed(collapsed) {
+    appEl.classList.toggle('sidebar-collapsed', collapsed);
+    expandBtn.hidden = !collapsed;
+    try { localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0'); } catch (err) { /* ignore */ }
+  }
+
+  collapseBtn.addEventListener('click', () => setCollapsed(true));
+  expandBtn.addEventListener('click', () => setCollapsed(false));
+
+  let initiallyCollapsed = false;
+  try { initiallyCollapsed = localStorage.getItem(STORAGE_KEY) === '1'; } catch (err) { /* ignore */ }
+  setCollapsed(initiallyCollapsed);
+})();
+
 (function setupResizer() {
   const resizer = document.getElementById('resizer');
   const sidebar = document.getElementById('sidebar');
