@@ -50,7 +50,8 @@ html, body {
   background: transparent;
   cursor: pointer;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 15px;
+  font-weight: 600;
   padding: 3px 7px;
   border-radius: 5px;
   line-height: 1;
