@@ -106,7 +106,7 @@ alias conda='/opt/homebrew/anaconda3/_conda'
 alias cdc='cd $(find . -type d | grep -v .git | fzf --preview "tree {}")'
 alias k='kubectl'
 alias ag='ag --hidden -S' # --hidden: 隠しファイル対象、-S: 大文字小文字区別なし, -uu: ignore設定を全部無視して全検索。
-alias codex='codex --sandbox workspace-write --ask-for-approval on-request --config approvals_reviewer="auto_review"'
+alias cod='codex --sandbox workspace-write --ask-for-approval on-request --config approvals_reviewer="auto_review"'
 alias cld='claude --permission-mode auto'
 alias cldd='claude --dangerously-skip-permissions'
 alias cldc='cld --continue'
