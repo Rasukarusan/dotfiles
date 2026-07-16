@@ -36,4 +36,5 @@ if [[ "$root" != "." ]]; then
   args+=(-- "$root")
 fi
 
-rg "${args[@]}" || true
+# ホーム配下は読みやすいように ~/... と表示する。
+rg "${args[@]}" 2>/dev/null | sed "s|^${HOME}/|~/|" || true

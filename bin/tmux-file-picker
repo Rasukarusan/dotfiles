@@ -6,6 +6,7 @@
 #   `@` プレフィックスを付けて送り込む（AI CLI のファイルメンション用）。
 # - popup の中で C-s を押すと「ファイル名検索」と「grep(rg) 検索」を行き来できる。
 #   grep 中は bat でハイライト付きプレビューを表示する。
+# - C-~ で検索起点をカレントディレクトリとホームディレクトリの間で切り替える。
 # - Tab で複数選択、Enter で確定、Esc で中止。
 #
 # 使い方(tmux.conf):
@@ -30,12 +31,12 @@ esac
 SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIST="$SELF_DIR/tmux-file-list"
 
-# grep のコマンド。.git / node_modules は除外し、隠しファイルも対象にする。
-RG_GREP="rg --column --line-number --no-heading --color=always --smart-case --hidden -g '!.git' -g '!node_modules'"
+# grep もファイル一覧と同じ検索起点を使う。
+RG_GREP="$SELF_DIR/tmux-file-grep"
 
 # プレビュー
-PREVIEW_FILE='bat --color=always --style=numbers -- {} 2>/dev/null || cat -- {}'
-PREVIEW_GREP='bat --color=always --style=numbers --highlight-line {2} -- {1} 2>/dev/null'
+PREVIEW_FILE="$SELF_DIR/tmux-file-preview {}"
+PREVIEW_GREP="$SELF_DIR/tmux-file-preview {1} {2}"
 
 # モードごとのクエリを退避しておく一時ファイル
 tmpdir="$(mktemp -d)"
@@ -66,7 +67,7 @@ selected="$(
     --border \
     --delimiter=: \
     --prompt='Files> ' \
-    --header='Ctrl+-: 1つ上へ  /  Ctrl+o: git管理外も表示' \
+    --header='Ctrl+~: 現在地/ホーム  /  Ctrl+-: 1つ上へ  /  Ctrl+o: git管理外も表示' \
     --preview="$PREVIEW_FILE" \
     --preview-window='right,60%,border-left' \
     --bind="start:unbind(change)" \
@@ -75,9 +76,28 @@ selected="$(
       case \$FZF_PROMPT in
         Files*)
           cur=\$(cat '$QROOT' 2>/dev/null || echo .)
-          if [ \"\$cur\" = '.' ]; then nx='..'; else nx=\"../\$cur\"; fi
+          case \"\$cur\" in
+            .) nx='..' ;;
+            /*) nx=\$(dirname \"\$cur\") ;;
+            *) nx=\"../\$cur\" ;;
+          esac
           printf '%s' \"\$nx\" > '$QROOT'
-          echo \"reload($LIST)+change-prompt(Files[\$nx]> )\" ;;
+          label=\${nx/#$HOME/~}
+          echo \"reload($LIST)+change-prompt(Files[\$label]> )\" ;;
+        *) echo ignore ;;
+      esac
+    " \
+    --bind="ctrl-^:transform:
+      case \$FZF_PROMPT in
+        Files*)
+          cur=\$(cat '$QROOT' 2>/dev/null || echo .)
+          if [ \"\$cur\" = '$HOME' ]; then
+            nx='.'; label='Files> '
+          else
+            nx='$HOME'; label='Files[~]> '
+          fi
+          printf '%s' \"\$nx\" > '$QROOT'
+          echo \"reload($LIST)+change-prompt(\$label)\" ;;
         *) echo ignore ;;
       esac
     " \
