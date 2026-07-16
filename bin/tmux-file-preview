@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# 一覧上の ~/... を実パスへ戻して bat でプレビューする。
+set -uo pipefail
+
+path="${1:-}"
+line="${2:-}"
+path="${path/#\~/$HOME}"
+
+if [[ -n "$line" ]]; then
+  bat --color=always --style=numbers --highlight-line "$line" -- "$path" 2>/dev/null
+else
+  bat --color=always --style=numbers -- "$path" 2>/dev/null || cat -- "$path"
+fi

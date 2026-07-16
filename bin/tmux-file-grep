@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# tmux-file-picker の現在の検索起点から本文検索する。
+set -uo pipefail
+
+query="${1:-}"
+[[ -z "$query" ]] && exit 0
+
+root="."
+if [[ -n "${QROOT:-}" && -r "$QROOT" ]]; then
+  root="$(cat "$QROOT")"
+fi
+
+args=(--column --line-number --no-heading --color=always --smart-case --hidden
+  -g '!.git' -g '!node_modules')
+
+if [[ "$root" == "." ]]; then
+  rg "${args[@]}" -- "$query" || true
+else
+  rg "${args[@]}" -- "$query" "$root" 2>/dev/null | sed "s|^${HOME}/|~/|" || true
+fi
