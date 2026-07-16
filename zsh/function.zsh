@@ -2087,7 +2087,7 @@ _claude_archive() {
 # 過去の Codex CLI 会話を fzf(popup) で選んで resume する (codexr)
 # カレントディレクトリのセッションのみ対象。履歴の取り出し・プレビューは
 # 自作の codex-resume-picker に委譲。
-alias codexr='_codex_resume'
+alias codr='_codex_resume'
 _codex_resume() {
   local sid
   sid=$(codex-resume-picker) || return 0
