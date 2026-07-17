@@ -82,17 +82,24 @@ _mdtree_fzf() {
       echo "mdd: ディレクトリが見つかりません: $input" >&2
       return 1
     fi
+    # 最初はmdファイルのみを表示し、ctrl-aで全ファイル表示とトグルする。
+    # reload用にコマンドを文字列で持ち、初期表示と切替後で同じ定義を使い回す。
+    local find_base="find . -type f \
+      -not -path './.git/*' \
+      -not -path './node_modules/*' \
+      -not -path './vendor/*' \
+      -not -path './.next/*' \
+      -not -path './dist/*' \
+      -not -name '.DS_Store'"
+    local list_md="$find_base -name '*.md' | cut -c3-"
+    local list_all="$find_base | cut -c3-"
     rel=$(
       cd "$abs_dir" || exit 1
-      find . -type f \
-        -not -path './.git/*' \
-        -not -path './node_modules/*' \
-        -not -path './vendor/*' \
-        -not -path './.next/*' \
-        -not -path './dist/*' \
-        -not -name '.DS_Store' \
-      | sed 's/\.\///g' \
-      | fzf-tmux -p80% --prompt 'mdd ' --preview 'fzf-preview {}' --preview-window=right:70%
+      eval "$list_md" \
+      | fzf-tmux -p80% --prompt 'mdd [md] ' --no-multi \
+          --header 'ctrl-a: 全ファイル/mdのみ切替' \
+          --preview 'fzf-preview {}' --preview-window=right:70% \
+          --bind "ctrl-a:transform:if [[ \$FZF_PROMPT == 'mdd [md] ' ]]; then echo \"change-prompt(mdd [all] )+reload($list_all)\"; else echo \"change-prompt(mdd [md] )+reload($list_md)\"; fi"
     )
     [ -z "$rel" ] && return
   else
