@@ -1,9 +1,9 @@
 {
+  "cleanupPeriodDays": 365,
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
   "includeCoAuthoredBy": false,
-  "cleanupPeriodDays": 365,
   "permissions": {
     "allow": [
       "Bash(npm:*)",
@@ -92,6 +92,9 @@
     "type": "command",
     "command": "bash ~/.claude/statusline.sh"
   },
+  "enabledPlugins": {
+    "last30days@last30days-skill": true
+  },
   "extraKnownMarketplaces": {
     "last30days-skill": {
       "source": {
@@ -102,12 +105,9 @@
   },
   "feedbackSurveyRate": 0,
   "alwaysThinkingEnabled": true,
-  "effortLevel": "high",
+  "effortLevel": "medium",
   "tui": "default",
   "skipDangerousModePermissionPrompt": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true,
-  "enabledPlugins": {
-    "last30days@last30days-skill": true
-  }
+  "skipAutoPermissionPrompt": true
 }
