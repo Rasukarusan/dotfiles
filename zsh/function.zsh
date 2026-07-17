@@ -84,15 +84,23 @@ _mdtree_fzf() {
     fi
     # 最初はmdファイルのみを表示し、ctrl-aで全ファイル表示とトグルする。
     # reload用にコマンドを文字列で持ち、初期表示と切替後で同じ定義を使い回す。
-    local find_base="find . -type f \
-      -not -path './.git/*' \
-      -not -path './node_modules/*' \
-      -not -path './vendor/*' \
-      -not -path './.next/*' \
-      -not -path './dist/*' \
-      -not -name '.DS_Store'"
-    local list_md="$find_base -name '*.md' | cut -c3-"
-    local list_all="$find_base | cut -c3-"
+    # Gitリポジトリ内ではgit管理下のファイルに限定する(未追跡でもgitignore対象外なら含む)。
+    local list_md list_all
+    if git -C "$abs_dir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+      local git_ls="git ls-files --cached --others --exclude-standard"
+      list_md="$git_ls -- '*.md'"
+      list_all="$git_ls"
+    else
+      local find_base="find . -type f \
+        -not -path './.git/*' \
+        -not -path './node_modules/*' \
+        -not -path './vendor/*' \
+        -not -path './.next/*' \
+        -not -path './dist/*' \
+        -not -name '.DS_Store'"
+      list_md="$find_base -name '*.md' | cut -c3-"
+      list_all="$find_base | cut -c3-"
+    fi
     rel=$(
       cd "$abs_dir" || exit 1
       eval "$list_md" \
