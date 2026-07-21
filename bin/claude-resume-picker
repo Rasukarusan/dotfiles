@@ -154,7 +154,7 @@ cmd_interactive() {
     --prompt='resume> '
     --header='Enter: resume / Ctrl-P: 📌のみ / Ctrl-A: 全件 / Ctrl-X: アーカイブ / Ctrl-R: アーカイブ一覧(復元)'
     --preview="$self preview {1}"
-    --preview-window='right,50%,border-left,wrap'
+    --preview-window='right,50%,border-left,wrap,follow'
     --bind="ctrl-p:reload($self list-pinned '$PWD')+change-prompt(📌resume> )"
     --bind="ctrl-a:reload($self list '$PWD')+change-prompt(resume> )"
     --bind="ctrl-x:execute-silent($self archive-file {1})+reload($self list '$PWD')"
@@ -185,7 +185,7 @@ cmd_interactive_archive() {
     --prompt='archive> '
     --header='Tab: 複数選択 / Enter: 選択したセッションをアーカイブ / Ctrl-P: 📌のみ / Ctrl-A: 全件'
     --preview="$self preview {1}"
-    --preview-window='right,50%,border-left,wrap'
+    --preview-window='right,50%,border-left,wrap,follow'
     --bind="ctrl-p:reload($self list-pinned '$PWD')+change-prompt(📌archive> )"
     --bind="ctrl-a:reload($self list '$PWD')+change-prompt(archive> )"
   )
