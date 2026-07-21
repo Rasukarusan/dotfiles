@@ -9,6 +9,10 @@
       "Bash(npm:*)",
       "Bash(tmux:*)",
       "Bash(git:*)",
+      "Bash(echo:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(crit:*)",
       "Bash(gh:*)",
       "Bash(ls:*)",
       "Bash(rg:*)",
@@ -72,6 +76,17 @@
           {
             "type": "command",
             "command": "bash ~/.claude/hooks/notify-approval.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/save-plan-adr.sh"
           }
         ]
       }
