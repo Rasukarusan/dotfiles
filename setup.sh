@@ -35,7 +35,7 @@ FORMULAE=(
   node nodebrew pyenv pyenv-virtualenv python3 ripgrep ruby
   the_silver_searcher tmux tree vim w3m watch wget yarn zsh swiftformat
   cocoapods chromedriver tokei ffmpeg rga pastel git-ftp silicon git-delta
-  python-yq st jc gh gron lolcat azure-cli rust dasel kind
+  python-yq st jc gh gron lolcat azure-cli rust dasel kind libsixel
 )
 for pkg in "${FORMULAE[@]}"; do
   brew install "$pkg" 2>/dev/null || true
@@ -81,7 +81,7 @@ done
 # ====================
 echo "==> pip packages"
 PIP_PACKAGES=(
-  jedi-language-server imgcat flake8 black
+  jedi-language-server flake8 black
 )
 for pkg in "${PIP_PACKAGES[@]}"; do
   pip install -U "$pkg" 2>/dev/null || true
