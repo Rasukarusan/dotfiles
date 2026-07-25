@@ -211,7 +211,7 @@ _process_kill(){
   echo $process | pbcopy
   for item in ${process[@]}
   do
-    kill $process
+    kill -9 $item
   done
 }
 
