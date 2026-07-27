@@ -1,6 +1,6 @@
 ---
 name: crit
-description: "Review code changes, a plan, a live page (running dev server), or a local HTML file with crit inline comments"
+description: "Review code changes, a plan, a live page (running dev server), or a local HTML file with crit inline comments. Use when asked to review code, a plan, a diff, a running web app, or when you want structured human feedback on your work."
 allowed-tools: Bash(crit:*), Bash(command ls:*), Read, Edit, Glob
 argument-hint: "[file|url]"
 ---
@@ -45,20 +45,15 @@ If a crit server is already running from earlier in this conversation, `crit` au
 
 ## Step 3: Read the review output
 
-When `crit` completes, its stdout includes the path to the review file (e.g. "Review comments are in /path/to/review.json"). Read it.
-
-The file contains structured JSON. Three comment types:
-- `review_comments` (top-level, `r_`-prefixed IDs) — general feedback
-- File comments (per-file `comments` array, no `start_line`/`end_line`) — about the file as a whole
-- Line comments (per-file `comments` array, with `start_line`/`end_line`) — about specific lines
-
-Identify all comments where `resolved` is `false` or missing. Unresolved comments may have `replies` — read them before acting.
+When `crit` completes, read **stdout** and follow its instructions. Check **stderr** for `approved: true` or `approved: false`.
 
 <important if="a comment has a quote, anchor, or drifted field">
 - `quote`: the specific text the reviewer selected — focus your changes on the quoted text rather than the entire line range
 - `anchor`: use it to locate the current position of the content; line numbers may be stale after edits
 - `drifted: true`: original content was removed or heavily rewritten — line numbers are approximate at best
 </important>
+
+**Fallback** (mid-round re-entry, plan hooks, or headless workflows): `crit comments` / `crit comments --json`. Use `crit comments --plan <slug>` for plan-mode reviews.
 
 ## Step 4: Address each review comment
 
@@ -83,13 +78,11 @@ echo '[
 ```
 </important>
 
-**If there are zero review comments**: inform the user no changes were requested and stop the background `crit` process.
-
 ## Step 5: Signal completion and start next round
 
 **CRITICAL — you MUST run this step. Do NOT skip it. Do NOT proceed without it.**
 
-Run the **exact same `crit` command from Step 2** in the background. The daemon is keyed by arguments — mismatched args spawn a new daemon instead of reconnecting. If Step 2 was `crit plan.md`, this must also be `crit plan.md` (not bare `crit`).
+The finish prompt on stdout includes the command to run again — use it to start a new round.
 
 On subsequent calls, `crit` automatically signals round-complete first, then blocks until the next "Finish Review" click.
 
