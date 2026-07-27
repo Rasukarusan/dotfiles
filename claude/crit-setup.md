@@ -80,14 +80,22 @@ settings.json/スキルの変更は**Claude Codeを再起動**してから有効
 
 ## 更新方法
 
+ローカル独自パッチ(`feat: floating quote-comment button on text selection` 等)を
+維持するため、タグ直接checkoutではなく **タグベースのブランチにcherry-pickで乗せ替える**。
+
 ```bash
 cd ~/Documents/github/crit
 git fetch --tags
-git checkout <新しいタグ>
+git branch -f backup/pre-<新タグ> HEAD          # 念のため退避
+git checkout -B local/<新タグ> <新タグ>
+git cherry-pick <ローカルパッチのコミット>       # git log --oneline で上流に無いコミットを確認
 make build
-cp crit ~/.local/bin/crit
+rm ~/.local/bin/crit && cp crit ~/.local/bin/crit
 # スキルが更新されていれば手順3を再実行。`crit check` でスキルの陳腐化を検出できる。
 ```
+
+> **注意:** `~/.local/bin/crit` は必ず `rm` してから `cp` すること。既存バイナリへの
+> 上書きコピーはmacOSの署名キャッシュ不整合でSIGKILL(exit 137)される。
 
 ## CLI 利用フロー(参考)
 
