@@ -1,0 +1,137 @@
+{
+  "title": "app/system URL整理の未ステージ差分レビュー",
+  "overview": "app/system配下のURL生成とホスト判定がコンポーネントごとに散在していたのを、resolveAppUrlを共通入口として一元化するリファクタリングです。subdomain方式とlegacy-path方式の両deployment modeで同じコードパスを通るようにし、共通UI・dashboard・settingsなどの相対リンクは絶対URLへ置き換えています。あわせて設計文書と移行計画を現在の責務分離に合わせて更新しています。",
+  "generatedAt": "2026-07-25 09:30",
+  "base": "unstaged (git diff HEAD)",
+  "plan": "plans/url-cleanup.md",
+  "stats": {
+    "files": 107,
+    "hunks": 268,
+    "additions": 1468,
+    "deletions": 812
+  },
+  "groups": [
+    {
+      "id": "g1",
+      "title": "URL・ホスト判定の共通基盤",
+      "intent": "deployment modeごとのURL生成とhost判定を一か所に集約し、legacy-pathとsubdomainを安全に切り替える。",
+      "impact": "legacy-pathでも通る基盤コードなので、影響範囲は広めです。",
+      "risk": "high",
+      "tags": [
+        "refactor"
+      ],
+      "sections": [
+        {
+          "id": "s1",
+          "title": "URL生成の共通入口 resolveAppUrl の新設",
+          "explain": "これまで呼び出し側に散っていたURL組み立てを url-config.ts の resolveAppUrl に一元化しています。userUrlMode が 'subdomain' なら https://{service}.{APEX_DOMAIN}、それ以外は {SITE_ROOT}/{service} を返す2分岐で、planの「URL生成の一元化」に対応する中核の変更です。",
+          "hunks": [
+            {
+              "id": "h080",
+              "file": "webapp/src/lib/url-config.ts",
+              "diff": "@@ -12,4 +12,12 @@\n export const userUrlMode = env.USER_URL_MODE;\n \n+export function resolveAppUrl(service: string): string {\n+  if (userUrlMode === 'subdomain') {\n+    return `https://${service}.${env.APEX_DOMAIN}`;\n+  }\n+  return `${env.SITE_ROOT}/${service}`;\n+}\n+\n export function buildUserUrl(name: string): string {",
+              "annotations": [
+                {
+                  "type": "question",
+                  "match": "service: string",
+                  "text": "service に何が来るのか('app' | 'system' だけか)はplanに記載がなく、型からは読み取れませんでした。"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "isLegacyHost の判定厳格化",
+          "explain": "同じ url-config.ts 内の別の変更です。host判定が includes による部分一致から完全一致(===)に変わっています。サブドメイン移行後に legacy.example.com.evil.com のような偽装hostを誤判定しないための布石と読めますが、副作用としてポート番号付きhostの扱いも変わります。",
+          "hunks": [
+            {
+              "id": "h081",
+              "file": "webapp/src/lib/url-config.ts",
+              "diff": "@@ -28,3 +36,3 @@\n export function isLegacyHost(host: string): boolean {\n-  return host.includes(env.LEGACY_HOST);\n+  return host === env.LEGACY_HOST;\n }",
+              "annotations": [
+                {
+                  "type": "question",
+                  "match": "host === env.LEGACY_HOST",
+                  "text": "完全一致化により localhost:3000 のようなポート番号付きhostが弾かれるようになります。意図的な変更かplanからは読み取れませんでした。"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "テストの追随",
+          "explain": "auth まわりのテストを新しい resolveAppUrl 前提に書き換えています。vi.mock によるモジュール差し替えをやめ、実装の resolveAppUrl をそのまま使う形になったため、テストが実際の分岐ロジックを通るようになっています。",
+          "hunks": [
+            {
+              "id": "h079",
+              "file": "webapp/src/lib/auth.subdomain.test.ts",
+              "diff": "@@ -1,10 +1,13 @@\n import Cookies from 'js-cookie';\n+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';\n \n-import { saveShouldFetchCurrentUser } from './auth';\n-\n-vi.mock('./user-url-config', () => ({\n-  userUrlMode: 'subdomain',\n-}));\n+import { resolveAppUrl } from './url-config';\n+import { saveShouldFetchCurrentUser } from './auth';\n \n describe('auth subdomain', () => {\n+  const host = resolveAppUrl('app');",
+              "annotations": [
+                {
+                  "type": "explain",
+                  "match": "import { afterEach",
+                  "text": "vitestのグローバル注入をやめ、明示importへ移行しています。"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "g2",
+      "title": "app/systemリンクの絶対URL化",
+      "intent": "共通UI、dashboard、settings、sponsorsなどの相対pathをapp apex URLへ置き換えています。",
+      "risk": "medium",
+      "tags": [
+        "refactor"
+      ],
+      "sections": [
+        {
+          "id": "s4",
+          "title": "ナビゲーション・リンクの一括置換",
+          "explain": "href の相対path指定を resolveAppUrl ベースの絶対URLに置き換える同型の変更が96 hunksあります。すべて機械的な置換で、代表としてNavの1 hunkのみ掲載しています。",
+          "hunks": [
+            {
+              "id": "h101",
+              "file": "webapp/src/components/Nav.tsx",
+              "diff": "@@ -8,7 +8,7 @@\n export function Nav() {\n   return (\n     <nav>\n-      <a href=\"/dashboard\">Dashboard</a>\n+      <a href={resolveAppUrl('app') + '/dashboard'}>Dashboard</a>\n     </nav>\n   );\n }"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "g3",
+      "title": "設計文書と移行計画の更新",
+      "intent": "architectureとmigration planを現在の責務分離へ更新しています。",
+      "risk": "low",
+      "tags": [
+        "docs"
+      ],
+      "sections": [
+        {
+          "id": "s5",
+          "title": "URL設計セクションの書き換え",
+          "explain": "architecture.md のURL設計の記述を、相対path前提から resolveAppUrl 前提へ更新しています。",
+          "hunks": [
+            {
+              "id": "h250",
+              "file": "docs/architecture.md",
+              "diff": "@@ -20,4 +20,5 @@\n ## URL設計\n \n-相対pathを使用する。\n+deployment modeに応じて resolveAppUrl で絶対URLを生成する。\n+移行は完了済み。",
+              "annotations": [
+                {
+                  "type": "question",
+                  "match": "移行は完了済み",
+                  "text": "sponsors配下に未置換の相対リンクが3件残っているため、「完了済み」が現状と一致しているか確認したい点です。"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
