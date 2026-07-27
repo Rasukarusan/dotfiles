@@ -261,6 +261,11 @@ _git_diff(){
   for file in "${files[@]}";do
     if git ls-files --error-unmatch ${path_working_tree_root}${file} &>/dev/null; then
       git diff -b ${path_working_tree_root}${file}
+    elif [ -L ${path_working_tree_root}${file} ]; then
+      # シンボリックリンクはリンク先パスの文字列がコミットされる実体なので、それを新規追加として表示する
+      readlink ${path_working_tree_root}${file} \
+        | git -c color.diff=always diff --no-index -- /dev/null - \
+        | sed -e "s|a/-|a/${file}|g" -e "s|b/-|b/${file}|g"
     else
       git diff --no-index /dev/null ${path_working_tree_root}${file}
     fi
