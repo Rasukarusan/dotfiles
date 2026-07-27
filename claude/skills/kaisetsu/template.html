@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diff Review</title>
+<style>
+:root {
+  --bg: #f4f5f7;
+  --card: #ffffff;
+  --border: #e4e7ee;
+  --border-strong: #d4d9e3;
+  --ink: #22252b;
+  --ink-soft: #5b6270;
+  --ink-faint: #8a919f;
+  --mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  --sans: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", sans-serif;
+  --red: #c2403d;
+  --red-bg: #fbeeee;
+  --amber: #c07f00;
+  --amber-bg: #fdf4e3;
+  --gray: #7c8494;
+  --gray-bg: #eef0f4;
+  --blue: #2f6bb0;
+  --blue-bg: #eef4fb;
+  --green: #2c7a4b;
+  --add-bg: #eaf6ec;
+  --add-gutter: #d9edde;
+  --del-bg: #fdefee;
+  --del-gutter: #f6dcda;
+  --shadow: 0 1px 2px rgba(30, 35, 48, .05), 0 4px 14px rgba(30, 35, 48, .05);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 14.5px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+ins, del { text-decoration: none; }
+button { font-family: inherit; }
+
+/* ---------- topbar ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px 24px;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+.logo {
+  font-family: var(--mono); font-size: 12px; letter-spacing: .35em;
+  color: var(--ink-soft); white-space: nowrap;
+}
+.topbar h1 {
+  font-size: 15.5px; font-weight: 700; margin: 0;
+  flex: 0 1 auto; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.stats-chip {
+  font-family: var(--mono); font-size: 12px; white-space: nowrap;
+  background: var(--gray-bg); border: 1px solid var(--border);
+  border-radius: 6px; padding: 3px 10px; color: var(--ink-soft);
+}
+.stats-chip ins { color: var(--green); font-weight: 600; }
+.stats-chip del { color: var(--red); font-weight: 600; }
+.topbar .spacer { flex: 1; }
+.comment-count {
+  font-family: var(--mono); font-size: 12px; color: var(--ink-soft); white-space: nowrap;
+  background: none; border: 1px solid transparent; border-radius: 7px; padding: 5px 9px; cursor: pointer;
+}
+.comment-count:hover, .comment-count.active {
+  border-color: var(--border); background: var(--gray-bg); color: var(--ink);
+}
+
+/* ---------- comment drawer(右サイドバー) ---------- */
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; width: 360px; max-width: 85vw; z-index: 80;
+  background: var(--card); border-left: 1px solid var(--border);
+  box-shadow: -10px 0 30px rgba(20,24,33,.12);
+  transform: translateX(105%); transition: transform .28s cubic-bezier(.2,.8,.2,1);
+  display: flex; flex-direction: column;
+}
+.drawer.open { transform: translateX(0); }
+.drawer-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 13px 16px; border-bottom: 1px solid var(--border);
+}
+.drawer-head .ttl { font-size: 14px; font-weight: 700; flex: 1; }
+.drawer-close {
+  width: 26px; height: 26px; border-radius: 7px; border: 1px solid var(--border);
+  background: var(--card); color: var(--ink-soft); cursor: pointer; font-size: 13px;
+}
+.drawer-close:hover { border-color: var(--border-strong); color: var(--ink); }
+.drawer-list { flex: 1; overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.drawer-item {
+  border: 1px solid var(--border); border-radius: 10px; padding: 9px 12px;
+  cursor: pointer; transition: all .12s;
+}
+.drawer-item:hover { border-color: var(--border-strong); background: var(--gray-bg); }
+.drawer-item .where {
+  font-family: var(--mono); font-size: 11px; color: var(--ink-faint);
+  margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.drawer-item .body { font-size: 13px; line-height: 1.6; white-space: pre-wrap; }
+.drawer-empty { color: var(--ink-faint); font-size: 13px; text-align: center; margin-top: 40px; }
+
+/* ---------- file tree(左サイドバー) ---------- */
+.filetree {
+  position: fixed; top: 53px; left: 0; bottom: 0; width: 250px; z-index: 40;
+  overflow-y: auto; padding: 18px 12px 30px;
+  border-right: 1px solid var(--border);
+  font-size: 12.5px;
+}
+.filetree .ft-label {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .22em;
+  color: var(--ink-faint); margin: 0 0 10px 6px;
+}
+.filetree ul { list-style: none; margin: 0; padding: 0 0 0 14px; }
+.filetree > div > ul { padding-left: 0; }
+.ft-dir > .ft-name, .ft-file {
+  display: flex; align-items: center; gap: 5px;
+  padding: 2.5px 6px; border-radius: 6px; cursor: pointer; user-select: none;
+  color: var(--ink-soft); white-space: nowrap;
+}
+.ft-dir > .ft-name:hover, .ft-file:hover { background: var(--gray-bg); color: var(--ink); }
+.ft-dir > .ft-name { overflow: hidden; text-overflow: ellipsis; }
+.ft-dir > .ft-name .caret { font-size: 9px; color: var(--ink-faint); transition: transform .12s; }
+.ft-dir.closed > .ft-name .caret { transform: rotate(-90deg); }
+.ft-dir.closed > ul { display: none; }
+.ft-file .n { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+.ft-file .cnt { font-family: var(--mono); font-size: 10.5px; color: var(--ink-faint); }
+.help-btn {
+  width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border);
+  background: var(--card); color: var(--ink-soft); cursor: pointer;
+  font-family: var(--mono); font-size: 13px;
+}
+.help-btn:hover { border-color: var(--border-strong); color: var(--ink); }
+
+/* ---------- layout ---------- */
+main { max-width: 1060px; margin: 0 auto; padding: 28px 24px 64px; }
+@media (min-width: 1340px) {
+  main { margin-left: max(274px, calc((100vw - 1060px) / 2)); margin-right: auto; }
+}
+@media (max-width: 1339.98px) { .filetree { display: none; } }
+.sec-label {
+  font-family: var(--mono); font-size: 12px; letter-spacing: .22em;
+  color: var(--ink-faint); margin: 34px 0 14px;
+}
+.meta-line {
+  font-family: var(--mono); font-size: 12px; color: var(--ink-faint);
+  margin: -6px 0 16px;
+}
+.meta-line b { color: var(--ink-soft); font-weight: 600; }
+.overview {
+  font-size: 14.5px; line-height: 1.9; color: var(--ink);
+  margin: 0 0 6px; max-width: 880px; white-space: pre-wrap;
+}
+
+/* ---------- group index ---------- */
+.group-index { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.index-card {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+  border-left: 4px solid var(--gray);
+  padding: 12px 16px; cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: transform .12s ease, border-color .12s ease;
+  animation: rise .4s ease backwards;
+}
+.index-card:hover { transform: translateY(-1px); border-color: var(--border-strong); }
+.index-card.risk-high { border-left-color: var(--red); }
+.index-card.risk-medium { border-left-color: #e0a41f; }
+.index-card .txt { flex: 1; min-width: 0; }
+.index-card .t { font-weight: 700; font-size: 14.5px; }
+.index-card .s {
+  color: var(--ink-soft); font-size: 13px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.index-card .badges { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+
+/* ---------- badges / chips ---------- */
+.chip {
+  display: inline-block; font-size: 12px; line-height: 1;
+  padding: 4px 8px; border-radius: 6px; font-weight: 600;
+}
+.chip.mono { font-family: var(--mono); font-weight: 500; }
+.chip.tag { background: var(--card); border: 1px solid var(--border); color: var(--ink-soft); font-family: var(--mono); font-weight: 500; }
+.chip.hunks { color: var(--ink-soft); font-family: var(--mono); font-weight: 500; padding: 4px 2px; }
+.chip.question { color: var(--amber); font-weight: 700; padding: 4px 2px; }
+.risk-badge { font-size: 12px; padding: 4px 9px; border-radius: 6px; font-weight: 700; white-space: nowrap; }
+.risk-badge.high { background: var(--red-bg); color: var(--red); }
+.risk-badge.medium { background: var(--amber-bg); color: var(--amber); }
+.risk-badge.low { background: var(--gray-bg); color: var(--gray); }
+
+/* ---------- group detail ---------- */
+.group {
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+  border-left: 4px solid var(--gray);
+  box-shadow: var(--shadow);
+  margin: 0 0 26px; overflow: hidden;
+  scroll-margin-top: 70px;
+}
+.group.risk-high { border-left-color: var(--red); }
+.group.risk-medium { border-left-color: #e0a41f; }
+.group-head { display: flex; align-items: flex-start; gap: 12px; padding: 18px 20px 0; }
+.group-head h2 { font-size: 17px; margin: 0; flex: 1; line-height: 1.45; }
+.group-head .risk-badge { margin-top: 2px; }
+.intent { padding: 8px 20px 4px; color: var(--ink); font-size: 14px; }
+.intent .k { color: var(--green); font-weight: 700; }
+.intent .impact { color: var(--ink-soft); }
+.group-tools { padding: 4px 20px 14px; }
+.link-btn {
+  background: none; border: none; padding: 0; cursor: pointer;
+  font-size: 12.5px; color: var(--blue); font-family: var(--mono);
+}
+.link-btn:hover { text-decoration: underline; }
+.group-comment { padding: 0 20px 14px; }
+
+/* ---------- sections ---------- */
+.section-head {
+  padding: 16px 20px 12px;
+  border-top: 1px solid var(--border);
+  background: linear-gradient(to bottom, #fafbfd, #fff);
+}
+.section-head .line1 { display: flex; align-items: baseline; gap: 10px; }
+.section-head .sid { font-family: var(--mono); font-size: 11.5px; color: var(--ink-faint); }
+.section-head h3 { font-size: 15px; margin: 0; }
+.section-head .files { font-family: var(--mono); font-size: 11.5px; color: var(--ink-faint); margin-left: auto; white-space: nowrap; }
+.section-head .explain {
+  margin: 8px 0 2px; padding: 2px 0 2px 12px;
+  border-left: 3px solid #cfe0f2;
+  font-size: 13.5px; color: #33465f; line-height: 1.7;
+}
+.section-head .explain .k {
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .15em;
+  color: var(--blue); display: block; margin-bottom: 2px;
+}
+
+/* ---------- hunks / diff ---------- */
+.hunk { border-top: 1px solid var(--border); scroll-margin-top: 60px; }
+.hunk-head {
+  display: flex; align-items: baseline; gap: 12px;
+  padding: 9px 20px; background: #fafbfc;
+  font-family: var(--mono); font-size: 12.5px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 53px; z-index: 5;
+  cursor: pointer; user-select: none;
+}
+.hunk-head:hover { background: #f2f4f7; }
+.hunk-head .caret { font-size: 9px; color: var(--ink-faint); transition: transform .12s; }
+.hunk.collapsed .hunk-head .caret { transform: rotate(-90deg); }
+.hunk.collapsed table.diff { display: none; }
+.hunk-head .hid { color: var(--ink-faint); }
+.hunk-head .file { font-weight: 700; color: var(--ink); word-break: break-all; }
+.hunk-head .range { color: var(--ink-faint); }
+table.diff { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12.5px; line-height: 1.75; }
+table.diff td { padding: 0; vertical-align: top; }
+td.ln {
+  width: 3.2em; min-width: 3.2em; text-align: right; padding: 0 8px;
+  color: var(--ink-faint); user-select: none; font-size: 11.5px;
+  background: #fafbfc; border-right: 1px solid var(--border);
+}
+td.sign { width: 1.6em; text-align: center; user-select: none; color: var(--ink-faint); position: relative; }
+td.code { white-space: pre-wrap; word-break: break-all; padding-right: 16px; }
+tr.add td.code, tr.add td.sign { background: var(--add-bg); }
+tr.add td.sign { color: var(--green); }
+tr.add td.ln { background: var(--add-gutter); border-right-color: #c9e4d0; }
+tr.del td.code, tr.del td.sign { background: var(--del-bg); }
+tr.del td.sign { color: var(--red); }
+tr.del td.ln { background: var(--del-gutter); border-right-color: #eccbc8; }
+tr.line:hover td.code { box-shadow: inset 0 0 0 999px rgba(47,107,176,.045); }
+.cbtn {
+  position: absolute; left: -2px; top: 1px;
+  width: 18px; height: 18px; border-radius: 5px;
+  border: 1px solid var(--blue); background: var(--blue); color: #fff;
+  font-size: 12px; line-height: 1; cursor: pointer; padding: 0;
+  opacity: 0; transition: opacity .1s;
+}
+tr.line:hover .cbtn, tr.line.has-comment .cbtn { opacity: 1; }
+tr.line.has-comment .cbtn { background: var(--card); color: var(--blue); }
+
+/* annotation / comment rows */
+td.wide { padding: 6px 14px 6px 4.8em; }
+.callout {
+  border: 1px solid; border-radius: 8px; padding: 8px 12px;
+  font-size: 13px; font-family: var(--sans); line-height: 1.6;
+  display: flex; gap: 9px; align-items: baseline;
+}
+.callout .label {
+  font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 5px;
+  white-space: nowrap; letter-spacing: .05em;
+}
+.callout.explain { border-color: #cfe0f2; background: var(--blue-bg); color: #274d79; }
+.callout.explain .label { background: var(--blue); color: #fff; }
+.callout.question { border-color: #ecd9ad; background: var(--amber-bg); color: #7c5500; }
+.callout.question .label { background: var(--amber); color: #fff; }
+/* コメントUI: コンポーザ(ヘッダー+textarea+右下アクション)と表示カード(ヘッダー+本文) */
+.comment-editor {
+  border: 1px solid var(--blue); border-radius: 10px; background: var(--card);
+  overflow: hidden; box-shadow: 0 1px 6px rgba(47,107,176,.12);
+}
+.comment-editor .ce-head {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .1em; font-weight: 700;
+  color: var(--blue); background: var(--blue-bg);
+  padding: 6px 12px; border-bottom: 1px solid #cfe0f2;
+}
+.comment-editor textarea {
+  display: block; width: 100%; min-height: 72px; resize: vertical; border: none;
+  padding: 10px 12px; font-family: var(--sans); font-size: 13.5px; line-height: 1.6;
+  background: var(--card);
+}
+.comment-editor textarea:focus { outline: none; }
+.comment-editor .ce-actions {
+  display: flex; justify-content: flex-end; gap: 8px;
+  padding: 8px 10px; border-top: 1px solid var(--border);
+}
+.comment-view {
+  border: 1px solid #ecd9ad; border-radius: 10px; background: var(--card);
+  overflow: hidden; font-size: 13.5px;
+}
+.comment-view .cv-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 6px 5px 10px; background: #fffbea; border-bottom: 1px solid #f3e6c0;
+}
+.comment-view .label {
+  font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 2px 9px;
+  border-radius: 999px; background: #b58a00; color: #fff; white-space: nowrap;
+}
+.comment-view .cv-head .spacer { flex: 1; }
+.comment-view .txt { padding: 9px 12px; white-space: pre-wrap; }
+.link-btn.danger { color: var(--red); }
+.mini-btn {
+  font-size: 12px; padding: 4px 12px; border-radius: 6px; cursor: pointer;
+  border: 1px solid var(--border-strong); background: var(--card); color: var(--ink-soft);
+}
+.mini-btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+.mini-btn.primary:hover { background: #275c99; }
+
+/* ---------- action buttons (topbar右端) ---------- */
+.abtn {
+  border: 1px solid var(--border-strong); background: var(--card); color: var(--ink);
+  border-radius: 8px; padding: 6px 13px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  white-space: nowrap; transition: background .12s;
+}
+.abtn:hover { background: var(--gray-bg); }
+.abtn.finish { background: var(--green); border-color: var(--green); color: #fff; }
+.abtn.finish:hover { background: #256a41; }
+.abtn:disabled { opacity: .5; cursor: default; }
+
+/* ---------- modal / overlay ---------- */
+.overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(24,27,33,.45); backdrop-filter: blur(3px);
+  display: none; align-items: center; justify-content: center; padding: 24px;
+}
+.overlay.show { display: flex; }
+.modal {
+  background: var(--card); border-radius: 14px; max-width: 480px; width: 100%;
+  padding: 26px 28px; box-shadow: 0 20px 60px rgba(20,24,33,.3);
+}
+.modal h3 { margin: 0 0 12px; font-size: 16px; }
+.modal .mono-label { font-family: var(--mono); font-size: 11px; letter-spacing: .22em; color: var(--ink-faint); margin-bottom: 8px; }
+.modal table { font-size: 13px; border-collapse: collapse; width: 100%; }
+.modal td { padding: 5px 8px 5px 0; color: var(--ink-soft); }
+.modal td.key { font-family: var(--mono); color: var(--ink); white-space: nowrap; width: 5em; }
+.modal .close-row { text-align: right; margin-top: 14px; }
+.abtn.finish.sent { background: var(--card); border-color: var(--border-strong); color: var(--ink); }
+.abtn.finish.sent:hover { background: var(--gray-bg); }
+
+.toast {
+  position: fixed; top: 62px; right: 24px; transform: translateY(-8px);
+  background: var(--ink); color: #fff; border-radius: 9px; padding: 9px 18px;
+  font-size: 13px; opacity: 0; pointer-events: none; z-index: 90;
+  transition: all .25s ease;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <span class="logo">DIFF REVIEW</span>
+  <h1 id="title"></h1>
+  <span class="stats-chip" id="stats"></span>
+  <span class="spacer"></span>
+  <button class="comment-count" id="comment-count" title="コメント一覧を開く"></button>
+  <button class="abtn" id="copy-btn">まとめをコピー</button>
+  <button class="abtn finish" id="finish-btn" hidden title="結果をClaudeのセッションへ返す">レビュー完了</button>
+  <button class="help-btn" id="help-btn" title="ヘルプ">?</button>
+</header>
+
+<aside class="filetree" id="filetree">
+  <div class="ft-label">FILES</div>
+  <div id="ft-root"></div>
+</aside>
+
+<main>
+  <div class="sec-label" id="overview-label">00 / 概要</div>
+  <p class="overview" id="overview"></p>
+
+  <div class="sec-label">01 / 変更グループ一覧(リスク順)</div>
+  <div class="meta-line" id="meta"></div>
+  <ol class="group-index" id="index"></ol>
+
+  <div class="sec-label">02 / 変更グループ詳細</div>
+  <div id="detail"></div>
+</main>
+
+<div class="overlay" id="help-overlay">
+  <div class="modal">
+    <div class="mono-label">HELP</div>
+    <h3>操作方法</h3>
+    <table>
+      <tr><td class="key">クリック</td><td>diff行の + ボタンでその行にコメント</td></tr>
+      <tr><td class="key">j / k</td><td>次 / 前のグループへ移動</td></tr>
+      <tr><td class="key">c</td><td>まとめをコピー</td></tr>
+      <tr><td class="key">⌘Enter</td><td>コメント編集中に保存</td></tr>
+      <tr><td class="key">Esc</td><td>コメント編集をキャンセル / コメント一覧を閉じる</td></tr>
+    </table>
+    <p style="font-size:13px;color:var(--ink-soft)">コメントは自動保存されます。
+    「レビュー完了」で結果がClaudeのセッションへ返ります。送信後も画面はそのまま使え、追加コメントして再送信もできます。
+    別セッション(Codex等)に投げる場合は「まとめをコピー」を使ってください。</p>
+    <div class="close-row"><button class="mini-btn" onclick="document.getElementById('help-overlay').classList.remove('show')">閉じる</button></div>
+  </div>
+</div>
+
+<aside class="drawer" id="drawer">
+  <div class="drawer-head">
+    <span class="ttl">コメント一覧</span>
+    <button class="drawer-close" id="drawer-close" title="閉じる">✕</button>
+  </div>
+  <div class="drawer-list" id="drawer-list"></div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<script id="review-data" type="application/json">__REVIEW_DATA__</script>
+<script>
+"use strict";
+const DATA = JSON.parse(document.getElementById("review-data").textContent);
+const SERVER = location.protocol === "http:" || location.protocol === "https:";
+
+/* ---------- state (localStorage + server autosave) ---------- */
+function fingerprint(s) {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = (h * 33) ^ s.charCodeAt(i);
+  return (h >>> 0).toString(36);
+}
+const LS_KEY = "diff-review:" + fingerprint(document.getElementById("review-data").textContent);
+let state = { comments: {}, groupComments: {} };
+try { state = Object.assign(state, JSON.parse(localStorage.getItem(LS_KEY) || "{}")); } catch (e) {}
+
+let saveTimer = null;
+function saveState() {
+  localStorage.setItem(LS_KEY, JSON.stringify(state));
+  if (SERVER) {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      fetch("/api/state", { method: "POST", body: JSON.stringify(state) }).catch(() => {});
+    }, 400);
+  }
+  refreshCounters();
+}
+
+/* ---------- data prep ---------- */
+const RISK = {
+  high:   { rank: 0, label: "要注意", cls: "high" },
+  medium: { rank: 1, label: "注意",   cls: "medium" },
+  low:    { rank: 2, label: "低リスク", cls: "low" },
+};
+const ANN = { explain: "解説", question: "疑問" };
+
+const groups = [...(DATA.groups || [])].sort(
+  (a, b) => (RISK[a.risk]?.rank ?? 9) - (RISK[b.risk]?.rank ?? 9)
+);
+
+function esc(s) {
+  return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+/* unified diff hunk をパース。先頭行は @@ ヘッダ */
+function parseHunk(text) {
+  const lines = String(text).replace(/\n$/, "").split("\n");
+  let header = "", body = lines;
+  if (lines[0] && lines[0].startsWith("@@")) { header = lines[0]; body = lines.slice(1); }
+  const m = /@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(header);
+  let oldN = m ? +m[1] : 1, newN = m ? +m[2] : 1;
+  const rows = [];
+  for (const raw of body) {
+    const t = raw[0] === "+" ? "add" : raw[0] === "-" ? "del" : raw[0] === "\\" ? "meta" : "ctx";
+    const row = { t, text: raw.slice(1), raw, old: null, new: null };
+    if (t === "ctx") { row.old = oldN++; row.new = newN++; }
+    else if (t === "add") { row.new = newN++; }
+    else if (t === "del") { row.old = oldN++; }
+    rows.push(row);
+  }
+  return { header, rows };
+}
+
+/* annotation のアンカー行index(hunk本文0始まり)を解決 */
+function resolveAnchor(rows, ann) {
+  if (ann.match) {
+    const i = rows.findIndex(r => r.t !== "meta" && r.text.includes(ann.match));
+    if (i >= 0) return i;
+  }
+  if (Number.isInteger(ann.line) && ann.line >= 1 && ann.line <= rows.length) return ann.line - 1;
+  return rows.length - 1;
+}
+
+/* ---------- render ---------- */
+document.title = (DATA.title || "Diff Review") + " — Diff Review";
+document.getElementById("title").textContent = DATA.title || "";
+const st = DATA.stats || {};
+document.getElementById("stats").innerHTML =
+  `${st.files ?? "?"} files / ${st.hunks ?? "?"} hunks <ins>+${st.additions ?? "?"}</ins> <del>−${st.deletions ?? "?"}</del>`;
+document.getElementById("meta").innerHTML =
+  `<b>範囲:</b> ${esc(DATA.base || "-")} 　<b>plan:</b> ${esc(DATA.plan || "なし")} 　<b>生成:</b> ${esc(DATA.generatedAt || "-")}`;
+if (DATA.overview) {
+  document.getElementById("overview").textContent = DATA.overview;
+} else {
+  document.getElementById("overview-label").hidden = true;
+  document.getElementById("overview").hidden = true;
+}
+if (SERVER) document.getElementById("finish-btn").hidden = false;
+
+const indexEl = document.getElementById("index");
+const detailEl = document.getElementById("detail");
+
+groups.forEach((g, gi) => {
+  const risk = RISK[g.risk] || RISK.low;
+  const sections = g.sections || (g.hunks ? [{ hunks: g.hunks }] : []);
+  const allHunks = sections.flatMap(s => s.hunks || []);
+  const nQuestion = allHunks.reduce(
+    (n, h) => n + (h.annotations || []).filter(a => a.type === "question").length, 0);
+
+  /* --- index card --- */
+  const li = document.createElement("li");
+  li.className = `index-card risk-${risk.cls}`;
+  li.style.animationDelay = (gi * 45) + "ms";
+  li.innerHTML = `
+    <div class="txt">
+      <div class="t">${esc(g.title)}</div>
+      <div class="s">${esc(g.intent || "")}</div>
+    </div>
+    <div class="badges">
+      ${nQuestion ? `<span class="chip question">疑問 ${nQuestion}</span>` : ""}
+      ${(g.tags || []).map(t => `<span class="chip tag">${esc(t)}</span>`).join("")}
+      <span class="chip hunks">${allHunks.length} hunks</span>
+      <span class="risk-badge ${risk.cls}">${risk.label}</span>
+    </div>`;
+  li.addEventListener("click", () => document.getElementById(g.id).scrollIntoView());
+  indexEl.appendChild(li);
+
+  /* --- detail card --- */
+  const art = document.createElement("article");
+  art.className = `group risk-${risk.cls}`;
+  art.id = g.id;
+  art.dataset.gid = g.id;
+
+  const head = document.createElement("div");
+  head.className = "group-head";
+  head.innerHTML = `
+    <span class="risk-badge ${risk.cls}">${risk.label}</span>
+    <h2>${esc(g.title)}</h2>`;
+  art.appendChild(head);
+
+  const intent = document.createElement("p");
+  intent.className = "intent";
+  intent.innerHTML = `<span class="k">意図:</span> ${esc(g.intent || "")}` +
+    (g.impact ? ` <span class="impact">— ${esc(g.impact)}</span>` : "");
+  art.appendChild(intent);
+
+  /* group comment */
+  const tools = document.createElement("div");
+  tools.className = "group-tools";
+  tools.innerHTML = `<button class="link-btn" data-gcomment="${esc(g.id)}">+ グループにコメント</button>`;
+  art.appendChild(tools);
+  const gcWrap = document.createElement("div");
+  gcWrap.className = "group-comment";
+  gcWrap.dataset.gcwrap = g.id;
+  art.appendChild(gcWrap);
+
+  /* sections */
+  for (const s of sections) {
+    if (s.title || s.explain) {
+      const sh = document.createElement("div");
+      sh.className = "section-head";
+      const files = [...new Set((s.hunks || []).map(h => h.file.split("/").pop()))];
+      sh.innerHTML = `
+        <div class="line1">
+          ${s.id ? `<span class="sid">${esc(s.id)}</span>` : ""}
+          <h3>${esc(s.title || "")}</h3>
+          <span class="files">${esc(files.slice(0, 3).join(", "))}${files.length > 3 ? ` +${files.length - 3}` : ""}</span>
+        </div>
+        ${s.explain ? `<div class="explain"><span class="k">AI解説</span>${esc(s.explain)}</div>` : ""}`;
+      art.appendChild(sh);
+    }
+
+  for (const h of s.hunks || []) {
+    const parsed = parseHunk(h.diff || "");
+    const anchors = new Map(); // rowIndex -> [ann,...]
+    for (const a of h.annotations || []) {
+      const i = resolveAnchor(parsed.rows, a);
+      if (!anchors.has(i)) anchors.set(i, []);
+      anchors.get(i).push(a);
+    }
+
+    const sec = document.createElement("section");
+    sec.className = "hunk";
+    sec.id = "hunk-" + h.id;
+    const hh = document.createElement("div");
+    hh.className = "hunk-head";
+    hh.title = "クリックで折りたたみ";
+    hh.innerHTML = `<span class="caret">▼</span><span class="hid">${esc(h.id)}</span><span class="file">${esc(h.file)}</span>
+      <span class="range">${esc((parsed.header || "").replace(/^@@ | @@.*$/g, m2 => m2 === "@@ " ? "" : ""))}</span>`;
+    hh.addEventListener("click", e => {
+      if (e.target.closest("button")) return;
+      sec.classList.toggle("collapsed");
+    });
+    sec.appendChild(hh);
+
+    const table = document.createElement("table");
+    table.className = "diff";
+    const tbody = document.createElement("tbody");
+    parsed.rows.forEach((r, i) => {
+      const tr = document.createElement("tr");
+      tr.className = "line " + r.t;
+      const key = h.id + ":" + i;
+      tr.dataset.ckey = key;
+      const sign = r.t === "add" ? "+" : r.t === "del" ? "−" : "";
+      tr.innerHTML = `
+        <td class="ln">${r.old ?? ""}</td>
+        <td class="ln">${r.new ?? ""}</td>
+        <td class="sign">${sign}<button class="cbtn" title="この行にコメント" data-comment="${esc(key)}">+</button></td>
+        <td class="code">${esc(r.text)}</td>`;
+      tbody.appendChild(tr);
+
+      for (const a of anchors.get(i) || []) {
+        const at = document.createElement("tr");
+        at.className = "annotation";
+        at.innerHTML = `<td class="wide" colspan="4">
+          <div class="callout ${esc(a.type || "explain")}">
+            <span class="label">${ANN[a.type] || "解説"}</span><span>${esc(a.text || "")}</span>
+          </div></td>`;
+        tbody.appendChild(at);
+      }
+      const ct = document.createElement("tr");
+      ct.className = "comment-slot";
+      ct.dataset.slot = key;
+      ct.hidden = true;
+      ct.innerHTML = `<td class="wide" colspan="4"></td>`;
+      tbody.appendChild(ct);
+    });
+    table.appendChild(tbody);
+    sec.appendChild(table);
+    art.appendChild(sec);
+  }
+  }
+
+  detailEl.appendChild(art);
+});
+
+/* ---------- file tree ---------- */
+(function buildFileTree() {
+  const byFile = new Map(); // file → 出現順のhunk ID一覧
+  for (const g of groups)
+    for (const s of g.sections || (g.hunks ? [{ hunks: g.hunks }] : []))
+      for (const h of s.hunks || []) {
+        if (!byFile.has(h.file)) byFile.set(h.file, []);
+        byFile.get(h.file).push(h.id);
+      }
+  const root = {};
+  for (const file of [...byFile.keys()].sort()) {
+    const parts = file.split("/");
+    let node = root;
+    parts.forEach((p, i) => {
+      if (i === parts.length - 1) (node.files ??= []).push({ name: p, file });
+      else node = (node.dirs ??= {})[p] ??= {};
+    });
+  }
+  function render(node) {
+    let html = "<ul>";
+    for (let [name, child] of Object.entries(node.dirs || {})) {
+      // 単一子ディレクトリの連結 (a > b > c → a/b/c)
+      while (child.dirs && Object.keys(child.dirs).length === 1 && !(child.files || []).length) {
+        const k = Object.keys(child.dirs)[0];
+        name += "/" + k;
+        child = child.dirs[k];
+      }
+      html += `<li class="ft-dir"><div class="ft-name"><span class="caret">▼</span>${esc(name)}</div>${render(child)}</li>`;
+    }
+    for (const f of node.files || []) {
+      const ids = byFile.get(f.file);
+      html += `<li class="ft-file" data-file-jump="${esc(ids[0])}" title="${esc(f.file)}">
+        <span class="n">${esc(f.name)}</span><span class="cnt">${ids.length}</span></li>`;
+    }
+    return html + "</ul>";
+  }
+  document.getElementById("ft-root").innerHTML = render(root);
+})();
+
+/* ---------- comments ---------- */
+function commentMeta(key) {
+  // key = hunkId:rowIndex → {file, lineLabel}
+  const [hid, idx] = [key.slice(0, key.lastIndexOf(":")), +key.slice(key.lastIndexOf(":") + 1)];
+  for (const g of groups)
+  for (const s of g.sections || (g.hunks ? [{ hunks: g.hunks }] : []))
+  for (const h of s.hunks || []) {
+    if (h.id !== hid) continue;
+    const r = parseHunk(h.diff || "").rows[idx];
+    const line = r ? (r.new != null ? "L" + r.new : "旧L" + r.old) : "";
+    return { file: h.file, line, code: r ? r.raw : "" };
+  }
+  return { file: "?", line: "", code: "" };
+}
+
+function renderCommentSlot(key) {
+  const slot = document.querySelector(`tr[data-slot="${CSS.escape(key)}"]`);
+  const row = document.querySelector(`tr[data-ckey="${CSS.escape(key)}"]`);
+  if (!slot) return;
+  const cell = slot.firstElementChild;
+  const text = state.comments[key];
+  row?.classList.toggle("has-comment", !!text);
+  if (text == null) { slot.hidden = true; cell.innerHTML = ""; return; }
+  slot.hidden = false;
+  cell.innerHTML = `<div class="comment-view">
+    <div class="cv-head"><span class="label">コメント</span><span class="spacer"></span>
+      <button class="link-btn" data-edit="${esc(key)}">編集</button>
+      <button class="link-btn danger" data-delete="${esc(key)}">削除</button></div>
+    <div class="txt">${esc(text)}</div></div>`;
+}
+
+function openEditor(key) {
+  const slot = document.querySelector(`tr[data-slot="${CSS.escape(key)}"]`);
+  if (!slot) return;
+  const cell = slot.firstElementChild;
+  slot.hidden = false;
+  cell.innerHTML = `<div class="comment-editor">
+    <div class="ce-head">COMMENT — この行へ</div>
+    <textarea placeholder="コメントを入力… (⌘Enterで保存、Escでキャンセル)">${esc(state.comments[key] || "")}</textarea>
+    <div class="ce-actions">
+      <button class="mini-btn" data-cancel="${esc(key)}">キャンセル</button>
+      <button class="mini-btn primary" data-save="${esc(key)}">保存</button>
+    </div></div>`;
+  cell.querySelector("textarea").focus();
+}
+
+function renderGroupComment(gid) {
+  const wrap = document.querySelector(`[data-gcwrap="${CSS.escape(gid)}"]`);
+  if (!wrap) return;
+  const text = state.groupComments[gid];
+  if (text == null) { wrap.innerHTML = ""; return; }
+  wrap.innerHTML = `<div class="comment-view">
+    <div class="cv-head"><span class="label">グループコメント</span><span class="spacer"></span>
+      <button class="link-btn" data-gedit="${esc(gid)}">編集</button>
+      <button class="link-btn danger" data-gdelete="${esc(gid)}">削除</button></div>
+    <div class="txt">${esc(text)}</div></div>`;
+}
+
+function openGroupEditor(gid) {
+  const wrap = document.querySelector(`[data-gcwrap="${CSS.escape(gid)}"]`);
+  wrap.innerHTML = `<div class="comment-editor">
+    <div class="ce-head">COMMENT — このグループ全体へ(設計面など)</div>
+    <textarea placeholder="コメントを入力… (⌘Enterで保存、Escでキャンセル)">${esc(state.groupComments[gid] || "")}</textarea>
+    <div class="ce-actions">
+      <button class="mini-btn" data-gcancel="${esc(gid)}">キャンセル</button>
+      <button class="mini-btn primary" data-gsave="${esc(gid)}">保存</button>
+    </div></div>`;
+  wrap.querySelector("textarea").focus();
+}
+
+/* ---------- counters / drawer ---------- */
+function refreshCounters() {
+  const nComments = Object.values(state.comments).filter(v => v != null).length +
+    Object.values(state.groupComments).filter(v => v != null).length;
+  document.getElementById("comment-count").textContent = `コメント ${nComments}件`;
+  if (document.getElementById("drawer").classList.contains("open")) renderDrawer();
+}
+
+function renderDrawer() {
+  const list = document.getElementById("drawer-list");
+  const items = [];
+  for (const g of groups) {
+    if (state.groupComments[g.id] != null) {
+      items.push(`<div class="drawer-item" data-goto-group="${esc(g.id)}">
+        <div class="where">グループ: ${esc(g.title)}</div>
+        <div class="body">${esc(state.groupComments[g.id])}</div></div>`);
+    }
+  }
+  for (const [key, text] of Object.entries(state.comments)) {
+    if (text == null) continue;
+    const m = commentMeta(key);
+    items.push(`<div class="drawer-item" data-goto-line="${esc(key)}">
+      <div class="where">${esc(m.file)} ${esc(String(m.line))}</div>
+      <div class="body">${esc(text)}</div></div>`);
+  }
+  list.innerHTML = items.length ? items.join("") : `<div class="drawer-empty">コメントはまだありません</div>`;
+}
+
+function toggleDrawer(open) {
+  const drawer = document.getElementById("drawer");
+  const on = open ?? !drawer.classList.contains("open");
+  if (on) renderDrawer();
+  drawer.classList.toggle("open", on);
+  document.getElementById("comment-count").classList.toggle("active", on);
+}
+
+/* ---------- summary markdown ---------- */
+function buildMarkdown() {
+  const lines = [];
+  lines.push(`# Diff Review 結果: ${DATA.title || ""}`);
+  lines.push(`- 範囲: ${DATA.base || "-"} / plan: ${DATA.plan || "なし"} / 生成: ${DATA.generatedAt || "-"}`);
+  lines.push("");
+  if (DATA.overview) lines.push("## 概要", DATA.overview, "");
+
+  lines.push("## 人間コメント");
+  let any = false;
+  for (const g of groups) {
+    if (state.groupComments[g.id] != null) {
+      any = true;
+      lines.push(`- [グループ ${g.id}] ${g.title}: ${state.groupComments[g.id]}`);
+    }
+  }
+  for (const [key, text] of Object.entries(state.comments)) {
+    if (text == null) continue;
+    any = true;
+    const m = commentMeta(key);
+    lines.push(`- ${m.file} ${m.line} (\`${m.code.trim()}\`): ${text}`);
+  }
+  if (!any) lines.push("- なし");
+  return lines.join("\n");
+}
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+async function copySummary() {
+  const md = buildMarkdown();
+  try {
+    await navigator.clipboard.writeText(md);
+    toast("まとめをコピーしました");
+  } catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = md;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+    toast("まとめをコピーしました");
+  }
+}
+
+let sent = false;
+async function finishReview() {
+  const btn = document.getElementById("finish-btn");
+  btn.disabled = true;
+  const payload = {
+    title: DATA.title,
+    finished: true,
+    comments: Object.entries(state.comments).filter(([, v]) => v != null)
+      .map(([key, text]) => ({ key, ...commentMeta(key), text })),
+    groupComments: Object.entries(state.groupComments).filter(([, v]) => v != null)
+      .map(([gid, text]) => ({ group: gid, text })),
+    markdown: buildMarkdown(),
+  };
+  try {
+    await fetch("/api/finish", { method: "POST", body: JSON.stringify(payload) });
+    toast(sent ? "更新した結果を再送信しました" : "結果をセッションへ返しました。画面はこのまま使えます");
+    sent = true;
+    btn.classList.add("sent");
+    btn.textContent = "レビュー完了(再送信)";
+  } catch (e) {
+    toast("送信に失敗しました(サーバ停止済み?)");
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click", e => {
+  const ftName = e.target.closest(".ft-dir > .ft-name");
+  if (ftName) { ftName.parentElement.classList.toggle("closed"); return; }
+  const ftFile = e.target.closest(".ft-file");
+  if (ftFile) { document.getElementById("hunk-" + ftFile.dataset.fileJump)?.scrollIntoView(); return; }
+  const item = e.target.closest(".drawer-item");
+  if (item) {
+    let target = null;
+    if (item.dataset.gotoGroup) target = document.getElementById(item.dataset.gotoGroup);
+    if (item.dataset.gotoLine) target = document.querySelector(`tr[data-slot="${CSS.escape(item.dataset.gotoLine)}"]`);
+    target?.scrollIntoView({ block: "center" });
+    return;
+  }
+  const t = e.target.closest("button");
+  if (!t) return;
+  if (t.dataset.comment != null) openEditor(t.dataset.comment);
+  if (t.dataset.edit != null) openEditor(t.dataset.edit);
+  if (t.dataset.save != null) {
+    const v = t.closest(".comment-editor").querySelector("textarea").value.trim();
+    if (v) state.comments[t.dataset.save] = v; else delete state.comments[t.dataset.save];
+    saveState(); renderCommentSlot(t.dataset.save);
+  }
+  if (t.dataset.delete != null) { delete state.comments[t.dataset.delete]; saveState(); renderCommentSlot(t.dataset.delete); }
+  if (t.dataset.cancel != null) renderCommentSlot(t.dataset.cancel);
+  if (t.dataset.gcancel != null) renderGroupComment(t.dataset.gcancel);
+  if (t.dataset.gcomment != null) openGroupEditor(t.dataset.gcomment);
+  if (t.dataset.gedit != null) openGroupEditor(t.dataset.gedit);
+  if (t.dataset.gsave != null) {
+    const v = t.closest(".comment-editor").querySelector("textarea").value.trim();
+    if (v) state.groupComments[t.dataset.gsave] = v; else delete state.groupComments[t.dataset.gsave];
+    saveState(); renderGroupComment(t.dataset.gsave);
+  }
+  if (t.dataset.gdelete != null) { delete state.groupComments[t.dataset.gdelete]; saveState(); renderGroupComment(t.dataset.gdelete); }
+});
+document.getElementById("copy-btn").addEventListener("click", copySummary);
+document.getElementById("comment-count").addEventListener("click", () => toggleDrawer());
+document.getElementById("drawer-close").addEventListener("click", () => toggleDrawer(false));
+document.getElementById("finish-btn").addEventListener("click", finishReview);
+document.getElementById("help-btn").addEventListener("click", () =>
+  document.getElementById("help-overlay").classList.add("show"));
+document.querySelectorAll(".overlay").forEach(o =>
+  o.addEventListener("click", e => { if (e.target === o) o.classList.remove("show"); }));
+
+/* keyboard: j/k group navigation, c copy */
+function currentGroupIndex() {
+  const y = 80;
+  let cur = 0;
+  groups.forEach((g, i) => {
+    const r = document.getElementById(g.id).getBoundingClientRect();
+    if (r.top <= y) cur = i;
+  });
+  return cur;
+}
+document.addEventListener("keydown", e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && e.target.matches(".comment-editor textarea")) {
+    e.preventDefault();
+    e.target.closest(".comment-editor").querySelector("[data-save], [data-gsave]")?.click();
+    return;
+  }
+  if (e.key === "Escape" && e.target.matches(".comment-editor textarea")) {
+    e.target.closest(".comment-editor").querySelector("[data-cancel], [data-gcancel]")?.click();
+    return;
+  }
+  if (e.key === "Escape") { toggleDrawer(false); return; }
+  if (e.target.matches("textarea, input") || e.metaKey || e.ctrlKey) return;
+  if (e.key === "j" || e.key === "k") {
+    const i = currentGroupIndex() + (e.key === "j" ? 1 : -1);
+    if (groups[i]) document.getElementById(groups[i].id).scrollIntoView();
+  } else if (e.key === "c") {
+    copySummary();
+  } else if (e.key === "?") {
+    document.getElementById("help-overlay").classList.add("show");
+  }
+});
+
+/* ---------- init ---------- */
+for (const key of Object.keys(state.comments)) renderCommentSlot(key);
+for (const gid of Object.keys(state.groupComments)) renderGroupComment(gid);
+refreshCounters();
+</script>
+</body>
+</html>
