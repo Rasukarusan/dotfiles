@@ -111,10 +111,14 @@ body.hide-tests :is(.hunk.is-test, .section-head.is-test, .ft-file.is-test,
   cursor: pointer; transition: all .12s;
 }
 .drawer-item:hover { border-color: var(--border-strong); background: var(--gray-bg); }
+.drawer-item.resolved { opacity: .55; }
+.drawer-item.resolved .where { color: var(--green); }
 .drawer-item .where {
+  display: flex; gap: 8px; align-items: center;
   font-family: var(--mono); font-size: 11px; color: var(--ink-faint);
-  margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  margin-bottom: 4px;
 }
+.drawer-item .where .w { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .drawer-item .body { font-size: 13px; line-height: 1.6; white-space: pre-wrap; }
 .drawer-empty { color: var(--ink-faint); font-size: 13px; text-align: center; margin-top: 40px; }
 
@@ -191,8 +195,9 @@ main { max-width: 1060px; margin: 0 auto; padding: 28px 24px 64px; }
   animation: rise .4s ease backwards;
 }
 .index-card:hover { transform: translateY(-1px); border-color: var(--border-strong); }
-.index-card.risk-high { border-left-color: var(--red); }
-.index-card.risk-medium { border-left-color: #e0a41f; }
+.index-card.risk-high { border-left-color: #1f2328; }
+.index-card.risk-medium { border-left-color: #a7aeb8; }
+.index-card.risk-low { border-left-color: #e2e5ea; }
 .index-card .txt { flex: 1; min-width: 0; }
 .index-card .t { font-weight: 700; font-size: 14.5px; }
 .index-card .s {
@@ -212,9 +217,10 @@ main { max-width: 1060px; margin: 0 auto; padding: 28px 24px 64px; }
 .chip.hunks { color: var(--ink-soft); font-family: var(--mono); font-weight: 500; padding: 4px 2px; }
 .chip.question { color: var(--amber); font-weight: 700; padding: 4px 2px; }
 .risk-badge { font-size: 12px; padding: 4px 9px; border-radius: 6px; font-weight: 700; white-space: nowrap; }
-.risk-badge.high { background: var(--red-bg); color: var(--red); }
-.risk-badge.medium { background: var(--amber-bg); color: var(--amber); }
-.risk-badge.low { background: var(--gray-bg); color: var(--gray); }
+.risk-badge .dots { font-size: 8.5px; letter-spacing: 1px; vertical-align: 1px; margin-right: 4px; }
+.risk-badge.high { background: #1f2328; color: #fff; }
+.risk-badge.medium { background: #e8eaee; color: #3d434c; }
+.risk-badge.low { background: var(--gray-bg); color: var(--ink-faint); }
 
 /* ---------- group detail ---------- */
 .group {
@@ -224,8 +230,9 @@ main { max-width: 1060px; margin: 0 auto; padding: 28px 24px 64px; }
   margin: 0 0 26px; overflow: hidden;
   scroll-margin-top: 70px;
 }
-.group.risk-high { border-left-color: var(--red); }
-.group.risk-medium { border-left-color: #e0a41f; }
+.group.risk-high { border-left-color: #1f2328; }
+.group.risk-medium { border-left-color: #a7aeb8; }
+.group.risk-low { border-left-color: #e2e5ea; }
 .group-head {
   display: flex; align-items: flex-start; gap: 12px; padding: 18px 20px 0;
   cursor: pointer; user-select: none;
@@ -481,6 +488,7 @@ td.wide { padding: 6px 14px 6px 4.8em; }
 <div class="toast" id="toast"></div>
 
 <script id="review-data" type="application/json">__REVIEW_DATA__</script>
+<script id="review-state" type="application/json">__REVIEW_STATE__</script>
 <script>
 "use strict";
 const DATA = JSON.parse(document.getElementById("review-data").textContent);
@@ -493,12 +501,21 @@ function fingerprint(s) {
   return (h >>> 0).toString(36);
 }
 const LS_KEY = "kaisetsu:" + fingerprint(document.getElementById("review-data").textContent);
-let state = { comments: {}, groupComments: {} };
+let state = { comments: {}, groupComments: {}, resolved: {}, groupResolved: {} };
 let replies = { comments: {}, groupComments: {} }; // AIからのコメント回答(/api/replies をポーリング)
-try { state = Object.assign(state, JSON.parse(localStorage.getItem(LS_KEY) || "{}")); } catch (e) {}
+// 復元: localStorage と サーバ埋め込みのstate.json の新しい方(_savedAtで比較)を使う
+{
+  let localState = null, serverState = null;
+  try { localState = JSON.parse(localStorage.getItem(LS_KEY) || "null"); } catch (e) {}
+  try { serverState = JSON.parse(document.getElementById("review-state").textContent); } catch (e) {}
+  const pick = (serverState?._savedAt || 0) > (localState?._savedAt || 0)
+    ? serverState : (localState || serverState);
+  if (pick) state = Object.assign(state, pick);
+}
 
 let saveTimer = null;
 function saveState() {
+  state._savedAt = Date.now();
   localStorage.setItem(LS_KEY, JSON.stringify(state));
   if (SERVER) {
     clearTimeout(saveTimer);
@@ -511,9 +528,9 @@ function saveState() {
 
 /* ---------- data prep ---------- */
 const RISK = {
-  high:   { rank: 0, label: "要注意", cls: "high" },
-  medium: { rank: 1, label: "注意",   cls: "medium" },
-  low:    { rank: 2, label: "低リスク", cls: "low" },
+  high:   { rank: 0, label: "要注意", cls: "high",   dots: "●●●" },
+  medium: { rank: 1, label: "注意",   cls: "medium", dots: "●●○" },
+  low:    { rank: 2, label: "低",     cls: "low",    dots: "●○○" },
 };
 const isTestFile = f => /(\.test\.|\.spec\.|_test\.|__tests__|(^|\/)tests?\/)/.test(f);
 
@@ -655,7 +672,7 @@ groups.forEach((g, gi) => {
       ${nQuestion ? `<span class="chip question">疑問 ${nQuestion}</span>` : ""}
       ${(g.tags || []).map(t => `<span class="chip tag">${esc(t)}</span>`).join("")}
       <span class="chip hunks">${allHunks.length} hunks</span>
-      <span class="risk-badge ${risk.cls}">${risk.label}</span>
+      <span class="risk-badge ${risk.cls}"><span class="dots">${risk.dots}</span>${risk.label}</span>
     </div>`;
   li.addEventListener("click", () => document.getElementById(g.id).scrollIntoView());
   indexEl.appendChild(li);
@@ -675,7 +692,7 @@ groups.forEach((g, gi) => {
   head.title = "クリックで折りたたみ";
   head.innerHTML = `
     <span class="gcaret">▼</span>
-    <span class="risk-badge ${risk.cls}">${risk.label}</span>
+    <span class="risk-badge ${risk.cls}"><span class="dots">${risk.dots}</span>${risk.label}</span>
     <h2>${esc(g.title)}</h2>`;
   head.addEventListener("click", e => {
     if (e.target.closest("button")) return;
@@ -828,12 +845,15 @@ function renderCommentSlot(key) {
   if (!slot) return;
   const cell = slot.firstElementChild;
   const text = state.comments[key];
-  row?.classList.toggle("has-comment", !!text);
-  if (text == null) { slot.hidden = true; cell.innerHTML = ""; return; }
+  const done = !!state.resolved[key];
+  row?.classList.toggle("has-comment", text != null && !done);
+  // 解決済みはdiff上では非表示(コメント一覧サイドバーからのみ参照・再開できる)
+  if (text == null || done) { slot.hidden = true; cell.innerHTML = ""; return; }
   slot.hidden = false;
   const rep = replies.comments[key];
   cell.innerHTML = `<div class="comment-view">
     <div class="cv-head"><span class="label">コメント</span><span class="spacer"></span>
+      <button class="link-btn" data-resolve="${esc(key)}">✓ 解決</button>
       <button class="link-btn" data-edit="${esc(key)}">編集</button>
       <button class="link-btn danger" data-delete="${esc(key)}">削除</button></div>
     <div class="txt">${esc(text)}</div>
@@ -859,10 +879,12 @@ function renderGroupComment(gid) {
   const wrap = document.querySelector(`[data-gcwrap="${CSS.escape(gid)}"]`);
   if (!wrap) return;
   const text = state.groupComments[gid];
-  if (text == null) { wrap.innerHTML = ""; return; }
+  // 解決済みはdiff上では非表示(コメント一覧サイドバーからのみ参照・再開できる)
+  if (text == null || state.groupResolved[gid]) { wrap.innerHTML = ""; return; }
   const rep = replies.groupComments[gid];
   wrap.innerHTML = `<div class="comment-view">
     <div class="cv-head"><span class="label">グループコメント</span><span class="spacer"></span>
+      <button class="link-btn" data-gresolve="${esc(gid)}">✓ 解決</button>
       <button class="link-btn" data-gedit="${esc(gid)}">編集</button>
       <button class="link-btn danger" data-gdelete="${esc(gid)}">削除</button></div>
     <div class="txt">${esc(text)}</div>
@@ -885,7 +907,11 @@ function openGroupEditor(gid) {
 function refreshCounters() {
   const nComments = Object.values(state.comments).filter(v => v != null).length +
     Object.values(state.groupComments).filter(v => v != null).length;
-  document.getElementById("comment-count").textContent = `コメント ${nComments}件`;
+  const nResolved =
+    Object.keys(state.comments).filter(k => state.comments[k] != null && state.resolved[k]).length +
+    Object.keys(state.groupComments).filter(g => state.groupComments[g] != null && state.groupResolved[g]).length;
+  document.getElementById("comment-count").textContent =
+    `コメント ${nComments}件` + (nResolved ? ` (解決 ${nResolved})` : "");
   if (document.getElementById("drawer").classList.contains("open")) renderDrawer();
 }
 
@@ -894,16 +920,20 @@ function renderDrawer() {
   const items = [];
   for (const g of groups) {
     if (state.groupComments[g.id] != null) {
-      items.push(`<div class="drawer-item" data-goto-group="${esc(g.id)}">
-        <div class="where">グループ: ${esc(g.title)}</div>
+      const done = !!state.groupResolved[g.id];
+      items.push(`<div class="drawer-item${done ? " resolved" : ""}" data-goto-group="${esc(g.id)}">
+        <div class="where"><span class="w">${done ? "✓ " : ""}グループ: ${esc(g.title)}</span>
+          ${done ? `<button class="link-btn" data-gunresolve="${esc(g.id)}">再開</button>` : ""}</div>
         <div class="body">${esc(state.groupComments[g.id])}</div></div>`);
     }
   }
   for (const [key, text] of Object.entries(state.comments)) {
     if (text == null) continue;
     const m = commentMeta(key);
-    items.push(`<div class="drawer-item" data-goto-line="${esc(key)}">
-      <div class="where">${esc(m.file)} ${esc(String(m.line))}</div>
+    const done = !!state.resolved[key];
+    items.push(`<div class="drawer-item${done ? " resolved" : ""}" data-goto-line="${esc(key)}">
+      <div class="where"><span class="w">${done ? "✓ " : ""}${esc(m.file)} ${esc(String(m.line))}</span>
+        ${done ? `<button class="link-btn" data-unresolve="${esc(key)}">再開</button>` : ""}</div>
       <div class="body">${esc(text)}</div></div>`);
   }
   list.innerHTML = items.length ? items.join("") : `<div class="drawer-empty">コメントはまだありません</div>`;
@@ -935,14 +965,16 @@ function buildMarkdown() {
   for (const g of groups) {
     if (state.groupComments[g.id] != null) {
       any = true;
-      lines.push(`- [グループ ${g.id}] ${g.title}: ${state.groupComments[g.id]}`);
+      const done = state.groupResolved[g.id] ? "[解決済] " : "";
+      lines.push(`- ${done}[グループ ${g.id}] ${g.title}: ${state.groupComments[g.id]}`);
     }
   }
   for (const [key, text] of Object.entries(state.comments)) {
     if (text == null) continue;
     any = true;
     const m = commentMeta(key);
-    lines.push(`- ${m.file} ${m.line} (\`${m.code.trim()}\`): ${text}`);
+    const done = state.resolved[key] ? "[解決済] " : "";
+    lines.push(`- ${done}${m.file} ${m.line} (\`${m.code.trim()}\`): ${text}`);
   }
   if (!any) lines.push("- なし");
   return lines.join("\n");
@@ -979,9 +1011,9 @@ async function finishReview() {
     title: DATA.title,
     finished: true,
     comments: Object.entries(state.comments).filter(([, v]) => v != null)
-      .map(([key, text]) => ({ key, ...commentMeta(key), text })),
+      .map(([key, text]) => ({ key, ...commentMeta(key), text, resolved: !!state.resolved[key] })),
     groupComments: Object.entries(state.groupComments).filter(([, v]) => v != null)
-      .map(([gid, text]) => ({ group: gid, text })),
+      .map(([gid, text]) => ({ group: gid, text, resolved: !!state.groupResolved[gid] })),
     markdown: buildMarkdown(),
   };
   try {
@@ -1004,7 +1036,7 @@ document.addEventListener("click", e => {
   const fj = e.target.closest("[data-file-jump]");
   if (fj) { document.getElementById("hunk-" + fj.dataset.fileJump)?.scrollIntoView(); return; }
   const item = e.target.closest(".drawer-item");
-  if (item) {
+  if (item && !e.target.closest("button")) {
     let target = null;
     if (item.dataset.gotoGroup) target = document.getElementById(item.dataset.gotoGroup);
     if (item.dataset.gotoLine) target = document.querySelector(`tr[data-slot="${CSS.escape(item.dataset.gotoLine)}"]`);
@@ -1020,9 +1052,17 @@ document.addEventListener("click", e => {
     if (v) state.comments[t.dataset.save] = v; else delete state.comments[t.dataset.save];
     saveState(); renderCommentSlot(t.dataset.save);
   }
-  if (t.dataset.delete != null) { delete state.comments[t.dataset.delete]; saveState(); renderCommentSlot(t.dataset.delete); }
+  if (t.dataset.delete != null) {
+    delete state.comments[t.dataset.delete];
+    delete state.resolved[t.dataset.delete];
+    saveState(); renderCommentSlot(t.dataset.delete);
+  }
   if (t.dataset.cancel != null) renderCommentSlot(t.dataset.cancel);
   if (t.dataset.gcancel != null) renderGroupComment(t.dataset.gcancel);
+  if (t.dataset.resolve != null) { state.resolved[t.dataset.resolve] = true; saveState(); renderCommentSlot(t.dataset.resolve); }
+  if (t.dataset.unresolve != null) { delete state.resolved[t.dataset.unresolve]; saveState(); renderCommentSlot(t.dataset.unresolve); }
+  if (t.dataset.gresolve != null) { state.groupResolved[t.dataset.gresolve] = true; saveState(); renderGroupComment(t.dataset.gresolve); }
+  if (t.dataset.gunresolve != null) { delete state.groupResolved[t.dataset.gunresolve]; saveState(); renderGroupComment(t.dataset.gunresolve); }
   if (t.dataset.gcomment != null) openGroupEditor(t.dataset.gcomment);
   if (t.dataset.gedit != null) openGroupEditor(t.dataset.gedit);
   if (t.dataset.gsave != null) {
@@ -1030,7 +1070,11 @@ document.addEventListener("click", e => {
     if (v) state.groupComments[t.dataset.gsave] = v; else delete state.groupComments[t.dataset.gsave];
     saveState(); renderGroupComment(t.dataset.gsave);
   }
-  if (t.dataset.gdelete != null) { delete state.groupComments[t.dataset.gdelete]; saveState(); renderGroupComment(t.dataset.gdelete); }
+  if (t.dataset.gdelete != null) {
+    delete state.groupComments[t.dataset.gdelete];
+    delete state.groupResolved[t.dataset.gdelete];
+    saveState(); renderGroupComment(t.dataset.gdelete);
+  }
 });
 document.getElementById("copy-btn").addEventListener("click", copySummary);
 document.getElementById("comment-count").addEventListener("click", () => toggleDrawer());
