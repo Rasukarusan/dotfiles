@@ -44,4 +44,4 @@ python3 scripts/serve.py example/sample-data.json --build  # 静的HTMLを出力
   → Claudeが結果を読み、コメントに対応 → やりとりが終わったらサーバをkill
 ```
 
-過去のレビューは `~/.diff-review/<リポジトリ>/<日時>/` に残り、`/kaisetsu-list` で一覧・再開できる。
+過去のレビューは `~/.kaisetsu/<リポジトリ>/<日時>/` に残り、`/kaisetsu-list` で一覧・再開できる。

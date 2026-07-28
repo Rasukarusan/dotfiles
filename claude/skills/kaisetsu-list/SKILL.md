@@ -6,12 +6,12 @@ description: kaisetsuの過去レビューを一覧表示し、ユーザーが�
 # kaisetsu-list
 
 `/kaisetsu` で行ったレビューの履歴を一覧し、選ばれたレビューを再開するスキル。
-レビューは `~/.diff-review/<リポジトリ名>/<YYYYMMDD-HHMMSS>/review-data.json` に保存されている。
+レビューは `~/.kaisetsu/<リポジトリ名>/<YYYYMMDD-HHMMSS>/review-data.json` に保存されている。
 
 ## ① 一覧の収集
 
 ```bash
-find ~/.diff-review -mindepth 3 -maxdepth 3 -name 'review-data.json' | sort -r
+find ~/.kaisetsu -mindepth 3 -maxdepth 3 -name 'review-data.json' | sort -r
 ```
 
 各レビューについて以下を読み取る。**`review-data.json` はdiff全文を含むためReadしないこと。**
