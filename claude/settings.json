@@ -124,7 +124,7 @@
   },
   "feedbackSurveyRate": 0,
   "alwaysThinkingEnabled": true,
-  "effortLevel": "medium",
+  "effortLevel": "high",
   "tui": "default",
   "skipDangerousModePermissionPrompt": true,
   "agentPushNotifEnabled": true,
