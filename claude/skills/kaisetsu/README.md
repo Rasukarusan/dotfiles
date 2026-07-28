@@ -43,3 +43,5 @@ python3 scripts/serve.py example/sample-data.json --build  # 静的HTMLを出力
   → 「レビュー完了」→ サーバが review-data.result.json を書く(サーバは動き続け、追加コメントの再送信も可)
   → Claudeが結果を読み、コメントに対応 → やりとりが終わったらサーバをkill
 ```
+
+過去のレビューは `~/.diff-review/<リポジトリ>/<日時>/` に残り、`/kaisetsu-list` で一覧・再開できる。

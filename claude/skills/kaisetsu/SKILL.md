@@ -21,7 +21,9 @@ description: 大きめの差分を意図ごとにグループ化し、リスク�
 
 ## ① 差分収集
 
-- 作業ファイルは `~/.diff-review/<リポジトリ名>/` に置く(対象リポジトリを汚さない)。
+- 作業ファイルは `~/.diff-review/<リポジトリ名>/<YYYYMMDD-HHMMSS>/` に置く(対象リポジトリを汚さない)。
+  レビューごとに新しい日時ディレクトリを作る(過去レビューは `/kaisetsu-list` から参照されるため上書きしない)。
+  以下このディレクトリを `$REVIEW_DIR` と呼ぶ。
 - 範囲: 引数指定があればそれに従う。なければ未コミット差分(`git diff HEAD`)。
   ブランチ全体なら `BASE=$(bash ~/.claude/docs/get-base-branch.sh 2>/dev/null || echo main)` 相当でbaseを決めて `git diff $BASE...HEAD`。
 - 保存するもの:
@@ -34,8 +36,11 @@ plan(`plans/*.md` など)があれば読み、変更の意図を正確に説明�
 
 3階層で整理する: **group(意図の単位) > section(機能ごとの解説の単位) > hunk**。
 
-- まず全体の `overview` を書く: このブランチ/差分全体で何をやっているかの大まかな説明(2〜5文)。
-  plan・PR説明・ブランチ名を踏まえ、レビュー画面の最上部に表示される前提で「初見の人が読む導入」として書く。
+- まず `tagline` を書く: PRの一言説明。**多少正確でなくてもよいので、全体が一発で掴めるざっくりした説明**にする
+  (例: 「URLの組み立てを1か所に集約するリファクタリング」)。概要の最初に大きく表示される。
+- 次に `overview` を書く: このブランチ/差分全体で何をやっているかを、`- ` 始まりの箇条書き3〜5点で
+  シンプルに書く(1点1行・改行区切り)。plan・PR説明・ブランチ名を踏まえ、
+  レビュー画面の最上部に表示される前提で「初見の人が読む導入」として書く。
 - hunkを**意図単位**でグループ化する(例: rename+関連import修正=1グループ)。ファイル単位ではない。
 - 各グループに `intent`(何のための変更か)と、必要なら `impact`(影響範囲)を書く。
 - 各グループに `risk` を付ける。これは「人間がどれだけ注意して読むべきか」の読み順ガイド:
@@ -54,17 +59,19 @@ plan(`plans/*.md` など)があれば読み、変更の意図を正確に説明�
 
 ## ③④ 画面生成・起動
 
-1. schema.md に従い `~/.diff-review/<repo>/review-data.json` を書く。
-   グループはリスク順(high→medium→low)に並べておく。
-2. サーバをバックグラウンドで起動(ブラウザが自動で開く):
+1. schema.md に従い `$REVIEW_DIR/review-data.json` を書く。
+   グループはリスク順(high→medium→low)に並べておく。`repoRoot` に対象リポジトリの絶対パスを入れる。
+2. サーバをバックグラウンドで起動(ブラウザが自動で開く)。
+   **対象リポジトリのルートをCWDにして実行する**(画面のplanリンクは `/plan` で planファイルを配信するため、
+   `plan` の相対パスがCWDから解決できる必要がある):
    ```bash
-   python3 $SKILL_DIR/scripts/serve.py ~/.diff-review/<repo>/review-data.json
+   python3 $SKILL_DIR/scripts/serve.py $REVIEW_DIR/review-data.json
    ```
    Bashツールの `run_in_background: true` で実行すること。起動直後にURL・結果パス・pidがstdoutに出る。
    **サーバは「レビュー完了」後も止まらない**(ユーザーは画面を見続けられる)。
 3. 完了検知用に、結果ファイルの出現を待つコマンドを別途バックグラウンドで実行する:
    ```bash
-   until [ -f ~/.diff-review/<repo>/review-data.result.json ]; do sleep 2; done
+   until [ -f $REVIEW_DIR/review-data.result.json ]; do sleep 2; done
    ```
    (`run_in_background: true`。ユーザーが画面で「レビュー完了」を押すと結果JSONが書かれ、
    このコマンドが終了してタスク通知が来る)
@@ -74,6 +81,9 @@ plan(`plans/*.md` など)があれば読み、変更の意図を正確に説明�
 
 1. `review-data.result.json` を読む。`markdown` フィールドに人間可読なまとめが入っている。
 2. まとめをユーザーに提示し、人間コメントに対応する(修正 or 回答)。
+3. **各コメントへの回答を `$REVIEW_DIR/review-data.replies.json` に書く**(形式はschema.md参照。
+   `key` はresult.jsonのcommentsの `key` をそのまま使う)。画面が数秒ごとに自動で拾い、
+   該当コメントの下に「回答」として表示される。コードを修正した場合も「修正済み: 〜」と回答を書く。
 3. **サーバは起動したままにする**(ユーザーが画面を見返したり、追加コメントして再度「レビュー完了」を押せる。
    再送信されると結果JSONが上書きされるので、対応中に更新がないか意識する)。
    レビューのやりとりがすべて終わったら、起動時に表示されたpidで `kill <pid>` して片付ける。
@@ -83,4 +93,5 @@ plan(`plans/*.md` など)があれば読み、変更の意図を正確に説明�
 - 静的HTMLだけ欲しい場合(別セッションへの共有など): `serve.py <data.json> --build out.html`
 - 画面の「まとめをコピー」は、コメントを**別セッション(Codex等)へ貼る**ための導線。本セッションで完結する場合は「レビュー完了」を使う。
 - 途中経過は `review-data.state.json` に自動保存される。サーバが落ちてもブラウザのlocalStorageに残る(同一データなら復元される)。
-- 再実行時は古い `*.result.json` を消してから起動すること(完了検知が即発火してしまうため)。
+- 同じ `$REVIEW_DIR` でサーバを再起動する場合は、古い `*.result.json` を消してから起動すること(完了検知が即発火してしまうため)。
+- 過去レビューの一覧・再開は `/kaisetsu-list` スキルから行える。
