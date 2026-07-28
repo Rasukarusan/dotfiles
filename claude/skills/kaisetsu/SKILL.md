@@ -61,6 +61,8 @@ plan(`plans/*.md` など)があれば読み、変更の意図を正確に説明�
 
 1. schema.md に従い `$REVIEW_DIR/review-data.json` を書く。
    グループはリスク順(high→medium→low)に並べておく。`repoRoot` に対象リポジトリの絶対パスを入れる。
+   あわせて一覧用の `$REVIEW_DIR/meta.json` を書く(`/kaisetsu-list` がdiff全文を開かずに一覧を出すためのもの。
+   内容は title / tagline / repoRoot / generatedAt のみ。schema.md参照)。
 2. サーバをバックグラウンドで起動(ブラウザが自動で開く)。
    **対象リポジトリのルートをCWDにして実行する**(画面のplanリンクは `/plan` で planファイルを配信するため、
    `plan` の相対パスがCWDから解決できる必要がある):
@@ -81,6 +83,7 @@ plan(`plans/*.md` など)があれば読み、変更の意図を正確に説明�
 
 1. `review-data.result.json` を読む。`markdown` フィールドに人間可読なまとめが入っている。
 2. まとめをユーザーに提示し、人間コメントに対応する(修正 or 回答)。
+   `resolved: true` のコメント(画面で「✓ 解決」済み)は対応不要。未解決のみ対応する。
 3. **各コメントへの回答を `$REVIEW_DIR/review-data.replies.json` に書く**(形式はschema.md参照。
    `key` はresult.jsonのcommentsの `key` をそのまま使う)。画面が数秒ごとに自動で拾い、
    該当コメントの下に「回答」として表示される。コードを修正した場合も「修正済み: 〜」と回答を書く。
@@ -92,6 +95,7 @@ plan(`plans/*.md` など)があれば読み、変更の意図を正確に説明�
 
 - 静的HTMLだけ欲しい場合(別セッションへの共有など): `serve.py <data.json> --build out.html`
 - 画面の「まとめをコピー」は、コメントを**別セッション(Codex等)へ貼る**ための導線。本セッションで完結する場合は「レビュー完了」を使う。
-- 途中経過は `review-data.state.json` に自動保存される。サーバが落ちてもブラウザのlocalStorageに残る(同一データなら復元される)。
+- 途中経過(コメント・解決状態)は `review-data.state.json` に自動保存され、画面を開き直すと
+  localStorage と state.json の新しい方から復元される(別ブラウザで開いてもstate.jsonから復元される)。
 - 同じ `$REVIEW_DIR` でサーバを再起動する場合は、古い `*.result.json` を消してから起動すること(完了検知が即発火してしまうため)。
 - 過去レビューの一覧・再開は `/kaisetsu-list` スキルから行える。

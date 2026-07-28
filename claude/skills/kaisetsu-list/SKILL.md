@@ -14,12 +14,15 @@ description: kaisetsuの過去レビューを一覧表示し、ユーザーが�
 find ~/.diff-review -mindepth 3 -maxdepth 3 -name 'review-data.json' | sort -r
 ```
 
-各レビューについて以下を読み取る(jq可):
+各レビューについて以下を読み取る。**`review-data.json` はdiff全文を含むためReadしないこと。**
+表示用の値は同じディレクトリの小さな `meta.json` から取る(1回のBashでjqをループさせて全行を作るとよい):
 
 - 日時: ディレクトリ名(`YYYYMMDD-HHMMSS`)
 - リポジトリ: 親ディレクトリ名
-- `title` / `repoRoot`: review-data.json から
-- 状態: 同じディレクトリに `review-data.result.json` があれば **完了済み**。あればコメント件数(`.comments + .groupComments` の長さ)も取る
+- `title` / `tagline` / `repoRoot`: `meta.json` から(無い旧レビューのみ `jq -r '.title, .repoRoot'` で
+  review-data.json からフィールド抽出する。この場合もReadは使わない)
+- 状態: 同じディレクトリに `review-data.result.json` があれば **完了済み**。あればコメント件数
+  (`.comments + .groupComments` の長さ)もjqで取る
 
 ## ② 一覧の提示と選択
 

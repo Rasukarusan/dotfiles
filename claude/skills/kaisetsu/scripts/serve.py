@@ -24,14 +24,15 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 
-def render(data: dict) -> str:
+def render(data: dict, state_text: str = "null") -> str:
     template = (ROOT / "template.html").read_text(encoding="utf-8")
     payload = json.dumps(data, ensure_ascii=False)
     # <script>内埋め込みのため、終了タグとして解釈されうる並びをエスケープ
     payload = payload.replace("</", "<\\/")
-    if "__REVIEW_DATA__" not in template:
-        sys.exit("template.html に __REVIEW_DATA__ プレースホルダがありません")
-    return template.replace("__REVIEW_DATA__", payload)
+    state_payload = state_text.replace("</", "<\\/")
+    if "__REVIEW_DATA__" not in template or "__REVIEW_STATE__" not in template:
+        sys.exit("template.html に __REVIEW_DATA__ / __REVIEW_STATE__ プレースホルダがありません")
+    return template.replace("__REVIEW_DATA__", payload).replace("__REVIEW_STATE__", state_payload)
 
 
 def free_port() -> int:
@@ -52,16 +53,18 @@ def main() -> None:
 
     data_path = pathlib.Path(args.data).resolve()
     data = json.loads(data_path.read_text(encoding="utf-8"))
-    html = render(data)
+    state_path = data_path.with_suffix(".state.json")    # 自動保存(途中経過)。画面はここから復元できる
+
+    def state_text() -> str:
+        return state_path.read_text(encoding="utf-8") if state_path.is_file() else "null"
 
     if args.build is not None:
         out = data_path.with_suffix(".html") if args.build == "-" else pathlib.Path(args.build)
-        out.write_text(html, encoding="utf-8")
+        out.write_text(render(data, state_text()), encoding="utf-8")
         print(out)
         return
 
     result_path = pathlib.Path(args.result) if args.result else data_path.with_suffix(".result.json")
-    state_path = data_path.with_suffix(".state.json")    # 自動保存(途中経過)
     replies_path = data_path.with_suffix(".replies.json")  # AIからのコメント回答(画面がポーリングで拾う)
     port = args.port or free_port()
 
@@ -82,7 +85,8 @@ def main() -> None:
 
         def do_GET(self):
             if self.path in ("/", "/index.html"):
-                self._respond(200, html.encode("utf-8"), "text/html; charset=utf-8")
+                # 毎回レンダリングし、最新のstate(コメント途中経過)を埋め込む
+                self._respond(200, render(data, state_text()).encode("utf-8"), "text/html; charset=utf-8")
             elif self.path == "/api/replies":
                 body = replies_path.read_bytes() if replies_path.is_file() else b"{}"
                 self._respond(200, body, "application/json; charset=utf-8")
