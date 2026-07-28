@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Diff Review</title>
+<title>kaisetsu</title>
 <style>
 :root {
   --bg: #f4f5f7;
@@ -77,6 +77,14 @@ button { font-family: inherit; }
 .comment-count:hover, .comment-count.active {
   border-color: var(--border); background: var(--gray-bg); color: var(--ink);
 }
+.topbar .opt {
+  display: flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 12px; color: var(--ink-soft);
+  cursor: pointer; user-select: none; white-space: nowrap;
+}
+.topbar .opt input { accent-color: var(--blue); cursor: pointer; }
+body.hide-tests :is(.hunk.is-test, .section-head.is-test, .ft-file.is-test,
+  .group.is-test, .index-card.is-test) { display: none; }
 
 /* ---------- comment drawer(右サイドバー) ---------- */
 .drawer {
@@ -121,8 +129,8 @@ button { font-family: inherit; }
   font-family: var(--mono); font-size: 11px; letter-spacing: .22em;
   color: var(--ink-faint); margin: 0 0 10px 6px;
 }
-.filetree ul { list-style: none; margin: 0; padding: 0 0 0 14px; }
-.filetree > div > ul { padding-left: 0; }
+.ftree ul { list-style: none; margin: 0; padding: 0; }
+.ftree ul ul { padding-left: 14px; }
 .ft-dir > .ft-name, .ft-file {
   display: flex; align-items: center; gap: 5px;
   padding: 2.5px 6px; border-radius: 6px; cursor: pointer; user-select: none;
@@ -157,10 +165,19 @@ main { max-width: 1060px; margin: 0 auto; padding: 28px 24px 64px; }
   margin: -6px 0 16px;
 }
 .meta-line b { color: var(--ink-soft); font-weight: 600; }
+.meta-line a { color: var(--blue); text-decoration: none; }
+.meta-line a:hover { text-decoration: underline; }
 .overview {
   font-size: 14.5px; line-height: 1.9; color: var(--ink);
-  margin: 0 0 6px; max-width: 880px; white-space: pre-wrap;
+  margin: 0 0 6px; max-width: 880px;
 }
+.overview .tagline {
+  font-size: 19px; font-weight: 700; line-height: 1.5;
+  margin: 0 0 10px;
+}
+.overview ul { margin: 0; padding-left: 1.4em; }
+.overview li { margin: 2px 0; }
+.overview p { margin: 0 0 6px; }
 
 /* ---------- group index ---------- */
 .group-index { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
@@ -209,12 +226,25 @@ main { max-width: 1060px; margin: 0 auto; padding: 28px 24px 64px; }
 }
 .group.risk-high { border-left-color: var(--red); }
 .group.risk-medium { border-left-color: #e0a41f; }
-.group-head { display: flex; align-items: flex-start; gap: 12px; padding: 18px 20px 0; }
+.group-head {
+  display: flex; align-items: flex-start; gap: 12px; padding: 18px 20px 0;
+  cursor: pointer; user-select: none;
+}
 .group-head h2 { font-size: 17px; margin: 0; flex: 1; line-height: 1.45; }
 .group-head .risk-badge { margin-top: 2px; }
-.intent { padding: 8px 20px 4px; color: var(--ink); font-size: 14px; }
+.group-head .gcaret { font-size: 10px; color: var(--ink-faint); margin-top: 6px; transition: transform .12s; }
+.group.g-collapsed .group-head { padding-bottom: 18px; }
+.group.g-collapsed .group-head .gcaret { transform: rotate(-90deg); }
+.group.g-collapsed > :not(.group-head) { display: none; }
+.intent-row { display: flex; gap: 16px; align-items: flex-start; padding: 8px 20px 4px; }
+.intent { flex: 1; margin: 0; color: var(--ink); font-size: 14px; }
 .intent .k { color: var(--green); font-weight: 700; }
 .intent .impact { color: var(--ink-soft); }
+.gtree {
+  font-family: var(--mono); font-size: 11px; max-width: 46%; min-width: 180px;
+  border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px;
+  background: #fafbfd;
+}
 .group-tools { padding: 4px 20px 14px; }
 .link-btn {
   background: none; border: none; padding: 0; cursor: pointer;
@@ -233,26 +263,24 @@ main { max-width: 1060px; margin: 0 auto; padding: 28px 24px 64px; }
 .section-head .sid { font-family: var(--mono); font-size: 11.5px; color: var(--ink-faint); }
 .section-head h3 { font-size: 15px; margin: 0; }
 .section-head .files { font-family: var(--mono); font-size: 11.5px; color: var(--ink-faint); margin-left: auto; white-space: nowrap; }
-.section-head .explain {
-  margin: 8px 0 2px; padding: 2px 0 2px 12px;
-  border-left: 3px solid #cfe0f2;
-  font-size: 13.5px; color: #33465f; line-height: 1.7;
-}
-.section-head .explain .k {
-  font-family: var(--mono); font-size: 10.5px; letter-spacing: .15em;
-  color: var(--blue); display: block; margin-bottom: 2px;
-}
 
 /* ---------- hunks / diff ---------- */
-.hunk { border-top: 1px solid var(--border); scroll-margin-top: 60px; }
+.hunk {
+  margin: 12px 20px; border: 1px solid var(--border); border-radius: 10px;
+  scroll-margin-top: 60px;
+}
 .hunk-head {
   display: flex; align-items: baseline; gap: 12px;
   padding: 9px 20px; background: #fafbfc;
   font-family: var(--mono); font-size: 12.5px;
   border-bottom: 1px solid var(--border);
+  border-radius: 10px 10px 0 0;
   position: sticky; top: 53px; z-index: 5;
   cursor: pointer; user-select: none;
 }
+.hunk.collapsed .hunk-head { border-radius: 10px; border-bottom: none; }
+.hunk table.diff tr:last-child td:first-child { border-bottom-left-radius: 10px; }
+.hunk table.diff tr:last-child td:last-child { border-bottom-right-radius: 10px; }
 .hunk-head:hover { background: #f2f4f7; }
 .hunk-head .caret { font-size: 9px; color: var(--ink-faint); transition: transform .12s; }
 .hunk.collapsed .hunk-head .caret { transform: rotate(-90deg); }
@@ -335,6 +363,16 @@ td.wide { padding: 6px 14px 6px 4.8em; }
 }
 .comment-view .cv-head .spacer { flex: 1; }
 .comment-view .txt { padding: 9px 12px; white-space: pre-wrap; }
+.comment-reply {
+  display: flex; gap: 9px; align-items: baseline;
+  border-top: 1px solid #e2ebf6; background: var(--blue-bg);
+  padding: 8px 12px; font-size: 13px; line-height: 1.65; color: #274d79;
+}
+.comment-reply .label {
+  font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 2px 9px;
+  border-radius: 999px; background: var(--blue); color: #fff; white-space: nowrap;
+}
+.comment-reply .rtxt { white-space: pre-wrap; }
 .link-btn.danger { color: var(--red); }
 .mini-btn {
   font-size: 12px; padding: 4px 12px; border-radius: 6px; cursor: pointer;
@@ -383,27 +421,28 @@ td.wide { padding: 6px 14px 6px 4.8em; }
 .toast.show { opacity: 1; transform: translateY(0); }
 </style>
 </head>
-<body>
+<body class="hide-tests">
 
 <header class="topbar">
-  <span class="logo">DIFF REVIEW</span>
+  <span class="logo">KAISETSU</span>
   <h1 id="title"></h1>
   <span class="stats-chip" id="stats"></span>
   <span class="spacer"></span>
+  <label class="opt" title="テストファイルのhunkを非表示にする"><input type="checkbox" id="hide-tests" checked> testを隠す</label>
   <button class="comment-count" id="comment-count" title="コメント一覧を開く"></button>
   <button class="abtn" id="copy-btn">まとめをコピー</button>
   <button class="abtn finish" id="finish-btn" hidden title="結果をClaudeのセッションへ返す">レビュー完了</button>
   <button class="help-btn" id="help-btn" title="ヘルプ">?</button>
 </header>
 
-<aside class="filetree" id="filetree">
+<aside class="filetree ftree" id="filetree">
   <div class="ft-label">FILES</div>
   <div id="ft-root"></div>
 </aside>
 
 <main>
   <div class="sec-label" id="overview-label">00 / 概要</div>
-  <p class="overview" id="overview"></p>
+  <div class="overview" id="overview"></div>
 
   <div class="sec-label">01 / 変更グループ一覧(リスク順)</div>
   <div class="meta-line" id="meta"></div>
@@ -453,8 +492,9 @@ function fingerprint(s) {
   for (let i = 0; i < s.length; i++) h = (h * 33) ^ s.charCodeAt(i);
   return (h >>> 0).toString(36);
 }
-const LS_KEY = "diff-review:" + fingerprint(document.getElementById("review-data").textContent);
+const LS_KEY = "kaisetsu:" + fingerprint(document.getElementById("review-data").textContent);
 let state = { comments: {}, groupComments: {} };
+let replies = { comments: {}, groupComments: {} }; // AIからのコメント回答(/api/replies をポーリング)
 try { state = Object.assign(state, JSON.parse(localStorage.getItem(LS_KEY) || "{}")); } catch (e) {}
 
 let saveTimer = null;
@@ -475,6 +515,39 @@ const RISK = {
   medium: { rank: 1, label: "注意",   cls: "medium" },
   low:    { rank: 2, label: "低リスク", cls: "low" },
 };
+const isTestFile = f => /(\.test\.|\.spec\.|_test\.|__tests__|(^|\/)tests?\/)/.test(f);
+
+/* byFile(Map: file → hunk ID配列)からファイルツリーHTMLを作る(サイドバー・グループ内ミニツリー共用) */
+function treeHtml(byFile) {
+  const root = {};
+  for (const file of [...byFile.keys()].sort()) {
+    const parts = file.split("/");
+    let node = root;
+    parts.forEach((p, i) => {
+      if (i === parts.length - 1) (node.files ??= []).push({ name: p, file });
+      else node = (node.dirs ??= {})[p] ??= {};
+    });
+  }
+  const render = node => {
+    let html = "<ul>";
+    for (let [name, child] of Object.entries(node.dirs || {})) {
+      // 単一子ディレクトリの連結 (a > b > c → a/b/c)
+      while (child.dirs && Object.keys(child.dirs).length === 1 && !(child.files || []).length) {
+        const k = Object.keys(child.dirs)[0];
+        name += "/" + k;
+        child = child.dirs[k];
+      }
+      html += `<li class="ft-dir"><div class="ft-name"><span class="caret">▼</span>${esc(name)}</div>${render(child)}</li>`;
+    }
+    for (const f of node.files || []) {
+      const ids = byFile.get(f.file);
+      html += `<li class="ft-file${isTestFile(f.file) ? " is-test" : ""}" data-file-jump="${esc(ids[0])}" title="${esc(f.file)}">
+        <span class="n">${esc(f.name)}</span><span class="cnt">${ids.length}</span></li>`;
+    }
+    return html + "</ul>";
+  };
+  return render(root);
+}
 const ANN = { explain: "解説", question: "疑問" };
 
 const groups = [...(DATA.groups || [])].sort(
@@ -515,20 +588,49 @@ function resolveAnchor(rows, ann) {
 }
 
 /* ---------- render ---------- */
-document.title = (DATA.title || "Diff Review") + " — Diff Review";
+document.title = (DATA.title || "kaisetsu") + " — kaisetsu";
 document.getElementById("title").textContent = DATA.title || "";
 const st = DATA.stats || {};
 document.getElementById("stats").innerHTML =
   `${st.files ?? "?"} files / ${st.hunks ?? "?"} hunks <ins>+${st.additions ?? "?"}</ins> <del>−${st.deletions ?? "?"}</del>`;
+const planHtml = DATA.plan
+  ? (SERVER ? `<a href="/plan" target="_blank" title="planを開く">${esc(DATA.plan)}</a>` : esc(DATA.plan))
+  : "なし";
 document.getElementById("meta").innerHTML =
-  `<b>範囲:</b> ${esc(DATA.base || "-")} 　<b>plan:</b> ${esc(DATA.plan || "なし")} 　<b>生成:</b> ${esc(DATA.generatedAt || "-")}`;
-if (DATA.overview) {
-  document.getElementById("overview").textContent = DATA.overview;
+  `<b>範囲:</b> ${esc(DATA.base || "-")} 　<b>plan:</b> ${planHtml} 　<b>生成:</b> ${esc(DATA.generatedAt || "-")}`;
+if (DATA.tagline || DATA.overview) {
+  // taglineを先頭に大きく出し、overviewは "- " 始まりの行を<ul>に、それ以外の行を<p>にする
+  let html = DATA.tagline ? `<p class="tagline">${esc(DATA.tagline)}</p>` : "";
+  let inList = false;
+  for (const ln of String(DATA.overview || "").split("\n")) {
+    const m = ln.match(/^\s*[-・]\s*(.+)/);
+    if (m) { if (!inList) { html += "<ul>"; inList = true; } html += `<li>${esc(m[1])}</li>`; }
+    else if (ln.trim()) { if (inList) { html += "</ul>"; inList = false; } html += `<p>${esc(ln)}</p>`; }
+  }
+  if (inList) html += "</ul>";
+  document.getElementById("overview").innerHTML = html;
 } else {
   document.getElementById("overview-label").hidden = true;
   document.getElementById("overview").hidden = true;
 }
 if (SERVER) document.getElementById("finish-btn").hidden = false;
+
+/* AIからのコメント回答をポーリングし、該当コメントの下に表示する */
+if (SERVER) {
+  let lastReplies = "";
+  setInterval(async () => {
+    try {
+      const txt = await (await fetch("/api/replies")).text();
+      if (txt === lastReplies) return;
+      lastReplies = txt;
+      const r = JSON.parse(txt || "{}");
+      replies.comments = Object.fromEntries((r.comments || []).map(c => [c.key, c.text]));
+      replies.groupComments = Object.fromEntries((r.groupComments || []).map(c => [c.group, c.text]));
+      for (const key of Object.keys(state.comments)) renderCommentSlot(key);
+      for (const gid of Object.keys(state.groupComments)) renderGroupComment(gid);
+    } catch (e) {}
+  }, 3000);
+}
 
 const indexEl = document.getElementById("index");
 const detailEl = document.getElementById("detail");
@@ -563,19 +665,36 @@ groups.forEach((g, gi) => {
   art.className = `group risk-${risk.cls}`;
   art.id = g.id;
   art.dataset.gid = g.id;
+  if (allHunks.length && allHunks.every(h => isTestFile(h.file))) {
+    art.classList.add("is-test");
+    li.classList.add("is-test");
+  }
 
   const head = document.createElement("div");
   head.className = "group-head";
+  head.title = "クリックで折りたたみ";
   head.innerHTML = `
+    <span class="gcaret">▼</span>
     <span class="risk-badge ${risk.cls}">${risk.label}</span>
     <h2>${esc(g.title)}</h2>`;
+  head.addEventListener("click", e => {
+    if (e.target.closest("button")) return;
+    art.classList.toggle("g-collapsed");
+  });
   art.appendChild(head);
 
-  const intent = document.createElement("p");
-  intent.className = "intent";
-  intent.innerHTML = `<span class="k">意図:</span> ${esc(g.intent || "")}` +
-    (g.impact ? ` <span class="impact">— ${esc(g.impact)}</span>` : "");
-  art.appendChild(intent);
+  const intentRow = document.createElement("div");
+  intentRow.className = "intent-row";
+  const gByFile = new Map(); // file → グループ内のhunk ID一覧
+  for (const h of allHunks) {
+    if (!gByFile.has(h.file)) gByFile.set(h.file, []);
+    gByFile.get(h.file).push(h.id);
+  }
+  intentRow.innerHTML = `
+    <p class="intent"><span class="k">意図:</span> ${esc(g.intent || "")}` +
+    (g.impact ? ` <span class="impact">— ${esc(g.impact)}</span>` : "") + `</p>
+    <div class="gtree ftree">${treeHtml(gByFile)}</div>`;
+  art.appendChild(intentRow);
 
   /* group comment */
   const tools = document.createElement("div");
@@ -592,17 +711,18 @@ groups.forEach((g, gi) => {
     if (s.title || s.explain) {
       const sh = document.createElement("div");
       sh.className = "section-head";
+      if ((s.hunks || []).length && s.hunks.every(h => isTestFile(h.file))) sh.classList.add("is-test");
       const files = [...new Set((s.hunks || []).map(h => h.file.split("/").pop()))];
       sh.innerHTML = `
         <div class="line1">
           ${s.id ? `<span class="sid">${esc(s.id)}</span>` : ""}
           <h3>${esc(s.title || "")}</h3>
           <span class="files">${esc(files.slice(0, 3).join(", "))}${files.length > 3 ? ` +${files.length - 3}` : ""}</span>
-        </div>
-        ${s.explain ? `<div class="explain"><span class="k">AI解説</span>${esc(s.explain)}</div>` : ""}`;
+        </div>`;
       art.appendChild(sh);
     }
 
+  let pendingExplain = s.explain; // セクション解説は最初のhunkの先頭行コメントとして表示
   for (const h of s.hunks || []) {
     const parsed = parseHunk(h.diff || "");
     const anchors = new Map(); // rowIndex -> [ann,...]
@@ -613,7 +733,7 @@ groups.forEach((g, gi) => {
     }
 
     const sec = document.createElement("section");
-    sec.className = "hunk";
+    sec.className = "hunk" + (isTestFile(h.file) ? " is-test" : "");
     sec.id = "hunk-" + h.id;
     const hh = document.createElement("div");
     hh.className = "hunk-head";
@@ -629,6 +749,14 @@ groups.forEach((g, gi) => {
     const table = document.createElement("table");
     table.className = "diff";
     const tbody = document.createElement("tbody");
+    if (pendingExplain) {
+      const et = document.createElement("tr");
+      et.className = "annotation";
+      et.innerHTML = `<td class="wide" colspan="4"><div class="callout explain">
+        <span class="label">AI解説</span><span>${esc(pendingExplain)}</span></div></td>`;
+      tbody.appendChild(et);
+      pendingExplain = null;
+    }
     parsed.rows.forEach((r, i) => {
       const tr = document.createElement("tr");
       tr.className = "line " + r.t;
@@ -667,7 +795,7 @@ groups.forEach((g, gi) => {
   detailEl.appendChild(art);
 });
 
-/* ---------- file tree ---------- */
+/* ---------- file tree(左サイドバー) ---------- */
 (function buildFileTree() {
   const byFile = new Map(); // file → 出現順のhunk ID一覧
   for (const g of groups)
@@ -676,34 +804,7 @@ groups.forEach((g, gi) => {
         if (!byFile.has(h.file)) byFile.set(h.file, []);
         byFile.get(h.file).push(h.id);
       }
-  const root = {};
-  for (const file of [...byFile.keys()].sort()) {
-    const parts = file.split("/");
-    let node = root;
-    parts.forEach((p, i) => {
-      if (i === parts.length - 1) (node.files ??= []).push({ name: p, file });
-      else node = (node.dirs ??= {})[p] ??= {};
-    });
-  }
-  function render(node) {
-    let html = "<ul>";
-    for (let [name, child] of Object.entries(node.dirs || {})) {
-      // 単一子ディレクトリの連結 (a > b > c → a/b/c)
-      while (child.dirs && Object.keys(child.dirs).length === 1 && !(child.files || []).length) {
-        const k = Object.keys(child.dirs)[0];
-        name += "/" + k;
-        child = child.dirs[k];
-      }
-      html += `<li class="ft-dir"><div class="ft-name"><span class="caret">▼</span>${esc(name)}</div>${render(child)}</li>`;
-    }
-    for (const f of node.files || []) {
-      const ids = byFile.get(f.file);
-      html += `<li class="ft-file" data-file-jump="${esc(ids[0])}" title="${esc(f.file)}">
-        <span class="n">${esc(f.name)}</span><span class="cnt">${ids.length}</span></li>`;
-    }
-    return html + "</ul>";
-  }
-  document.getElementById("ft-root").innerHTML = render(root);
+  document.getElementById("ft-root").innerHTML = treeHtml(byFile);
 })();
 
 /* ---------- comments ---------- */
@@ -730,11 +831,13 @@ function renderCommentSlot(key) {
   row?.classList.toggle("has-comment", !!text);
   if (text == null) { slot.hidden = true; cell.innerHTML = ""; return; }
   slot.hidden = false;
+  const rep = replies.comments[key];
   cell.innerHTML = `<div class="comment-view">
     <div class="cv-head"><span class="label">コメント</span><span class="spacer"></span>
       <button class="link-btn" data-edit="${esc(key)}">編集</button>
       <button class="link-btn danger" data-delete="${esc(key)}">削除</button></div>
-    <div class="txt">${esc(text)}</div></div>`;
+    <div class="txt">${esc(text)}</div>
+    ${rep ? `<div class="comment-reply"><span class="label">回答</span><span class="rtxt">${esc(rep)}</span></div>` : ""}</div>`;
 }
 
 function openEditor(key) {
@@ -757,11 +860,13 @@ function renderGroupComment(gid) {
   if (!wrap) return;
   const text = state.groupComments[gid];
   if (text == null) { wrap.innerHTML = ""; return; }
+  const rep = replies.groupComments[gid];
   wrap.innerHTML = `<div class="comment-view">
     <div class="cv-head"><span class="label">グループコメント</span><span class="spacer"></span>
       <button class="link-btn" data-gedit="${esc(gid)}">編集</button>
       <button class="link-btn danger" data-gdelete="${esc(gid)}">削除</button></div>
-    <div class="txt">${esc(text)}</div></div>`;
+    <div class="txt">${esc(text)}</div>
+    ${rep ? `<div class="comment-reply"><span class="label">回答</span><span class="rtxt">${esc(rep)}</span></div>` : ""}</div>`;
 }
 
 function openGroupEditor(gid) {
@@ -815,10 +920,15 @@ function toggleDrawer(open) {
 /* ---------- summary markdown ---------- */
 function buildMarkdown() {
   const lines = [];
-  lines.push(`# Diff Review 結果: ${DATA.title || ""}`);
+  lines.push(`# kaisetsu レビュー結果: ${DATA.title || ""}`);
   lines.push(`- 範囲: ${DATA.base || "-"} / plan: ${DATA.plan || "なし"} / 生成: ${DATA.generatedAt || "-"}`);
   lines.push("");
-  if (DATA.overview) lines.push("## 概要", DATA.overview, "");
+  if (DATA.tagline || DATA.overview) {
+    lines.push("## 概要");
+    if (DATA.tagline) lines.push(`**${DATA.tagline}**`, "");
+    if (DATA.overview) lines.push(DATA.overview);
+    lines.push("");
+  }
 
   lines.push("## 人間コメント");
   let any = false;
@@ -891,8 +1001,8 @@ async function finishReview() {
 document.addEventListener("click", e => {
   const ftName = e.target.closest(".ft-dir > .ft-name");
   if (ftName) { ftName.parentElement.classList.toggle("closed"); return; }
-  const ftFile = e.target.closest(".ft-file");
-  if (ftFile) { document.getElementById("hunk-" + ftFile.dataset.fileJump)?.scrollIntoView(); return; }
+  const fj = e.target.closest("[data-file-jump]");
+  if (fj) { document.getElementById("hunk-" + fj.dataset.fileJump)?.scrollIntoView(); return; }
   const item = e.target.closest(".drawer-item");
   if (item) {
     let target = null;
@@ -924,6 +1034,8 @@ document.addEventListener("click", e => {
 });
 document.getElementById("copy-btn").addEventListener("click", copySummary);
 document.getElementById("comment-count").addEventListener("click", () => toggleDrawer());
+document.getElementById("hide-tests").addEventListener("change", e =>
+  document.body.classList.toggle("hide-tests", e.target.checked));
 document.getElementById("drawer-close").addEventListener("click", () => toggleDrawer(false));
 document.getElementById("finish-btn").addEventListener("click", finishReview);
 document.getElementById("help-btn").addEventListener("click", () =>

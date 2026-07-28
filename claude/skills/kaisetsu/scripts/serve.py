@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""diff-review サーバ。
+"""kaisetsu サーバ。
 
 review-data.json を埋め込んだレビュー画面をローカル配信し、ブラウザを開く。
 画面の「レビュー完了」ボタンで結果JSONを書き出す。サーバは終了せず、
@@ -41,7 +41,7 @@ def free_port() -> int:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="diff-review server")
+    ap = argparse.ArgumentParser(description="kaisetsu server")
     ap.add_argument("data", help="review-data.json のパス")
     ap.add_argument("--port", type=int, default=0)
     ap.add_argument("--result", help="結果JSONの出力先(既定: <data>.result.json)")
@@ -61,7 +61,8 @@ def main() -> None:
         return
 
     result_path = pathlib.Path(args.result) if args.result else data_path.with_suffix(".result.json")
-    state_path = data_path.with_suffix(".state.json")  # 自動保存(途中経過)
+    state_path = data_path.with_suffix(".state.json")    # 自動保存(途中経過)
+    replies_path = data_path.with_suffix(".replies.json")  # AIからのコメント回答(画面がポーリングで拾う)
     port = args.port or free_port()
 
     class Handler(BaseHTTPRequestHandler):
@@ -82,6 +83,20 @@ def main() -> None:
         def do_GET(self):
             if self.path in ("/", "/index.html"):
                 self._respond(200, html.encode("utf-8"), "text/html; charset=utf-8")
+            elif self.path == "/api/replies":
+                body = replies_path.read_bytes() if replies_path.is_file() else b"{}"
+                self._respond(200, body, "application/json; charset=utf-8")
+            elif self.path == "/plan":
+                plan = data.get("plan")
+                if not plan:
+                    self._respond(404, b"plan not set")
+                    return
+                # 絶対パス / サーバ起動時CWD相対 / データファイル相対 の順で解決
+                for base in (pathlib.Path(plan), pathlib.Path.cwd() / plan, data_path.parent / plan):
+                    if base.is_file():
+                        self._respond(200, base.read_text(encoding="utf-8").encode("utf-8"))
+                        return
+                self._respond(404, f"plan not found: {plan}".encode("utf-8"))
             else:
                 self._respond(404, b"not found")
 
@@ -104,7 +119,7 @@ def main() -> None:
 
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     url = f"http://127.0.0.1:{port}/"
-    print(f"diff-review: {url}", flush=True)
+    print(f"kaisetsu: {url}", flush=True)
     print(f"result: {result_path}", flush=True)
     print(f"pid: {os.getpid()}", flush=True)
     if not args.no_open:
