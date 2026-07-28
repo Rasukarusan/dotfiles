@@ -1,6 +1,7 @@
 {
   "title": "app/system URL整理の未ステージ差分レビュー",
-  "overview": "app/system配下のURL生成とホスト判定がコンポーネントごとに散在していたのを、resolveAppUrlを共通入口として一元化するリファクタリングです。subdomain方式とlegacy-path方式の両deployment modeで同じコードパスを通るようにし、共通UI・dashboard・settingsなどの相対リンクは絶対URLへ置き換えています。あわせて設計文書と移行計画を現在の責務分離に合わせて更新しています。",
+  "tagline": "バラバラだったURLの組み立てを1か所に集約するリファクタリング",
+  "overview": "- 散在していたURL生成とホスト判定を resolveAppUrl / isLegacyHost に集約\n- subdomain / legacy-path の両deployment modeで同じコードパスを通るように変更\n- 共通UI・dashboard・settingsなどの相対リンクを絶対URLへ置換\n- 設計文書と移行計画を現在の責務分離に合わせて更新",
   "generatedAt": "2026-07-25 09:30",
   "base": "unstaged (git diff HEAD)",
   "plan": "plans/url-cleanup.md",

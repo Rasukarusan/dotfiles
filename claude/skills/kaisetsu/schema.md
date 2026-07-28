@@ -5,10 +5,12 @@
 ```jsonc
 {
   "title": "app/system URL整理の未ステージ差分レビュー", // 画面タイトル
-  "overview": "URL生成とhost判定をresolveAppUrlに集約し、…", // このブランチ/差分全体で何をやっているかの大まかな説明(2〜5文)。画面最上部に表示される
+  "tagline": "URLの組み立てを1か所に集約するリファクタリング", // PRの一言説明。多少不正確でも全体が掴める粒度で。概要の最初に大きく表示される
+  "overview": "- URL生成とhost判定をresolveAppUrlに集約\n- …", // 全体で何をやっているかの箇条書き(- 始まり・改行区切りで3〜5点)。taglineの下に表示される
   "generatedAt": "2026-07-25 09:30",                    // 生成日時(手で書く。JSでは取らない)
   "base": "main..HEAD + unstaged",                      // 差分の取得範囲の説明
-  "plan": "plans/url-cleanup.md",                       // 参照したplan。無ければ null
+  "plan": "plans/url-cleanup.md",                       // 参照したplan(リポジトリルートからの相対パス)。無ければ null。画面ではリンクになり /plan で中身が開く
+  "repoRoot": "/Users/me/repos/myapp",                  // 対象リポジトリの絶対パス(/kaisetsu-list がレビュー再開時の基準パスに使う)
   "stats": { "files": 107, "hunks": 268, "additions": 1468, "deletions": 812 },
   "groups": [
     {
@@ -55,8 +57,26 @@
 - **section** = 機能ごとのまとまり(解説の単位)。「このセクションを読めばその機能の変更が一通り分かる」大きさにする
 - **annotation** = 行レベルの補足。全hunkに付ける必要はない
 
+## 回答ファイル(review-data.replies.json)
+
+人間コメントへのAI回答。レビューデータと同じディレクトリに置くと、画面が数秒ごとに自動で拾い、
+該当コメントの下に「回答」として表示される(サーバ配信時のみ)。
+
+```jsonc
+{
+  "comments": [
+    { "key": "h081:2", "text": "修正済み: ポート付きhostも許容するようにしました。" }
+    // key は result.json の comments[].key をそのまま使う
+  ],
+  "groupComments": [
+    { "group": "g1", "text": "ご指摘のとおりです。設計は〜" }
+  ]
+}
+```
+
 ## 描画ルール(テンプレート側の挙動)
 
 - グループは `risk` 順 (high → medium → low) に表示される。JSON内の順序はリスク順に並べておくこと(同リスク内の順序はJSONの順序を維持)。
+- sectionの `explain` は、そのsectionの最初のhunkの先頭に「AI解説」コメントとして表示される。
 - `annotations` の `type: "question"` があるグループは一覧で「疑問」バッジが付く。
 - 人間コメント(diff行・グループ)は localStorage に保存される(キーはJSON内容のハッシュ。データを作り直すと状態はリセットされる)。
