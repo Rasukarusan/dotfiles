@@ -57,6 +57,20 @@
 - **section** = 機能ごとのまとまり(解説の単位)。「このセクションを読めばその機能の変更が一通り分かる」大きさにする
 - **annotation** = 行レベルの補足。全hunkに付ける必要はない
 
+## 一覧用メタ(meta.json)
+
+`/kaisetsu-list` が一覧表示に使う小さなファイル。review-data.json と同じディレクトリに置く。
+値はすべて review-data.json の同名フィールドの複製(一覧側がdiff全文をパースせずに済むようにするためのもの)。
+
+```jsonc
+{
+  "title": "app/system URL整理の未ステージ差分レビュー",
+  "tagline": "URLの組み立てを1か所に集約するリファクタリング",
+  "repoRoot": "/Users/me/repos/myapp",
+  "generatedAt": "2026-07-25 09:30"
+}
+```
+
 ## 回答ファイル(review-data.replies.json)
 
 人間コメントへのAI回答。レビューデータと同じディレクトリに置くと、画面が数秒ごとに自動で拾い、
