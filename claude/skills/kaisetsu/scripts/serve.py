@@ -4,7 +4,7 @@
 review-data.json を埋め込んだレビュー画面をローカル配信し、ブラウザを開く。
 画面の「レビュー完了」ボタンで結果JSONを書き出す。サーバは終了せず、
 画面はその後も閲覧・追加コメント・再送信ができる。
-呼び出し側(Claude)は結果JSONの出現を監視して読み、不要になったらプロセスをkillする。
+呼び出し側のエージェントは結果JSONの出現を監視して読み、不要になったらプロセスをkillする。
 
 Usage:
   serve.py <review-data.json> [--port N] [--result PATH] [--no-open]
