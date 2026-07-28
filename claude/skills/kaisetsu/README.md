@@ -1,7 +1,7 @@
 # kaisetsu
 
-差分を「意図ごとのグループ × リスク順 × AI解説つき」で表示する、自作のレビュー画面 + Claude Codeスキル。
-critのように `/kaisetsu` で呼ぶとローカルサーバが立ち、ブラウザでレビュー →「レビュー完了」で結果がセッションへ返る。
+差分を「意図ごとのグループ × リスク順 × AI解説つき」で表示する、自作のレビュー画面 + エージェントスキル。
+Claude Codeでは `/kaisetsu`、Codexでは `$kaisetsu` として呼ぶとローカルサーバが立ち、ブラウザでレビュー →「レビュー完了」で結果がセッションへ返る。
 
 **レビュー(良し悪しの判断)は人間の仕事。AIは差分を読みやすく整理し、解説を付けるところまで。**
 
@@ -23,8 +23,8 @@ critのように `/kaisetsu` で呼ぶとローカルサーバが立ち、ブラ
 
 ## セットアップ
 
-`dotfiles/claude/skills/kaisetsu/` に置く(`~/.claude/skills` はdotfilesへのsymlinkなのでそのまま反映される)。
-Claude Codeを再起動すると `/kaisetsu` が使えるようになる。
+`dotfiles/claude/skills/kaisetsu/` に置く。`~/.claude/skills` と `~/.agents/skills` はdotfilesへのsymlinkなので、Claude CodeとCodexの両方へ反映される。
+各クライアントを再起動するとスキルが使えるようになる。
 
 ## 手動での動作確認
 

@@ -1,0 +1,4 @@
+interface:
+  display_name: "kaisetsu"
+  short_description: "差分を意図とリスク順に整理してレビュー画面を起動"
+  default_prompt: "$kaisetsu を使って現在の差分をレビュー画面にまとめてください。"
