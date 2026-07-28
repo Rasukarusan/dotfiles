@@ -9,6 +9,8 @@ description: 大きめの差分を意図ごとにグループ化し、リスク�
 **レビュー(良し悪しの判断)は人間の仕事。AIは差分を読みやすく整理し、解説を付けるところまで。**
 人間が画面上でつけたコメントを受け取り、対応する。
 
+Claude CodeとCodexのどちらでも、利用可能なプロセス実行・待機機能に読み替えて実行する。
+
 このスキルのベースディレクトリ(SKILL.mdがある場所)を以下 `$SKILL_DIR` と呼ぶ。
 データ仕様は `$SKILL_DIR/schema.md` を必ず読むこと。
 
@@ -25,7 +27,8 @@ description: 大きめの差分を意図ごとにグループ化し、リスク�
   レビューごとに新しい日時ディレクトリを作る(過去レビューは `/kaisetsu-list` から参照されるため上書きしない)。
   以下このディレクトリを `$REVIEW_DIR` と呼ぶ。
 - 範囲: 引数指定があればそれに従う。なければ未コミット差分(`git diff HEAD`)。
-  ブランチ全体なら `BASE=$(bash ~/.claude/docs/get-base-branch.sh 2>/dev/null || echo main)` 相当でbaseを決めて `git diff $BASE...HEAD`。
+  ブランチ全体なら、リポジトリ既定のbase branchを特定して `git diff $BASE...HEAD` を使う。
+  `~/.claude/docs/get-base-branch.sh` があれば利用できる。なければremoteのHEAD、PRのbase、`main`の順で判定する。
 - 保存するもの:
   - `diff.patch`: 差分全文(`git diff ... > diff.patch`)
   - 統計: `git diff --shortstat` と `grep -c '^@@' diff.patch`(files / hunks / +N −N)
@@ -63,20 +66,25 @@ plan(`plans/*.md` など)があれば読み、変更の意図を正確に説明�
    グループはリスク順(high→medium→low)に並べておく。`repoRoot` に対象リポジトリの絶対パスを入れる。
    あわせて一覧用の `$REVIEW_DIR/meta.json` を書く(`/kaisetsu-list` がdiff全文を開かずに一覧を出すためのもの。
    内容は title / tagline / repoRoot / generatedAt のみ。schema.md参照)。
-2. サーバをバックグラウンドで起動(ブラウザが自動で開く)。
+2. サーバを長時間実行プロセスとして起動する(ブラウザが自動で開く)。
    **対象リポジトリのルートをCWDにして実行する**(画面のplanリンクは `/plan` で planファイルを配信するため、
    `plan` の相対パスがCWDから解決できる必要がある):
    ```bash
    python3 $SKILL_DIR/scripts/serve.py $REVIEW_DIR/review-data.json
    ```
-   Bashツールの `run_in_background: true` で実行すること。起動直後にURL・結果パス・pidがstdoutに出る。
+   Claude CodeではBashツールの `run_in_background: true`、Codexでは`exec_command`を短いyield時間で実行し、
+   返されたsession IDを保持する。起動直後にURL・結果パス・pidがstdoutに出る。
+   ブラウザの自動起動が実行環境の制約で失敗する場合は `--no-open` を付け、表示されたURLをユーザーへ渡す。
    **サーバは「レビュー完了」後も止まらない**(ユーザーは画面を見続けられる)。
-3. 完了検知用に、結果ファイルの出現を待つコマンドを別途バックグラウンドで実行する:
+3. 完了を非同期で検知する。
+   Claude Codeでは、結果ファイルの出現を待つコマンドを別途バックグラウンドで実行する:
    ```bash
    until [ -f $REVIEW_DIR/review-data.result.json ]; do sleep 2; done
    ```
    (`run_in_background: true`。ユーザーが画面で「レビュー完了」を押すと結果JSONが書かれ、
-   このコマンドが終了してタスク通知が来る)
+   このコマンドが終了してタスク通知が来る)。
+   Codexではサーバのsessionを`write_stdin`の空入力でpollするか、次のユーザーターンで結果ファイルの存在を確認する。
+   ブロッキングするsleepや、結果がない状態での長時間待機はしない。
 4. ユーザーに「レビュー画面を開きました。確認後、画面の『レビュー完了』を押してください」と伝えて待つ。
 
 ## ⑤⑥ 結果の取り込みと対応
