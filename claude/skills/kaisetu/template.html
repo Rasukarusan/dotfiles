@@ -300,6 +300,15 @@ main { max-width: 1060px; margin: 0 auto; padding: 28px 24px 64px; }
 .hunk.collapsed table.diff { display: none; }
 .hunk-head .hid { color: var(--ink-faint); }
 .hunk-head .file { font-weight: 700; color: var(--ink); word-break: break-all; }
+/* ファイルパスのコピーボタン(ホバーで出す) */
+.copy-path {
+  font-family: var(--mono); font-size: 10.5px; line-height: 1;
+  padding: 3px 7px; border-radius: 5px; cursor: pointer;
+  border: 1px solid var(--border-strong); background: var(--card); color: var(--ink-faint);
+  opacity: 0; transition: opacity .1s; flex: none;
+}
+.hunk-head:hover .copy-path, .ft-file:hover .copy-path { opacity: 1; }
+.copy-path:hover { color: var(--blue); border-color: var(--blue); }
 .hunk-head .range { color: var(--ink-faint); }
 table.diff { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12.5px; line-height: 1.75; }
 table.diff td { padding: 0; vertical-align: top; }
@@ -509,6 +518,7 @@ td.wide { padding: 6px 14px 6px 4.8em; }
     <h3>操作方法</h3>
     <table>
       <tr><td class="key">クリック</td><td>diff行・概要・意図・AI解説にマウスを乗せると出る + でコメント</td></tr>
+      <tr><td class="key">copy</td><td>ファイル名の横のボタンでそのパスをコピー</td></tr>
       <tr><td class="key">j / k</td><td>次 / 前のグループへ移動</td></tr>
       <tr><td class="key">c</td><td>まとめをコピー</td></tr>
       <tr><td class="key">⌘Enter</td><td>コメント編集中に保存</td></tr>
@@ -628,7 +638,9 @@ function treeHtml(byFile) {
     for (const f of node.files || []) {
       const ids = byFile.get(f.file);
       html += `<li class="ft-file${isTestFile(f.file) ? " is-test" : ""}" data-file-jump="${esc(ids[0])}" title="${esc(f.file)}">
-        <span class="n">${esc(f.name)}</span><span class="cnt">${ids.length}</span></li>`;
+        <span class="n">${esc(f.name)}</span>
+        <button class="copy-path" data-copy="${esc(f.file)}" title="パスをコピー">copy</button>
+        <span class="cnt">${ids.length}</span></li>`;
     }
     return html + "</ul>";
   };
@@ -864,6 +876,7 @@ groups.forEach((g, gi) => {
     hh.className = "hunk-head";
     hh.title = "クリックで折りたたみ";
     hh.innerHTML = `<span class="caret">▼</span><span class="hid">${esc(h.id)}</span><span class="file">${esc(h.file)}</span>
+      <button class="copy-path" data-copy="${esc(h.file)}" title="パスをコピー">copy</button>
       <span class="range">${esc((parsed.header || "").replace(/^@@ | @@.*$/g, m2 => m2 === "@@ " ? "" : ""))}</span>`;
     hh.addEventListener("click", e => {
       if (e.target.closest("button")) return;
@@ -1150,21 +1163,22 @@ function toast(msg) {
   setTimeout(() => t.classList.remove("show"), 1800);
 }
 
-async function copySummary() {
-  const md = buildMarkdown();
+async function copyText(text, done) {
   try {
-    await navigator.clipboard.writeText(md);
-    toast("まとめをコピーしました");
+    await navigator.clipboard.writeText(text);
   } catch (e) {
+    // クリップボードAPIが使えない場合(http以外・権限なし)のフォールバック
     const ta = document.createElement("textarea");
-    ta.value = md;
+    ta.value = text;
     document.body.appendChild(ta);
     ta.select();
     document.execCommand("copy");
     ta.remove();
-    toast("まとめをコピーしました");
   }
+  toast(done);
 }
+
+const copySummary = () => copyText(buildMarkdown(), "まとめをコピーしました");
 
 let sent = false;
 async function finishReview() {
@@ -1211,6 +1225,8 @@ async function finishReview() {
 
 /* ---------- events ---------- */
 document.addEventListener("click", e => {
+  const cp = e.target.closest("[data-copy]");
+  if (cp) { copyText(cp.dataset.copy, "パスをコピーしました: " + cp.dataset.copy); return; }
   const ftName = e.target.closest(".ft-dir > .ft-name");
   if (ftName) { ftName.parentElement.classList.toggle("closed"); return; }
   const fj = e.target.closest("[data-file-jump]");
