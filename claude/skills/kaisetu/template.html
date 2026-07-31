@@ -369,17 +369,25 @@ td.wide { padding: 6px 14px 6px 4.8em; }
   border-radius: 999px; background: #b58a00; color: #fff; white-space: nowrap;
 }
 .comment-view .cv-head .spacer { flex: 1; }
-.comment-view .txt { padding: 9px 12px; white-space: pre-wrap; }
-.comment-reply {
-  display: flex; gap: 9px; align-items: baseline;
-  border-top: 1px solid #e2ebf6; background: var(--blue-bg);
-  padding: 8px 12px; font-size: 13px; line-height: 1.65; color: #274d79;
+/* スレッド: 人間の発言(msg.human)とAIの回答(msg.ai)が交互に積まれる */
+.comment-view .msg + .msg { border-top: 1px solid var(--border); }
+.comment-view .msg.ai { background: var(--blue-bg); color: #274d79; }
+.comment-view .msg.ai + .msg { border-top-color: #e2ebf6; }
+.comment-view .msg.edit { padding: 8px; background: #fcfcfa; }
+.comment-view .mhead { display: flex; align-items: center; gap: 8px; padding: 6px 8px 0 12px; }
+.comment-view .mhead .spacer { flex: 1; }
+.comment-view .who {
+  font-family: var(--mono); font-size: 10.5px; font-weight: 700;
+  letter-spacing: .08em; color: var(--ink-faint);
 }
-.comment-reply .label {
-  font-family: var(--mono); font-size: 11px; font-weight: 700; padding: 2px 9px;
-  border-radius: 999px; background: var(--blue); color: #fff; white-space: nowrap;
+.comment-view .msg.ai .who { color: var(--blue); }
+.comment-view .txt { padding: 4px 12px 9px; white-space: pre-wrap; line-height: 1.65; }
+.comment-view .cv-foot {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 10px; border-top: 1px solid var(--border); background: #fcfcfa;
 }
-.comment-reply .rtxt { white-space: pre-wrap; }
+.comment-view .cv-foot .pending { font-size: 11.5px; color: var(--ink-faint); }
+.drawer-item .turns { font-size: 11px; color: var(--ink-faint); margin-top: 3px; }
 .link-btn.danger { color: var(--red); }
 .mini-btn {
   font-size: 12px; padding: 4px 12px; border-radius: 6px; cursor: pointer;
@@ -431,7 +439,7 @@ td.wide { padding: 6px 14px 6px 4.8em; }
 <body class="hide-tests">
 
 <header class="topbar">
-  <span class="logo">KAISETSU</span>
+  <span class="logo">KAISETU</span>
   <h1 id="title"></h1>
   <span class="stats-chip" id="stats"></span>
   <span class="spacer"></span>
@@ -471,7 +479,9 @@ td.wide { padding: 6px 14px 6px 4.8em; }
       <tr><td class="key">Esc</td><td>コメント編集をキャンセル / コメント一覧を閉じる</td></tr>
     </table>
     <p style="font-size:13px;color:var(--ink-soft)">コメントは自動保存されます。
-    「レビュー完了」で結果がClaudeのセッションへ返ります。送信後も画面はそのまま使え、追加コメントして再送信もできます。
+    「レビュー完了」で結果がClaudeのセッションへ返ります。送信後も画面はそのまま使えます。
+    AIの回答が付いたコメントは「返信」でスレッドとして続けられます。返信を書いたら
+    もう一度「レビュー完了」を押すとセッションへ送られます。
     別セッション(Codex等)に投げる場合は「まとめをコピー」を使ってください。</p>
     <div class="close-row"><button class="mini-btn" onclick="document.getElementById('help-overlay').classList.remove('show')">閉じる</button></div>
   </div>
@@ -501,8 +511,10 @@ function fingerprint(s) {
   return (h >>> 0).toString(36);
 }
 const LS_KEY = "kaisetu:" + fingerprint(document.getElementById("review-data").textContent);
+// comments[key] / groupComments[gid] = 人間の発言スレッド(古い順の文字列配列)。
+// AIの回答は replies 側に同じ添字で入る(replies[key][i] が i番目の人間発言への回答)。
 let state = { comments: {}, groupComments: {}, resolved: {}, groupResolved: {} };
-let replies = { comments: {}, groupComments: {} }; // AIからのコメント回答(/api/replies をポーリング)
+let replies = { comments: {}, groupComments: {} }; // AIからの回答(/api/replies をポーリング)
 // 復元: localStorage と サーバ埋め込みのstate.json の新しい方(_savedAtで比較)を使う
 {
   let localState = null, serverState = null;
@@ -511,6 +523,11 @@ let replies = { comments: {}, groupComments: {} }; // AIからのコメント回
   const pick = (serverState?._savedAt || 0) > (localState?._savedAt || 0)
     ? serverState : (localState || serverState);
   if (pick) state = Object.assign(state, pick);
+  for (const store of [state.comments, state.groupComments])
+    for (const [k, v] of Object.entries(store)) {
+      const t = typeof v === "string" ? [v] : Array.isArray(v) ? v.filter(x => typeof x === "string" && x) : [];
+      if (t.length) store[k] = t; else delete store[k];
+    }
 }
 
 let saveTimer = null;
@@ -632,19 +649,22 @@ if (DATA.tagline || DATA.overview) {
 }
 if (SERVER) document.getElementById("finish-btn").hidden = false;
 
-/* AIからのコメント回答をポーリングし、該当コメントの下に表示する */
+/* AIからの回答をポーリングし、スレッドに差し込む */
 if (SERVER) {
   let lastReplies = "";
+  const asList = c => Array.isArray(c.replies) ? c.replies.filter(x => typeof x === "string")
+    : typeof c.text === "string" ? [c.text] : [];
   setInterval(async () => {
     try {
       const txt = await (await fetch("/api/replies")).text();
       if (txt === lastReplies) return;
       lastReplies = txt;
       const r = JSON.parse(txt || "{}");
-      replies.comments = Object.fromEntries((r.comments || []).map(c => [c.key, c.text]));
-      replies.groupComments = Object.fromEntries((r.groupComments || []).map(c => [c.group, c.text]));
-      for (const key of Object.keys(state.comments)) renderCommentSlot(key);
-      for (const gid of Object.keys(state.groupComments)) renderGroupComment(gid);
+      replies.comments = Object.fromEntries((r.comments || []).map(c => [c.key, asList(c)]));
+      replies.groupComments = Object.fromEntries((r.groupComments || []).map(c => [c.group, asList(c)]));
+      for (const key of Object.keys(state.comments)) renderThread(key, "line");
+      for (const gid of Object.keys(state.groupComments)) renderThread(gid, "group");
+      refreshCounters();
     } catch (e) {}
   }, 3000);
 }
@@ -716,7 +736,7 @@ groups.forEach((g, gi) => {
   /* group comment */
   const tools = document.createElement("div");
   tools.className = "group-tools";
-  tools.innerHTML = `<button class="link-btn" data-gcomment="${esc(g.id)}">+ グループにコメント</button>`;
+  tools.innerHTML = `<button class="link-btn" data-act="new" data-kind="group" data-key="${esc(g.id)}">+ グループにコメント</button>`;
   art.appendChild(tools);
   const gcWrap = document.createElement("div");
   gcWrap.className = "group-comment";
@@ -783,7 +803,7 @@ groups.forEach((g, gi) => {
       tr.innerHTML = `
         <td class="ln">${r.old ?? ""}</td>
         <td class="ln">${r.new ?? ""}</td>
-        <td class="sign">${sign}<button class="cbtn" title="この行にコメント" data-comment="${esc(key)}">+</button></td>
+        <td class="sign">${sign}<button class="cbtn" title="この行にコメント" data-act="new" data-kind="line" data-key="${esc(key)}">+</button></td>
         <td class="code">${esc(r.text)}</td>`;
       tbody.appendChild(tr);
 
@@ -839,103 +859,128 @@ function commentMeta(key) {
   return { file: "?", line: "", code: "" };
 }
 
-function renderCommentSlot(key) {
+/* kind = "line"(diff行) | "group"(グループ全体)。key は行キー or グループID */
+const msgStore = kind => kind === "line" ? state.comments : state.groupComments;
+const doneStore = kind => kind === "line" ? state.resolved : state.groupResolved;
+const replyStore = kind => kind === "line" ? replies.comments : replies.groupComments;
+const msgsOf = (key, kind) => msgStore(kind)[key] || [];
+const repsOf = (key, kind) => replyStore(kind)[key] || [];
+/* 末尾が人間の発言のまま = AIがまだ答えていない */
+const isAwaiting = (key, kind) => msgsOf(key, kind).length > repsOf(key, kind).length;
+
+function threadHost(key, kind) {
+  if (kind === "group") return document.querySelector(`[data-gcwrap="${CSS.escape(key)}"]`);
   const slot = document.querySelector(`tr[data-slot="${CSS.escape(key)}"]`);
-  const row = document.querySelector(`tr[data-ckey="${CSS.escape(key)}"]`);
-  if (!slot) return;
-  const cell = slot.firstElementChild;
-  const text = state.comments[key];
-  const done = !!state.resolved[key];
-  row?.classList.toggle("has-comment", text != null && !done);
-  // 解決済みはdiff上では非表示(コメント一覧サイドバーからのみ参照・再開できる)
-  if (text == null || done) { slot.hidden = true; cell.innerHTML = ""; return; }
-  slot.hidden = false;
-  const rep = replies.comments[key];
-  cell.innerHTML = `<div class="comment-view">
-    <div class="cv-head"><span class="label">コメント</span><span class="spacer"></span>
-      <button class="link-btn" data-resolve="${esc(key)}">✓ 解決</button>
-      <button class="link-btn" data-edit="${esc(key)}">編集</button>
-      <button class="link-btn danger" data-delete="${esc(key)}">削除</button></div>
-    <div class="txt">${esc(text)}</div>
-    ${rep ? `<div class="comment-reply"><span class="label">回答</span><span class="rtxt">${esc(rep)}</span></div>` : ""}</div>`;
+  return slot ? slot.firstElementChild : null;
 }
 
-function openEditor(key) {
-  const slot = document.querySelector(`tr[data-slot="${CSS.escape(key)}"]`);
-  if (!slot) return;
-  const cell = slot.firstElementChild;
-  slot.hidden = false;
-  cell.innerHTML = `<div class="comment-editor">
-    <div class="ce-head">COMMENT — この行へ</div>
-    <textarea placeholder="コメントを入力… (⌘Enterで保存、Escでキャンセル)">${esc(state.comments[key] || "")}</textarea>
+function editorHtml(key, kind, idx, value, mode) {
+  const head = mode === "edit" ? "EDIT — この発言を修正"
+    : mode === "reply" ? "REPLY — 回答への返信"
+    : kind === "group" ? "COMMENT — このグループ全体へ(設計面など)" : "COMMENT — この行へ";
+  const attrs = `data-kind="${kind}" data-key="${esc(key)}" data-idx="${idx}"`;
+  return `<div class="comment-editor">
+    <div class="ce-head">${head}</div>
+    <textarea placeholder="入力… (⌘Enterで保存、Escでキャンセル)">${esc(value || "")}</textarea>
     <div class="ce-actions">
-      <button class="mini-btn" data-cancel="${esc(key)}">キャンセル</button>
-      <button class="mini-btn primary" data-save="${esc(key)}">保存</button>
+      <button class="mini-btn" data-act="cancel" ${attrs}>キャンセル</button>
+      <button class="mini-btn primary" data-act="save" ${attrs}>保存</button>
     </div></div>`;
-  cell.querySelector("textarea").focus();
 }
 
-function renderGroupComment(gid) {
-  const wrap = document.querySelector(`[data-gcwrap="${CSS.escape(gid)}"]`);
-  if (!wrap) return;
-  const text = state.groupComments[gid];
+/* スレッドを描画する。editAt を渡すとその添字の位置にエディタを開く
+   (editAt === 発言数 なら末尾に追記 = 返信) */
+function renderThread(key, kind, editAt = null) {
+  const host = threadHost(key, kind);
+  if (!host) return;
+  const slot = kind === "line" ? host.closest("tr") : null;
+  const msgs = msgsOf(key, kind);
+  const done = !!doneStore(kind)[key];
+  if (kind === "line")
+    document.querySelector(`tr[data-ckey="${CSS.escape(key)}"]`)
+      ?.classList.toggle("has-comment", msgs.length > 0 && !done);
   // 解決済みはdiff上では非表示(コメント一覧サイドバーからのみ参照・再開できる)
-  if (text == null || state.groupResolved[gid]) { wrap.innerHTML = ""; return; }
-  const rep = replies.groupComments[gid];
-  wrap.innerHTML = `<div class="comment-view">
-    <div class="cv-head"><span class="label">グループコメント</span><span class="spacer"></span>
-      <button class="link-btn" data-gresolve="${esc(gid)}">✓ 解決</button>
-      <button class="link-btn" data-gedit="${esc(gid)}">編集</button>
-      <button class="link-btn danger" data-gdelete="${esc(gid)}">削除</button></div>
-    <div class="txt">${esc(text)}</div>
-    ${rep ? `<div class="comment-reply"><span class="label">回答</span><span class="rtxt">${esc(rep)}</span></div>` : ""}</div>`;
-}
-
-function openGroupEditor(gid) {
-  const wrap = document.querySelector(`[data-gcwrap="${CSS.escape(gid)}"]`);
-  wrap.innerHTML = `<div class="comment-editor">
-    <div class="ce-head">COMMENT — このグループ全体へ(設計面など)</div>
-    <textarea placeholder="コメントを入力… (⌘Enterで保存、Escでキャンセル)">${esc(state.groupComments[gid] || "")}</textarea>
-    <div class="ce-actions">
-      <button class="mini-btn" data-gcancel="${esc(gid)}">キャンセル</button>
-      <button class="mini-btn primary" data-gsave="${esc(gid)}">保存</button>
-    </div></div>`;
-  wrap.querySelector("textarea").focus();
+  if (editAt == null && (!msgs.length || done)) {
+    host.innerHTML = "";
+    if (slot) slot.hidden = true;
+    return;
+  }
+  if (slot) slot.hidden = false;
+  if (!msgs.length) {
+    // 新規コメントはスレッドの外枠を出さず、エディタだけを見せる
+    host.innerHTML = editorHtml(key, kind, 0, "", "new");
+    host.querySelector("textarea").focus();
+    return;
+  }
+  const reps = repsOf(key, kind);
+  const attrs = `data-kind="${kind}" data-key="${esc(key)}"`;
+  let body = "";
+  for (let i = 0; i < Math.max(msgs.length, reps.length, (editAt ?? -1) + 1); i++) {
+    if (i === editAt) {
+      body += `<div class="msg edit">${editorHtml(key, kind, i, msgs[i], i < msgs.length ? "edit" : "reply")}</div>`;
+    } else if (msgs[i] != null) {
+      body += `<div class="msg human">
+        <div class="mhead"><span class="who">${i === 0 ? "あなた" : "あなた(返信 " + i + ")"}</span>
+          <span class="spacer"></span>
+          <button class="link-btn" data-act="edit" ${attrs} data-idx="${i}">編集</button></div>
+        <div class="txt">${esc(msgs[i])}</div></div>`;
+    }
+    if (reps[i] != null) {
+      body += `<div class="msg ai">
+        <div class="mhead"><span class="who">AI 回答</span></div>
+        <div class="txt">${esc(reps[i])}</div></div>`;
+    }
+  }
+  const foot = editAt != null ? "" : `<div class="cv-foot">
+    <button class="mini-btn" data-act="reply" ${attrs} data-idx="${msgs.length}">返信</button>
+    ${isAwaiting(key, kind) ? `<span class="pending">AIの回答待ち(「レビュー完了」で送信)</span>` : ""}</div>`;
+  host.innerHTML = `<div class="comment-view">
+    <div class="cv-head"><span class="label">${kind === "group" ? "グループコメント" : "コメント"}</span>
+      <span class="spacer"></span>
+      <button class="link-btn" data-act="resolve" ${attrs}>✓ 解決</button>
+      <button class="link-btn danger" data-act="del" ${attrs}>削除</button></div>
+    ${body}${foot}</div>`;
+  host.querySelector("textarea")?.focus();
 }
 
 /* ---------- counters / drawer ---------- */
+/* スレッドを持つコメントを [key, kind] で列挙する(グループ→行の順) */
+function eachThread() {
+  const out = [];
+  for (const g of groups) if (msgsOf(g.id, "group").length) out.push([g.id, "group"]);
+  for (const key of Object.keys(state.comments)) if (msgsOf(key, "line").length) out.push([key, "line"]);
+  return out;
+}
+
 function refreshCounters() {
-  const nComments = Object.values(state.comments).filter(v => v != null).length +
-    Object.values(state.groupComments).filter(v => v != null).length;
-  const nResolved =
-    Object.keys(state.comments).filter(k => state.comments[k] != null && state.resolved[k]).length +
-    Object.keys(state.groupComments).filter(g => state.groupComments[g] != null && state.groupResolved[g]).length;
+  const all = eachThread();
+  const nResolved = all.filter(([k, kind]) => doneStore(kind)[k]).length;
+  const nAwaiting = all.filter(([k, kind]) => !doneStore(kind)[k] && isAwaiting(k, kind)).length;
+  const extra = [nAwaiting ? `未回答 ${nAwaiting}` : "", nResolved ? `解決 ${nResolved}` : ""].filter(Boolean);
   document.getElementById("comment-count").textContent =
-    `コメント ${nComments}件` + (nResolved ? ` (解決 ${nResolved})` : "");
+    `コメント ${all.length}件` + (extra.length ? ` (${extra.join(" / ")})` : "");
   if (document.getElementById("drawer").classList.contains("open")) renderDrawer();
 }
 
 function renderDrawer() {
   const list = document.getElementById("drawer-list");
-  const items = [];
-  for (const g of groups) {
-    if (state.groupComments[g.id] != null) {
-      const done = !!state.groupResolved[g.id];
-      items.push(`<div class="drawer-item${done ? " resolved" : ""}" data-goto-group="${esc(g.id)}">
-        <div class="where"><span class="w">${done ? "✓ " : ""}グループ: ${esc(g.title)}</span>
-          ${done ? `<button class="link-btn" data-gunresolve="${esc(g.id)}">再開</button>` : ""}</div>
-        <div class="body">${esc(state.groupComments[g.id])}</div></div>`);
-    }
-  }
-  for (const [key, text] of Object.entries(state.comments)) {
-    if (text == null) continue;
-    const m = commentMeta(key);
-    const done = !!state.resolved[key];
-    items.push(`<div class="drawer-item${done ? " resolved" : ""}" data-goto-line="${esc(key)}">
-      <div class="where"><span class="w">${done ? "✓ " : ""}${esc(m.file)} ${esc(String(m.line))}</span>
-        ${done ? `<button class="link-btn" data-unresolve="${esc(key)}">再開</button>` : ""}</div>
-      <div class="body">${esc(text)}</div></div>`);
-  }
+  const items = eachThread().map(([key, kind]) => {
+    const msgs = msgsOf(key, kind), reps = repsOf(key, kind);
+    const done = !!doneStore(kind)[key];
+    const where = kind === "group"
+      ? "グループ: " + (groups.find(g => g.id === key)?.title || key)
+      : (m => `${m.file} ${m.line}`)(commentMeta(key));
+    const turns = [
+      msgs.length > 1 ? `返信 ${msgs.length - 1}` : "",
+      reps.length ? `回答 ${reps.length}` : "",
+      !done && isAwaiting(key, kind) ? "未回答" : "",
+    ].filter(Boolean).join(" / ");
+    return `<div class="drawer-item${done ? " resolved" : ""}" data-goto-${kind === "group" ? "group" : "line"}="${esc(key)}">
+      <div class="where"><span class="w">${done ? "✓ " : ""}${esc(where)}</span>
+        ${done ? `<button class="link-btn" data-act="unresolve" data-kind="${kind}" data-key="${esc(key)}">再開</button>` : ""}</div>
+      <div class="body">${esc(msgs[msgs.length - 1])}</div>
+      ${turns ? `<div class="turns">${esc(turns)}</div>` : ""}</div>`;
+  });
   list.innerHTML = items.length ? items.join("") : `<div class="drawer-empty">コメントはまだありません</div>`;
 }
 
@@ -961,22 +1006,21 @@ function buildMarkdown() {
   }
 
   lines.push("## 人間コメント");
-  let any = false;
-  for (const g of groups) {
-    if (state.groupComments[g.id] != null) {
-      any = true;
-      const done = state.groupResolved[g.id] ? "[解決済] " : "";
-      lines.push(`- ${done}[グループ ${g.id}] ${g.title}: ${state.groupComments[g.id]}`);
+  const all = eachThread();
+  if (!all.length) lines.push("- なし");
+  for (const [key, kind] of all) {
+    const msgs = msgsOf(key, kind), reps = repsOf(key, kind);
+    const done = doneStore(kind)[key];
+    const flags = [done ? "解決済" : "", !done && isAwaiting(key, kind) ? "未回答" : ""].filter(Boolean);
+    const where = kind === "group"
+      ? `[グループ ${key}] ${groups.find(g => g.id === key)?.title || ""}`
+      : (m => `${m.file} ${m.line} (\`${m.code.trim()}\`)`)(commentMeta(key));
+    lines.push(`- ${flags.map(f => `[${f}] `).join("")}${where} \`${key}\``);
+    for (let i = 0; i < Math.max(msgs.length, reps.length); i++) {
+      if (msgs[i] != null) lines.push(`  - 人間: ${msgs[i].replace(/\n/g, "\n    ")}`);
+      if (reps[i] != null) lines.push(`  - AI: ${reps[i].replace(/\n/g, "\n    ")}`);
     }
   }
-  for (const [key, text] of Object.entries(state.comments)) {
-    if (text == null) continue;
-    any = true;
-    const m = commentMeta(key);
-    const done = state.resolved[key] ? "[解決済] " : "";
-    lines.push(`- ${done}${m.file} ${m.line} (\`${m.code.trim()}\`): ${text}`);
-  }
-  if (!any) lines.push("- なし");
   return lines.join("\n");
 }
 
@@ -1007,13 +1051,27 @@ let sent = false;
 async function finishReview() {
   const btn = document.getElementById("finish-btn");
   btn.disabled = true;
+  /* 人間発言とAI回答を交互に並べたスレッドを返す */
+  const messages = (key, kind) => {
+    const msgs = msgsOf(key, kind), reps = repsOf(key, kind), out = [];
+    for (let i = 0; i < Math.max(msgs.length, reps.length); i++) {
+      if (msgs[i] != null) out.push({ role: "human", text: msgs[i] });
+      if (reps[i] != null) out.push({ role: "ai", text: reps[i] });
+    }
+    return out;
+  };
+  const common = (key, kind) => ({
+    messages: messages(key, kind),
+    resolved: !!doneStore(kind)[key],
+    awaiting: !doneStore(kind)[key] && isAwaiting(key, kind),
+  });
   const payload = {
     title: DATA.title,
     finished: true,
-    comments: Object.entries(state.comments).filter(([, v]) => v != null)
-      .map(([key, text]) => ({ key, ...commentMeta(key), text, resolved: !!state.resolved[key] })),
-    groupComments: Object.entries(state.groupComments).filter(([, v]) => v != null)
-      .map(([gid, text]) => ({ group: gid, text, resolved: !!state.groupResolved[gid] })),
+    comments: eachThread().filter(([, kind]) => kind === "line")
+      .map(([key]) => ({ key, ...commentMeta(key), ...common(key, "line") })),
+    groupComments: eachThread().filter(([, kind]) => kind === "group")
+      .map(([gid]) => ({ group: gid, ...common(gid, "group") })),
     markdown: buildMarkdown(),
   };
   try {
@@ -1044,36 +1102,38 @@ document.addEventListener("click", e => {
     return;
   }
   const t = e.target.closest("button");
-  if (!t) return;
-  if (t.dataset.comment != null) openEditor(t.dataset.comment);
-  if (t.dataset.edit != null) openEditor(t.dataset.edit);
-  if (t.dataset.save != null) {
-    const v = t.closest(".comment-editor").querySelector("textarea").value.trim();
-    if (v) state.comments[t.dataset.save] = v; else delete state.comments[t.dataset.save];
-    saveState(); renderCommentSlot(t.dataset.save);
-  }
-  if (t.dataset.delete != null) {
-    delete state.comments[t.dataset.delete];
-    delete state.resolved[t.dataset.delete];
-    saveState(); renderCommentSlot(t.dataset.delete);
-  }
-  if (t.dataset.cancel != null) renderCommentSlot(t.dataset.cancel);
-  if (t.dataset.gcancel != null) renderGroupComment(t.dataset.gcancel);
-  if (t.dataset.resolve != null) { state.resolved[t.dataset.resolve] = true; saveState(); renderCommentSlot(t.dataset.resolve); }
-  if (t.dataset.unresolve != null) { delete state.resolved[t.dataset.unresolve]; saveState(); renderCommentSlot(t.dataset.unresolve); }
-  if (t.dataset.gresolve != null) { state.groupResolved[t.dataset.gresolve] = true; saveState(); renderGroupComment(t.dataset.gresolve); }
-  if (t.dataset.gunresolve != null) { delete state.groupResolved[t.dataset.gunresolve]; saveState(); renderGroupComment(t.dataset.gunresolve); }
-  if (t.dataset.gcomment != null) openGroupEditor(t.dataset.gcomment);
-  if (t.dataset.gedit != null) openGroupEditor(t.dataset.gedit);
-  if (t.dataset.gsave != null) {
-    const v = t.closest(".comment-editor").querySelector("textarea").value.trim();
-    if (v) state.groupComments[t.dataset.gsave] = v; else delete state.groupComments[t.dataset.gsave];
-    saveState(); renderGroupComment(t.dataset.gsave);
-  }
-  if (t.dataset.gdelete != null) {
-    delete state.groupComments[t.dataset.gdelete];
-    delete state.groupResolved[t.dataset.gdelete];
-    saveState(); renderGroupComment(t.dataset.gdelete);
+  if (!t || !t.dataset.act) return;
+  const { act, key } = t.dataset;
+  const kind = t.dataset.kind || "line";
+  const idx = t.dataset.idx != null ? +t.dataset.idx : 0;
+  const msgs = msgStore(kind), done = doneStore(kind);
+  switch (act) {
+    case "new":
+    case "reply":
+    case "edit":
+      renderThread(key, kind, act === "edit" ? idx : msgsOf(key, kind).length);
+      break;
+    case "cancel":
+      renderThread(key, kind);
+      break;
+    case "save": {
+      const v = t.closest(".comment-editor").querySelector("textarea").value.trim();
+      const next = msgsOf(key, kind).slice();
+      if (v) next[idx] = v; else next.splice(idx, 1);   // 空にしたらその発言を削除
+      if (next.length) msgs[key] = next; else { delete msgs[key]; delete done[key]; }
+      saveState(); renderThread(key, kind);
+      break;
+    }
+    case "del":
+      delete msgs[key]; delete done[key];
+      saveState(); renderThread(key, kind);
+      break;
+    case "resolve":
+      done[key] = true; saveState(); renderThread(key, kind);
+      break;
+    case "unresolve":
+      delete done[key]; saveState(); renderThread(key, kind);
+      break;
   }
 });
 document.getElementById("copy-btn").addEventListener("click", copySummary);
@@ -1100,11 +1160,11 @@ function currentGroupIndex() {
 document.addEventListener("keydown", e => {
   if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && e.target.matches(".comment-editor textarea")) {
     e.preventDefault();
-    e.target.closest(".comment-editor").querySelector("[data-save], [data-gsave]")?.click();
+    e.target.closest(".comment-editor").querySelector('[data-act="save"]')?.click();
     return;
   }
   if (e.key === "Escape" && e.target.matches(".comment-editor textarea")) {
-    e.target.closest(".comment-editor").querySelector("[data-cancel], [data-gcancel]")?.click();
+    e.target.closest(".comment-editor").querySelector('[data-act="cancel"]')?.click();
     return;
   }
   if (e.key === "Escape") { toggleDrawer(false); return; }
@@ -1120,8 +1180,7 @@ document.addEventListener("keydown", e => {
 });
 
 /* ---------- init ---------- */
-for (const key of Object.keys(state.comments)) renderCommentSlot(key);
-for (const gid of Object.keys(state.groupComments)) renderGroupComment(gid);
+for (const [key, kind] of eachThread()) renderThread(key, kind);
 refreshCounters();
 </script>
 </body>
