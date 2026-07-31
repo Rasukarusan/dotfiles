@@ -10,7 +10,7 @@
   "generatedAt": "2026-07-25 09:30",                    // 生成日時(手で書く。JSでは取らない)
   "base": "main..HEAD + unstaged",                      // 差分の取得範囲の説明
   "plan": "plans/url-cleanup.md",                       // 参照したplan(リポジトリルートからの相対パス)。無ければ null。画面ではリンクになり /plan で中身が開く
-  "repoRoot": "/Users/me/repos/myapp",                  // 対象リポジトリの絶対パス(/kaisetsu-list がレビュー再開時の基準パスに使う)
+  "repoRoot": "/Users/me/repos/myapp",                  // 対象リポジトリの絶対パス(/kaisetu-list がレビュー再開時の基準パスに使う)
   "stats": { "files": 107, "hunks": 268, "additions": 1468, "deletions": 812 },
   "groups": [
     {
@@ -59,7 +59,7 @@
 
 ## 一覧用メタ(meta.json)
 
-`/kaisetsu-list` が一覧表示に使う小さなファイル。review-data.json と同じディレクトリに置く。
+`/kaisetu-list` が一覧表示に使う小さなファイル。review-data.json と同じディレクトリに置く。
 値はすべて review-data.json の同名フィールドの複製(一覧側がdiff全文をパースせずに済むようにするためのもの)。
 
 ```jsonc
