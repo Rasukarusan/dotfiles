@@ -1,7 +1,7 @@
 {
   "title": "app/system URL整理の未ステージ差分レビュー",
-  "tagline": "バラバラだったURLの組み立てを1か所に集約するリファクタリング",
-  "overview": "- 散在していたURL生成とホスト判定を resolveAppUrl / isLegacyHost に集約\n- subdomain / legacy-path の両deployment modeで同じコードパスを通るように変更\n- 共通UI・dashboard・settingsなどの相対リンクを絶対URLへ置換\n- 設計文書と移行計画を現在の責務分離に合わせて更新",
+  "tagline": "バラバラだったURLの組み立てを1か所に集約するリファクタリング ＝ 移行後もリンク切れやログインし直しが起きないようにする準備",
+  "overview": "- 散在していたURL生成とホスト判定を resolveAppUrl / isLegacyHost に集約 ＝ URLの作り方が1か所になり、直し忘れによるリンク切れがなくなる\n- subdomain / legacy-path の両deployment modeで同じコードパスを通るように変更 ＝ 新ドメインへ移した顧客も旧ドメインの顧客も同じ挙動になる\n- 共通UI・dashboard・settingsなどの相対リンクを絶対URLへ置換 ＝ どの画面から飛んでも正しいドメインに着地する\n- 設計文書と移行計画を現在の責務分離に合わせて更新 ＝ 移行手順を読む人が現状と食い違わない資料を見られる",
   "generatedAt": "2026-07-25 09:30",
   "base": "unstaged (git diff HEAD)",
   "plan": "plans/url-cleanup.md",
