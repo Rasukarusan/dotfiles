@@ -100,18 +100,18 @@
 }
 ```
 
-## 解説の書き直し依頼
+## 解説文へのコメント
 
-画面の概要・グループの意図・セクション解説には「書き直しを依頼」ボタンが付いている。
-依頼はコメントと同じスレッドとして result.json の `docComments` に入る。`target` は書き直す対象:
+diff行と同じように、AIが書いた解説文にもマウスを乗せると `+` が出てコメントできる。
+コメントの置き場所は3つ:
 
-| target | 書き直すフィールド |
-|---|---|
-| `overview` | トップレベルの `tagline` / `overview` |
-| `group:<gid>` | そのグループの `intent` / `impact` |
-| `section:<sid>` | そのセクションの `title` / `explain`(`sid` はセクションの `id`) |
+| 対象 | 結果JSON | 書き直すフィールド |
+|---|---|---|
+| 概要 | `docComments` の `target: "overview"` | `tagline` / `overview` |
+| グループの意図 | `groupComments` の `group: "<gid>"` | そのグループの `intent` / `impact` |
+| AI解説(セクション) | `docComments` の `target: "section:<sid>"` | そのセクションの `title` / `explain` |
 
-対応方法は **review-data.json の該当フィールドを書き直して保存するだけ**。
+「ここ分かりにくい、書き直して」という依頼なら、**review-data.json の該当フィールドを書き直して保存するだけ**。
 サーバがファイルを読み直し、画面が更新を検知して作り直す(コメントは保持される)。
 
 **`groups[].id` / `sections[].id` / `hunks` の構成は変えない。**
@@ -143,7 +143,7 @@
   "groupComments": [
     { "group": "g1", "messages": [ … ], "resolved": false, "awaiting": true }
   ],
-  "docComments": [                // AIが書いた解説文の書き直し依頼
+  "docComments": [                // AIが書いた解説文(概要・セクション解説)へのコメント
     { "target": "overview", "label": "概要", "messages": [ … ], "resolved": false, "awaiting": true }
   ],
   "markdown": "…"                 // 人間可読なまとめ(スレッドを入れ子の箇条書きで表現)
