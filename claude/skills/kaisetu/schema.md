@@ -74,17 +74,56 @@
 ## 回答ファイル(review-data.replies.json)
 
 人間コメントへのAI回答。レビューデータと同じディレクトリに置くと、画面が数秒ごとに自動で拾い、
-該当コメントの下に「回答」として表示される(サーバ配信時のみ)。
+スレッドの該当位置に「AI 回答」として表示される(サーバ配信時のみ)。
+
+コメントは**スレッド**になっている。`replies[i]` が、そのスレッドの i 番目(0始まり)の人間発言への回答。
+人間が回答に返信すると人間発言が増えるので、**既存の replies.json を読んで `replies` 配列に追記する**
+(過去の回答を消すと画面から消える)。
 
 ```jsonc
 {
   "comments": [
-    { "key": "h081:2", "text": "修正済み: ポート付きhostも許容するようにしました。" }
-    // key は result.json の comments[].key をそのまま使う
+    {
+      "key": "h081:2",            // key は result.json の comments[].key をそのまま使う
+      "replies": [
+        "修正済み: ポート付きhostも許容するようにしました。",  // 1つ目の指摘への回答
+        "IPv6は未対応です。必要ならURL.hostnameで正規化します。" // 返信への回答
+      ]
+    }
   ],
   "groupComments": [
-    { "group": "g1", "text": "ご指摘のとおりです。設計は〜" }
+    { "group": "g1", "replies": ["ご指摘のとおりです。設計は〜"] }
   ]
+}
+```
+
+## 結果ファイル(review-data.result.json)
+
+画面の「レビュー完了」で書き出される。コメントは人間発言とAI回答を交互に並べたスレッドで入る。
+
+```jsonc
+{
+  "title": "…",
+  "finished": true,
+  "comments": [
+    {
+      "key": "h081:2",
+      "file": "webapp/src/lib/url-config.ts",
+      "line": "L12",
+      "code": " export const userUrlMode = env.USER_URL_MODE;",
+      "messages": [
+        { "role": "human", "text": "ここ、ポート付きhostだと弾かれない?" },
+        { "role": "ai",    "text": "修正済み: 〜" },
+        { "role": "human", "text": "ではIPv6は?" }   // ← 末尾が human = 未回答
+      ],
+      "resolved": false,
+      "awaiting": true            // 未解決かつ末尾が人間発言(=回答が必要)
+    }
+  ],
+  "groupComments": [
+    { "group": "g1", "messages": [ … ], "resolved": false, "awaiting": true }
+  ],
+  "markdown": "…"                 // 人間可読なまとめ(スレッドを入れ子の箇条書きで表現)
 }
 ```
 
@@ -94,3 +133,5 @@
 - sectionの `explain` は、そのsectionの最初のhunkの先頭に「AI解説」コメントとして表示される。
 - `annotations` の `type: "question"` があるグループは一覧で「疑問」バッジが付く。
 - 人間コメント(diff行・グループ)は localStorage に保存される(キーはJSON内容のハッシュ。データを作り直すと状態はリセットされる)。
+- コメントはスレッド。AI回答の下に「返信」ボタンが出て、人間が続けて書ける。
+  末尾が人間発言のスレッドには「AIの回答待ち」と表示され、ヘッダーのコメント件数に「未回答 N」が出る。
