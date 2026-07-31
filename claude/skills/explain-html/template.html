@@ -27,10 +27,10 @@
     --todo-soft: #eef1f4;
     --code-bg: #f1f3f7;
     /* 対比させたい 2 概念の色。題材に合わせて変える */
-    --contract: #0f766e;
-    --contract-soft: #ddf1ee;
-    --assign: #b45309;
-    --assign-soft: #fdeedd;
+    --pair-a: #0f766e;
+    --pair-a-soft: #ddf1ee;
+    --pair-b: #b45309;
+    --pair-b-soft: #fdeedd;
   }
   * { box-sizing: border-box; }
   body {
@@ -164,8 +164,8 @@
   .mini tr:last-child td { border-bottom: none; }
   .mini .yes { color: var(--done); font-weight: 700; }
   .mini .no { color: var(--todo); }
-  .mini.c-contract > .cap { background: var(--contract-soft); color: var(--contract); }
-  .mini.c-assign > .cap { background: var(--assign-soft); color: var(--assign); }
+  .mini.c-a > .cap { background: var(--pair-a-soft); color: var(--pair-a); }
+  .mini.c-b > .cap { background: var(--pair-b-soft); color: var(--pair-b); }
   .result { background: var(--accent-soft); border-radius: 10px; padding: .9rem 1.2rem; font-size: .92rem; }
   .result b { color: var(--accent); }
 
@@ -226,12 +226,12 @@
 
   <!-- 集合の重なりを説明する図。2 概念の対比があるときだけ使う -->
   <svg class="venn" viewBox="0 0 430 280" role="img" aria-label="【図の説明】">
-    <circle cx="160" cy="150" r="88" fill="var(--contract)" fill-opacity="0.14" stroke="var(--contract)" stroke-width="1.5"/>
-    <circle cx="270" cy="150" r="88" fill="var(--assign)" fill-opacity="0.14" stroke="var(--assign)" stroke-width="1.5"/>
-    <text x="84" y="24" font-size="11" font-weight="700" fill="var(--contract)">【左のテーブル名】</text>
+    <circle cx="160" cy="150" r="88" fill="var(--pair-a)" fill-opacity="0.14" stroke="var(--pair-a)" stroke-width="1.5"/>
+    <circle cx="270" cy="150" r="88" fill="var(--pair-b)" fill-opacity="0.14" stroke="var(--pair-b)" stroke-width="1.5"/>
+    <text x="84" y="24" font-size="11" font-weight="700" fill="var(--pair-a)">【左のテーブル名】</text>
     <text x="84" y="44" font-size="13" fill="var(--ink)">【左の意味】</text>
     <text x="84" y="62" font-size="11" fill="var(--sub)">【平たく言うと】</text>
-    <text x="346" y="24" font-size="11" font-weight="700" fill="var(--assign)">【右のテーブル名】</text>
+    <text x="346" y="24" font-size="11" font-weight="700" fill="var(--pair-b)">【右のテーブル名】</text>
     <text x="346" y="44" font-size="13" fill="var(--ink)">【右の意味】</text>
     <text x="346" y="62" font-size="11" fill="var(--sub)">【平たく言うと】</text>
     <text x="215" y="146" font-size="14" font-weight="700" fill="var(--ink)">【重なりの名前】</text>
@@ -295,14 +295,14 @@
 
   <h3>実際のデータで見る</h3>
   <div class="example">
-    <div class="mini c-contract">
+    <div class="mini c-a">
       <div class="cap">【入力 1 のテーブル名】</div>
       <table>
         <tr><th>【列】</th><th>【列】</th></tr>
         <tr><td>【値】</td><td class="yes">【値】</td></tr>
       </table>
     </div>
-    <div class="mini c-assign">
+    <div class="mini c-b">
       <div class="cap">【入力 2 のテーブル名】</div>
       <table>
         <tr><th>【列】</th><th>【列】</th></tr>
