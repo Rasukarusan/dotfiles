@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""kaisetsu サーバ。
+"""kaisetu サーバ。
 
 review-data.json を埋め込んだレビュー画面をローカル配信し、ブラウザを開く。
 画面の「レビュー完了」ボタンで結果JSONを書き出す。サーバは終了せず、
@@ -42,7 +42,7 @@ def free_port() -> int:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="kaisetsu server")
+    ap = argparse.ArgumentParser(description="kaisetu server")
     ap.add_argument("data", help="review-data.json のパス")
     ap.add_argument("--port", type=int, default=0)
     ap.add_argument("--result", help="結果JSONの出力先(既定: <data>.result.json)")
@@ -123,7 +123,7 @@ def main() -> None:
 
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     url = f"http://127.0.0.1:{port}/"
-    print(f"kaisetsu: {url}", flush=True)
+    print(f"kaisetu: {url}", flush=True)
     print(f"result: {result_path}", flush=True)
     print(f"pid: {os.getpid()}", flush=True)
     if not args.no_open:

@@ -1,9 +1,9 @@
 ---
-name: kaisetsu
+name: kaisetu
 description: 大きめの差分を意図ごとにグループ化し、リスク順・AI解説つきのレビュー画面(ローカルサーバ)を起動する。レビュー判断は人間が行い、画面上のコメントを「レビュー完了」でセッションへ返す。差分が大きいとき・plan実装後のセルフレビューに明示的に使う。
 ---
 
-# kaisetsu
+# kaisetu
 
 差分を「意図ごとのグループ×リスク順×AI解説つき」で表示するレビュー画面を起動するスキル。
 **レビュー(良し悪しの判断)は人間の仕事。AIは差分を読みやすく整理し、解説を付けるところまで。**
@@ -23,8 +23,8 @@ Claude CodeとCodexのどちらでも、利用可能なプロセス実行・待�
 
 ## ① 差分収集
 
-- 作業ファイルは `~/.kaisetsu/<リポジトリ名>/<YYYYMMDD-HHMMSS>/` に置く(対象リポジトリを汚さない)。
-  レビューごとに新しい日時ディレクトリを作る(過去レビューは `/kaisetsu-list` から参照されるため上書きしない)。
+- 作業ファイルは `~/.kaisetu/<リポジトリ名>/<YYYYMMDD-HHMMSS>/` に置く(対象リポジトリを汚さない)。
+  レビューごとに新しい日時ディレクトリを作る(過去レビューは `/kaisetu-list` から参照されるため上書きしない)。
   以下このディレクトリを `$REVIEW_DIR` と呼ぶ。
 - 範囲: 引数指定があればそれに従う。なければ未コミット差分(`git diff HEAD`)。
   ブランチ全体なら、リポジトリ既定のbase branchを特定して `git diff $BASE...HEAD` を使う。
@@ -64,7 +64,7 @@ plan(`plans/*.md` など)があれば読み、変更の意図を正確に説明�
 
 1. schema.md に従い `$REVIEW_DIR/review-data.json` を書く。
    グループはリスク順(high→medium→low)に並べておく。`repoRoot` に対象リポジトリの絶対パスを入れる。
-   あわせて一覧用の `$REVIEW_DIR/meta.json` を書く(`/kaisetsu-list` がdiff全文を開かずに一覧を出すためのもの。
+   あわせて一覧用の `$REVIEW_DIR/meta.json` を書く(`/kaisetu-list` がdiff全文を開かずに一覧を出すためのもの。
    内容は title / tagline / repoRoot / generatedAt のみ。schema.md参照)。
 2. サーバを長時間実行プロセスとして起動する(ブラウザが自動で開く)。
    **対象リポジトリのルートをCWDにして実行する**(画面のplanリンクは `/plan` で planファイルを配信するため、
@@ -106,4 +106,4 @@ plan(`plans/*.md` など)があれば読み、変更の意図を正確に説明�
 - 途中経過(コメント・解決状態)は `review-data.state.json` に自動保存され、画面を開き直すと
   localStorage と state.json の新しい方から復元される(別ブラウザで開いてもstate.jsonから復元される)。
 - 同じ `$REVIEW_DIR` でサーバを再起動する場合は、古い `*.result.json` を消してから起動すること(完了検知が即発火してしまうため)。
-- 過去レビューの一覧・再開は `/kaisetsu-list` スキルから行える。
+- 過去レビューの一覧・再開は `/kaisetu-list` スキルから行える。
