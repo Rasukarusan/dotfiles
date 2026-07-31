@@ -252,7 +252,6 @@ main { max-width: 1060px; margin: 0 auto; padding: 28px 24px 64px; }
   border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px;
   background: #fafbfd;
 }
-.group-tools { display: flex; gap: 16px; padding: 4px 20px 14px; }
 .link-btn {
   background: none; border: none; padding: 0; cursor: pointer;
   font-size: 12.5px; color: var(--blue); font-family: var(--mono);
@@ -324,6 +323,7 @@ tr.line.has-comment .cbtn { background: var(--card); color: var(--blue); }
 /* annotation / comment rows */
 td.wide { padding: 6px 14px 6px 4.8em; }
 .callout {
+  position: relative;
   border: 1px solid; border-radius: 8px; padding: 8px 12px;
   font-size: 13px; font-family: var(--sans); line-height: 1.6;
   display: flex; gap: 9px; align-items: baseline;
@@ -387,10 +387,6 @@ td.wide { padding: 6px 14px 6px 4.8em; }
   padding: 7px 10px; border-top: 1px solid var(--border); background: #fcfcfa;
 }
 .comment-view .cv-foot .pending { font-size: 11.5px; color: var(--ink-faint); }
-/* 解説の書き直し依頼はコード指摘と色で区別する */
-.comment-view.doc { border-color: #cfe0f2; }
-.comment-view.doc .cv-head { background: var(--blue-bg); border-bottom-color: #cfe0f2; }
-.comment-view.doc .cv-head .label { background: var(--blue); }
 .drawer-item .turns { font-size: 11px; color: var(--ink-faint); margin-top: 3px; }
 .link-btn.danger { color: var(--red); }
 .mini-btn {
@@ -431,12 +427,21 @@ td.wide { padding: 6px 14px 6px 4.8em; }
 .abtn.finish.sent { background: var(--card); border-color: var(--border-strong); color: var(--ink); }
 .abtn.finish.sent:hover { background: var(--gray-bg); }
 
-/* 解説へのコメント(書き直し依頼)。概要・グループ意図・セクション解説に付く */
-.doc-tools { margin: 6px 0 0; }
-.doc-comment { margin: 8px 0 0; max-width: 880px; }
-.intent-row + .group-tools .doc-comment, .group-tools .doc-comment { max-width: none; }
-article .doc-comment { padding: 0 20px; }
-article .doc-comment:not(:empty) { padding-bottom: 12px; }
+/* 解説文(概要・意図・AI解説)へのコメント。diff行と同じくホバーで + が出る */
+.prose-target { position: relative; }
+.pbtn {
+  position: absolute; width: 18px; height: 18px; border-radius: 5px;
+  border: 1px solid var(--blue); background: var(--blue); color: #fff;
+  font-size: 12px; line-height: 1; cursor: pointer; padding: 0;
+  opacity: 0; transition: opacity .1s;
+}
+.prose-target:hover .pbtn { opacity: 1; }
+.pbtn.has { opacity: 1; background: var(--card); color: var(--blue); }
+#overview-block .pbtn { left: -26px; top: 5px; }
+.intent-row .pbtn { left: 1px; top: 9px; width: 16px; height: 16px; }
+/* 解説カードは左に余白がないので、ボックス内の右上に出す */
+.callout .pbtn { position: static; margin-left: auto; align-self: flex-start; }
+.doc-comment { margin: 10px 0 0; max-width: 880px; }
 /* 解説が書き直されたときの反映バー(編集中は自動リロードせずここから反映する) */
 .update-bar {
   position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(12px);
@@ -477,9 +482,9 @@ article .doc-comment:not(:empty) { padding-bottom: 12px; }
 
 <main>
   <div class="sec-label" id="overview-label">00 / 概要</div>
-  <div class="overview" id="overview"></div>
-  <div class="doc-tools" id="overview-tools">
-    <button class="link-btn" data-act="new" data-kind="doc" data-key="overview">+ この概要の書き直しを依頼</button>
+  <div class="prose-target" id="overview-block">
+    <div class="overview" id="overview"></div>
+    <button class="pbtn" data-act="new" data-kind="doc" data-key="overview" title="概要にコメント">+</button>
   </div>
   <div class="doc-comment" data-dcwrap="overview"></div>
 
@@ -496,8 +501,7 @@ article .doc-comment:not(:empty) { padding-bottom: 12px; }
     <div class="mono-label">HELP</div>
     <h3>操作方法</h3>
     <table>
-      <tr><td class="key">クリック</td><td>diff行の + ボタンでその行にコメント</td></tr>
-      <tr><td class="key">書き直し</td><td>概要・意図・解説の「書き直しを依頼」でAIに書き直させる</td></tr>
+      <tr><td class="key">クリック</td><td>diff行・概要・意図・AI解説にマウスを乗せると出る + でコメント</td></tr>
       <tr><td class="key">j / k</td><td>次 / 前のグループへ移動</td></tr>
       <tr><td class="key">c</td><td>まとめをコピー</td></tr>
       <tr><td class="key">⌘Enter</td><td>コメント編集中に保存</td></tr>
@@ -507,7 +511,7 @@ article .doc-comment:not(:empty) { padding-bottom: 12px; }
     「レビュー完了」で結果がClaudeのセッションへ返ります。送信後も画面はそのまま使えます。
     AIの回答が付いたコメントは「返信」でスレッドとして続けられます。返信を書いたら
     もう一度「レビュー完了」を押すとセッションへ送られます。
-    解説が書き直されると、この画面は自動で新しい内容に入れ替わります(コメントは残ります)。
+    概要や解説へのコメントを受けてAIが書き直すと、この画面は自動で新しい内容に入れ替わります(コメントは残ります)。
     別セッション(Codex等)に投げる場合は「まとめをコピー」を使ってください。</p>
     <div class="close-row"><button class="mini-btn" onclick="document.getElementById('help-overlay').classList.remove('show')">閉じる</button></div>
   </div>
@@ -688,8 +692,7 @@ if (DATA.tagline || DATA.overview) {
   document.getElementById("overview").innerHTML = html;
 } else {
   document.getElementById("overview-label").hidden = true;
-  document.getElementById("overview").hidden = true;
-  document.getElementById("overview-tools").hidden = true;
+  document.getElementById("overview-block").hidden = true;
 }
 if (SERVER) document.getElementById("finish-btn").hidden = false;
 
@@ -788,7 +791,7 @@ groups.forEach((g, gi) => {
   art.appendChild(head);
 
   const intentRow = document.createElement("div");
-  intentRow.className = "intent-row";
+  intentRow.className = "intent-row prose-target";
   const gByFile = new Map(); // file → グループ内のhunk ID一覧
   for (const h of allHunks) {
     if (!gByFile.has(h.file)) gByFile.set(h.file, []);
@@ -797,22 +800,12 @@ groups.forEach((g, gi) => {
   intentRow.innerHTML = `
     <p class="intent"><span class="k">意図:</span> ${esc(g.intent || "")}` +
     (g.impact ? ` <span class="impact">— ${esc(g.impact)}</span>` : "") + `</p>
-    <div class="gtree ftree">${treeHtml(gByFile)}</div>`;
+    <div class="gtree ftree">${treeHtml(gByFile)}</div>
+    <button class="pbtn" data-act="new" data-kind="group" data-key="${esc(g.id)}"
+      title="このグループにコメント(意図の書き方でも設計でも)">+</button>`;
   art.appendChild(intentRow);
 
-  /* group comment / 意図の書き直し依頼 */
-  const docKey = "group:" + g.id;
-  docLabels.set(docKey, `グループ「${g.title}」の意図`);
-  const tools = document.createElement("div");
-  tools.className = "group-tools";
-  tools.innerHTML = `
-    <button class="link-btn" data-act="new" data-kind="group" data-key="${esc(g.id)}">+ グループにコメント</button>
-    <button class="link-btn" data-act="new" data-kind="doc" data-key="${esc(docKey)}">+ 意図の書き直しを依頼</button>`;
-  art.appendChild(tools);
-  const gdWrap = document.createElement("div");
-  gdWrap.className = "group-comment";
-  gdWrap.dataset.dcwrap = docKey;
-  art.appendChild(gdWrap);
+  /* group comment */
   const gcWrap = document.createElement("div");
   gcWrap.className = "group-comment";
   gcWrap.dataset.gcwrap = g.id;
@@ -822,7 +815,7 @@ groups.forEach((g, gi) => {
   sections.forEach((s, si) => {
     const sDocKey = "section:" + (s.id || `${g.id}-${si}`);
     if (s.title || s.explain) {
-      docLabels.set(sDocKey, `セクション「${s.title || sDocKey}」の解説`);
+      docLabels.set(sDocKey, `「${s.title || sDocKey}」の解説`);
       const sh = document.createElement("div");
       sh.className = "section-head";
       if ((s.hunks || []).length && s.hunks.every(h => isTestFile(h.file))) sh.classList.add("is-test");
@@ -832,15 +825,8 @@ groups.forEach((g, gi) => {
           ${s.id ? `<span class="sid">${esc(s.id)}</span>` : ""}
           <h3>${esc(s.title || "")}</h3>
           <span class="files">${esc(files.slice(0, 3).join(", "))}${files.length > 3 ? ` +${files.length - 3}` : ""}</span>
-        </div>
-        <div class="doc-tools">
-          <button class="link-btn" data-act="new" data-kind="doc" data-key="${esc(sDocKey)}">+ この解説の書き直しを依頼</button>
         </div>`;
       art.appendChild(sh);
-      const sdWrap = document.createElement("div");
-      sdWrap.className = "doc-comment";
-      sdWrap.dataset.dcwrap = sDocKey;
-      art.appendChild(sdWrap);
     }
 
   let pendingExplain = s.explain; // セクション解説は最初のhunkの先頭行コメントとして表示
@@ -873,9 +859,17 @@ groups.forEach((g, gi) => {
     if (pendingExplain) {
       const et = document.createElement("tr");
       et.className = "annotation";
-      et.innerHTML = `<td class="wide" colspan="4"><div class="callout explain">
-        <span class="label">AI解説</span><span>${esc(pendingExplain)}</span></div></td>`;
+      et.innerHTML = `<td class="wide" colspan="4"><div class="callout explain prose-target">
+        <span class="label">AI解説</span><span>${esc(pendingExplain)}</span>
+        <button class="pbtn" data-act="new" data-kind="doc" data-key="${esc(sDocKey)}"
+          title="この解説にコメント">+</button></div></td>`;
       tbody.appendChild(et);
+      // 解説へのコメントはこのすぐ下に出す
+      const ec = document.createElement("tr");
+      ec.className = "comment-slot";
+      ec.hidden = true;
+      ec.innerHTML = `<td class="wide" colspan="4" data-dcwrap="${esc(sDocKey)}"></td>`;
+      tbody.appendChild(ec);
       pendingExplain = null;
     }
     parsed.rows.forEach((r, i) => {
@@ -968,8 +962,8 @@ function threadHost(key, kind) {
 function editorHtml(key, kind, idx, value, mode) {
   const head = mode === "edit" ? "EDIT — この発言を修正"
     : mode === "reply" ? "REPLY — 回答への返信"
-    : kind === "doc" ? `REWRITE — 「${docLabels.get(key) || key}」の書き直し依頼`
-    : kind === "group" ? "COMMENT — このグループ全体へ(設計面など)" : "COMMENT — この行へ";
+    : kind === "doc" ? `COMMENT — ${docLabels.get(key) || key}へ`
+    : kind === "group" ? "COMMENT — このグループ全体へ(意図の書き方・設計など)" : "COMMENT — この行へ";
   const attrs = `data-kind="${kind}" data-key="${esc(key)}" data-idx="${idx}"`;
   return `<div class="comment-editor">
     <div class="ce-head">${head}</div>
@@ -985,12 +979,15 @@ function editorHtml(key, kind, idx, value, mode) {
 function renderThread(key, kind, editAt = null) {
   const host = threadHost(key, kind);
   if (!host) return;
-  const slot = kind === "line" ? host.closest("tr") : null;
+  const slot = host.closest("tr.comment-slot");   // 表の中に出すスレッドは行ごと出し入れする
   const msgs = msgsOf(key, kind);
   const done = !!doneStore(kind)[key];
+  const marked = msgs.length > 0 && !done;
   if (kind === "line")
-    document.querySelector(`tr[data-ckey="${CSS.escape(key)}"]`)
-      ?.classList.toggle("has-comment", msgs.length > 0 && !done);
+    document.querySelector(`tr[data-ckey="${CSS.escape(key)}"]`)?.classList.toggle("has-comment", marked);
+  else
+    document.querySelector(`.pbtn[data-kind="${kind}"][data-key="${CSS.escape(key)}"]`)
+      ?.classList.toggle("has", marked);
   // 解決済みはdiff上では非表示(コメント一覧サイドバーからのみ参照・再開できる)
   if (editAt == null && (!msgs.length || done)) {
     host.innerHTML = "";
@@ -1026,9 +1023,8 @@ function renderThread(key, kind, editAt = null) {
   const foot = editAt != null ? "" : `<div class="cv-foot">
     <button class="mini-btn" data-act="reply" ${attrs} data-idx="${msgs.length}">返信</button>
     ${isAwaiting(key, kind) ? `<span class="pending">AIの回答待ち(「レビュー完了」で送信)</span>` : ""}</div>`;
-  const headLabel = kind === "doc" ? "書き直し依頼"
-    : kind === "group" ? "グループコメント" : "コメント";
-  host.innerHTML = `<div class="comment-view${kind === "doc" ? " doc" : ""}">
+  const headLabel = kind === "group" ? "グループコメント" : "コメント";
+  host.innerHTML = `<div class="comment-view">
     <div class="cv-head"><span class="label">${headLabel}</span>
       <span class="spacer"></span>
       <button class="link-btn" data-act="resolve" ${attrs}>✓ 解決</button>
@@ -1049,7 +1045,7 @@ function eachThread() {
 
 /* コメントの場所を人が読める形にする */
 function threadWhere(key, kind) {
-  if (kind === "doc") return `解説「${docLabels.get(key) || key}」の書き直し依頼`;
+  if (kind === "doc") return docLabels.get(key) || key;
   if (kind === "group") return "グループ: " + (groups.find(g => g.id === key)?.title || key);
   const m = commentMeta(key);
   return `${m.file} ${m.line}`;
@@ -1113,7 +1109,7 @@ function buildMarkdown() {
     const where = kind === "line"
       ? (m => `${m.file} ${m.line} (\`${m.code.trim()}\`)`)(commentMeta(key))
       : kind === "group" ? `[グループ ${key}] ${groups.find(g => g.id === key)?.title || ""}`
-      : `解説「${docLabels.get(key) || key}」の書き直し依頼`;
+      : docLabels.get(key) || key;
     const out = [`- ${flags.map(f => `[${f}] `).join("")}${where} \`${key}\``];
     for (let i = 0; i < Math.max(msgs.length, reps.length); i++) {
       if (msgs[i] != null) out.push(`  - 人間: ${msgs[i].replace(/\n/g, "\n    ")}`);
@@ -1122,17 +1118,10 @@ function buildMarkdown() {
     return out;
   };
 
-  const docs = eachThread().filter(([, k]) => k === "doc");
-  if (docs.length) {
-    lines.push("## 解説の書き直し依頼");
-    for (const [key, kind] of docs) lines.push(...threadLines(key, kind));
-    lines.push("");
-  }
-
   lines.push("## 人間コメント");
-  const rest = eachThread().filter(([, k]) => k !== "doc");
-  if (!rest.length) lines.push("- なし");
-  for (const [key, kind] of rest) lines.push(...threadLines(key, kind));
+  const all = eachThread();
+  if (!all.length) lines.push("- なし");
+  for (const [key, kind] of all) lines.push(...threadLines(key, kind));
   return lines.join("\n");
 }
 
@@ -1184,7 +1173,7 @@ async function finishReview() {
       .map(([key]) => ({ key, ...commentMeta(key), ...common(key, "line") })),
     groupComments: eachThread().filter(([, kind]) => kind === "group")
       .map(([gid]) => ({ group: gid, ...common(gid, "group") })),
-    // AIが書いた解説文への書き直し依頼(review-data.json 側を直す)
+    // AIが書いた解説文(概要・セクション解説)へのコメント
     docComments: eachThread().filter(([, kind]) => kind === "doc")
       .map(([key]) => ({ target: key, label: docLabels.get(key) || key, ...common(key, "doc") })),
     markdown: buildMarkdown(),
