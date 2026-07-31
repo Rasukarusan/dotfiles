@@ -252,7 +252,7 @@ main { max-width: 1060px; margin: 0 auto; padding: 28px 24px 64px; }
   border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px;
   background: #fafbfd;
 }
-.group-tools { padding: 4px 20px 14px; }
+.group-tools { display: flex; gap: 16px; padding: 4px 20px 14px; }
 .link-btn {
   background: none; border: none; padding: 0; cursor: pointer;
   font-size: 12.5px; color: var(--blue); font-family: var(--mono);
@@ -387,6 +387,10 @@ td.wide { padding: 6px 14px 6px 4.8em; }
   padding: 7px 10px; border-top: 1px solid var(--border); background: #fcfcfa;
 }
 .comment-view .cv-foot .pending { font-size: 11.5px; color: var(--ink-faint); }
+/* 解説の書き直し依頼はコード指摘と色で区別する */
+.comment-view.doc { border-color: #cfe0f2; }
+.comment-view.doc .cv-head { background: var(--blue-bg); border-bottom-color: #cfe0f2; }
+.comment-view.doc .cv-head .label { background: var(--blue); }
 .drawer-item .turns { font-size: 11px; color: var(--ink-faint); margin-top: 3px; }
 .link-btn.danger { color: var(--red); }
 .mini-btn {
@@ -427,6 +431,22 @@ td.wide { padding: 6px 14px 6px 4.8em; }
 .abtn.finish.sent { background: var(--card); border-color: var(--border-strong); color: var(--ink); }
 .abtn.finish.sent:hover { background: var(--gray-bg); }
 
+/* 解説へのコメント(書き直し依頼)。概要・グループ意図・セクション解説に付く */
+.doc-tools { margin: 6px 0 0; }
+.doc-comment { margin: 8px 0 0; max-width: 880px; }
+.intent-row + .group-tools .doc-comment, .group-tools .doc-comment { max-width: none; }
+article .doc-comment { padding: 0 20px; }
+article .doc-comment:not(:empty) { padding-bottom: 12px; }
+/* 解説が書き直されたときの反映バー(編集中は自動リロードせずここから反映する) */
+.update-bar {
+  position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(12px);
+  display: none; align-items: center; gap: 12px; z-index: 95;
+  background: var(--ink); color: #fff; border-radius: 10px; padding: 10px 14px;
+  font-size: 13px; box-shadow: 0 8px 28px rgba(20,24,33,.35);
+}
+.update-bar.show { display: flex; transform: translateX(-50%) translateY(0); }
+.update-bar .mini-btn { background: transparent; color: #fff; border-color: rgba(255,255,255,.5); }
+
 .toast {
   position: fixed; top: 62px; right: 24px; transform: translateY(-8px);
   background: var(--ink); color: #fff; border-radius: 9px; padding: 9px 18px;
@@ -458,6 +478,10 @@ td.wide { padding: 6px 14px 6px 4.8em; }
 <main>
   <div class="sec-label" id="overview-label">00 / 概要</div>
   <div class="overview" id="overview"></div>
+  <div class="doc-tools" id="overview-tools">
+    <button class="link-btn" data-act="new" data-kind="doc" data-key="overview">+ この概要の書き直しを依頼</button>
+  </div>
+  <div class="doc-comment" data-dcwrap="overview"></div>
 
   <div class="sec-label">01 / 変更グループ一覧(リスク順)</div>
   <div class="meta-line" id="meta"></div>
@@ -473,6 +497,7 @@ td.wide { padding: 6px 14px 6px 4.8em; }
     <h3>操作方法</h3>
     <table>
       <tr><td class="key">クリック</td><td>diff行の + ボタンでその行にコメント</td></tr>
+      <tr><td class="key">書き直し</td><td>概要・意図・解説の「書き直しを依頼」でAIに書き直させる</td></tr>
       <tr><td class="key">j / k</td><td>次 / 前のグループへ移動</td></tr>
       <tr><td class="key">c</td><td>まとめをコピー</td></tr>
       <tr><td class="key">⌘Enter</td><td>コメント編集中に保存</td></tr>
@@ -482,6 +507,7 @@ td.wide { padding: 6px 14px 6px 4.8em; }
     「レビュー完了」で結果がClaudeのセッションへ返ります。送信後も画面はそのまま使えます。
     AIの回答が付いたコメントは「返信」でスレッドとして続けられます。返信を書いたら
     もう一度「レビュー完了」を押すとセッションへ送られます。
+    解説が書き直されると、この画面は自動で新しい内容に入れ替わります(コメントは残ります)。
     別セッション(Codex等)に投げる場合は「まとめをコピー」を使ってください。</p>
     <div class="close-row"><button class="mini-btn" onclick="document.getElementById('help-overlay').classList.remove('show')">閉じる</button></div>
   </div>
@@ -495,6 +521,11 @@ td.wide { padding: 6px 14px 6px 4.8em; }
   <div class="drawer-list" id="drawer-list"></div>
 </aside>
 
+<div class="update-bar" id="update-bar">
+  <span>解説が書き直されました</span>
+  <button class="mini-btn" id="update-apply">画面に反映する</button>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script id="review-data" type="application/json">__REVIEW_DATA__</script>
@@ -503,6 +534,7 @@ td.wide { padding: 6px 14px 6px 4.8em; }
 "use strict";
 const DATA = JSON.parse(document.getElementById("review-data").textContent);
 const SERVER = location.protocol === "http:" || location.protocol === "https:";
+const VERSION = "__REVIEW_VERSION__"; // review-data.json のバージョン(更新検知に使う)
 
 /* ---------- state (localStorage + server autosave) ---------- */
 function fingerprint(s) {
@@ -510,11 +542,18 @@ function fingerprint(s) {
   for (let i = 0; i < s.length; i++) h = (h * 33) ^ s.charCodeAt(i);
   return (h >>> 0).toString(36);
 }
-const LS_KEY = "kaisetu:" + fingerprint(document.getElementById("review-data").textContent);
-// comments[key] / groupComments[gid] = 人間の発言スレッド(古い順の文字列配列)。
+// localStorageのキーは差分の構成(hunk IDと本文)から作る。
+// 解説文を書き直してもコメントのアンカーは変わらないので、キーも変えない。
+const LS_KEY = "kaisetu:" + fingerprint(JSON.stringify((DATA.groups || []).map(
+  g => [g.id, (g.sections || (g.hunks ? [{ hunks: g.hunks }] : []))
+    .map(s => (s.hunks || []).map(h => [h.id, h.diff]))])));
+// comments[key] / groupComments[gid] / docComments[target] = 人間の発言スレッド(古い順の文字列配列)。
 // AIの回答は replies 側に同じ添字で入る(replies[key][i] が i番目の人間発言への回答)。
-let state = { comments: {}, groupComments: {}, resolved: {}, groupResolved: {} };
-let replies = { comments: {}, groupComments: {} }; // AIからの回答(/api/replies をポーリング)
+let state = {
+  comments: {}, groupComments: {}, docComments: {},
+  resolved: {}, groupResolved: {}, docResolved: {},
+};
+let replies = { comments: {}, groupComments: {}, docComments: {} }; // AIからの回答(/api/replies をポーリング)
 // 復元: localStorage と サーバ埋め込みのstate.json の新しい方(_savedAtで比較)を使う
 {
   let localState = null, serverState = null;
@@ -523,7 +562,9 @@ let replies = { comments: {}, groupComments: {} }; // AIからの回答(/api/rep
   const pick = (serverState?._savedAt || 0) > (localState?._savedAt || 0)
     ? serverState : (localState || serverState);
   if (pick) state = Object.assign(state, pick);
-  for (const store of [state.comments, state.groupComments])
+  for (const k of ["comments", "groupComments", "docComments", "resolved", "groupResolved", "docResolved"])
+    state[k] ??= {};
+  for (const store of [state.comments, state.groupComments, state.docComments])
     for (const [k, v] of Object.entries(store)) {
       const t = typeof v === "string" ? [v] : Array.isArray(v) ? v.filter(x => typeof x === "string" && x) : [];
       if (t.length) store[k] = t; else delete store[k];
@@ -583,6 +624,8 @@ function treeHtml(byFile) {
   return render(root);
 }
 const ANN = { explain: "解説", question: "疑問" };
+/* 書き直し依頼のターゲット → 表示名。グループ・セクションの分は描画時に登録する */
+const docLabels = new Map([["overview", "概要"]]);
 
 const groups = [...(DATA.groups || [])].sort(
   (a, b) => (RISK[a.risk]?.rank ?? 9) - (RISK[b.risk]?.rank ?? 9)
@@ -646,6 +689,7 @@ if (DATA.tagline || DATA.overview) {
 } else {
   document.getElementById("overview-label").hidden = true;
   document.getElementById("overview").hidden = true;
+  document.getElementById("overview-tools").hidden = true;
 }
 if (SERVER) document.getElementById("finish-btn").hidden = false;
 
@@ -662,9 +706,32 @@ if (SERVER) {
       const r = JSON.parse(txt || "{}");
       replies.comments = Object.fromEntries((r.comments || []).map(c => [c.key, asList(c)]));
       replies.groupComments = Object.fromEntries((r.groupComments || []).map(c => [c.group, asList(c)]));
-      for (const key of Object.keys(state.comments)) renderThread(key, "line");
-      for (const gid of Object.keys(state.groupComments)) renderThread(gid, "group");
+      replies.docComments = Object.fromEntries((r.docComments || []).map(c => [c.target, asList(c)]));
+      for (const [key, kind] of eachThread()) renderThread(key, kind);
       refreshCounters();
+    } catch (e) {}
+  }, 3000);
+}
+
+/* review-data.json(解説)が書き直されたら画面を作り直す。
+   コメントはサーバのstate.jsonとlocalStorageから復元されるので消えない。 */
+const SS_SCROLL = "kaisetu:scroll", SS_UPDATED = "kaisetu:updated";
+function applyDataUpdate() {
+  sessionStorage.setItem(SS_SCROLL, String(window.scrollY));
+  sessionStorage.setItem(SS_UPDATED, "1");
+  location.reload();
+}
+if (SERVER) {
+  setInterval(async () => {
+    try {
+      const { version } = await (await fetch("/api/version")).json();
+      if (!version || version === VERSION) return;
+      // 入力中に作り直すと書いている内容が消えるので、その場合はバーから明示的に反映してもらう
+      if (document.querySelector(".comment-editor")) {
+        document.getElementById("update-bar").classList.add("show");
+        return;
+      }
+      applyDataUpdate();
     } catch (e) {}
   }, 3000);
 }
@@ -733,19 +800,29 @@ groups.forEach((g, gi) => {
     <div class="gtree ftree">${treeHtml(gByFile)}</div>`;
   art.appendChild(intentRow);
 
-  /* group comment */
+  /* group comment / 意図の書き直し依頼 */
+  const docKey = "group:" + g.id;
+  docLabels.set(docKey, `グループ「${g.title}」の意図`);
   const tools = document.createElement("div");
   tools.className = "group-tools";
-  tools.innerHTML = `<button class="link-btn" data-act="new" data-kind="group" data-key="${esc(g.id)}">+ グループにコメント</button>`;
+  tools.innerHTML = `
+    <button class="link-btn" data-act="new" data-kind="group" data-key="${esc(g.id)}">+ グループにコメント</button>
+    <button class="link-btn" data-act="new" data-kind="doc" data-key="${esc(docKey)}">+ 意図の書き直しを依頼</button>`;
   art.appendChild(tools);
+  const gdWrap = document.createElement("div");
+  gdWrap.className = "group-comment";
+  gdWrap.dataset.dcwrap = docKey;
+  art.appendChild(gdWrap);
   const gcWrap = document.createElement("div");
   gcWrap.className = "group-comment";
   gcWrap.dataset.gcwrap = g.id;
   art.appendChild(gcWrap);
 
   /* sections */
-  for (const s of sections) {
+  sections.forEach((s, si) => {
+    const sDocKey = "section:" + (s.id || `${g.id}-${si}`);
     if (s.title || s.explain) {
+      docLabels.set(sDocKey, `セクション「${s.title || sDocKey}」の解説`);
       const sh = document.createElement("div");
       sh.className = "section-head";
       if ((s.hunks || []).length && s.hunks.every(h => isTestFile(h.file))) sh.classList.add("is-test");
@@ -755,8 +832,15 @@ groups.forEach((g, gi) => {
           ${s.id ? `<span class="sid">${esc(s.id)}</span>` : ""}
           <h3>${esc(s.title || "")}</h3>
           <span class="files">${esc(files.slice(0, 3).join(", "))}${files.length > 3 ? ` +${files.length - 3}` : ""}</span>
+        </div>
+        <div class="doc-tools">
+          <button class="link-btn" data-act="new" data-kind="doc" data-key="${esc(sDocKey)}">+ この解説の書き直しを依頼</button>
         </div>`;
       art.appendChild(sh);
+      const sdWrap = document.createElement("div");
+      sdWrap.className = "doc-comment";
+      sdWrap.dataset.dcwrap = sDocKey;
+      art.appendChild(sdWrap);
     }
 
   let pendingExplain = s.explain; // セクション解説は最初のhunkの先頭行コメントとして表示
@@ -827,7 +911,7 @@ groups.forEach((g, gi) => {
     sec.appendChild(table);
     art.appendChild(sec);
   }
-  }
+  });
 
   detailEl.appendChild(art);
 });
@@ -859,10 +943,16 @@ function commentMeta(key) {
   return { file: "?", line: "", code: "" };
 }
 
-/* kind = "line"(diff行) | "group"(グループ全体)。key は行キー or グループID */
-const msgStore = kind => kind === "line" ? state.comments : state.groupComments;
-const doneStore = kind => kind === "line" ? state.resolved : state.groupResolved;
-const replyStore = kind => kind === "line" ? replies.comments : replies.groupComments;
+/* kind = "line"(diff行) | "group"(グループ全体) | "doc"(AIが書いた解説文への書き直し依頼)。
+   key は 行キー / グループID / 解説ターゲット("overview" | "group:g1" | "section:s1") */
+const STORES = {
+  line:  () => [state.comments, state.resolved, replies.comments],
+  group: () => [state.groupComments, state.groupResolved, replies.groupComments],
+  doc:   () => [state.docComments, state.docResolved, replies.docComments],
+};
+const msgStore = kind => STORES[kind]()[0];
+const doneStore = kind => STORES[kind]()[1];
+const replyStore = kind => STORES[kind]()[2];
 const msgsOf = (key, kind) => msgStore(kind)[key] || [];
 const repsOf = (key, kind) => replyStore(kind)[key] || [];
 /* 末尾が人間の発言のまま = AIがまだ答えていない */
@@ -870,6 +960,7 @@ const isAwaiting = (key, kind) => msgsOf(key, kind).length > repsOf(key, kind).l
 
 function threadHost(key, kind) {
   if (kind === "group") return document.querySelector(`[data-gcwrap="${CSS.escape(key)}"]`);
+  if (kind === "doc") return document.querySelector(`[data-dcwrap="${CSS.escape(key)}"]`);
   const slot = document.querySelector(`tr[data-slot="${CSS.escape(key)}"]`);
   return slot ? slot.firstElementChild : null;
 }
@@ -877,6 +968,7 @@ function threadHost(key, kind) {
 function editorHtml(key, kind, idx, value, mode) {
   const head = mode === "edit" ? "EDIT — この発言を修正"
     : mode === "reply" ? "REPLY — 回答への返信"
+    : kind === "doc" ? `REWRITE — 「${docLabels.get(key) || key}」の書き直し依頼`
     : kind === "group" ? "COMMENT — このグループ全体へ(設計面など)" : "COMMENT — この行へ";
   const attrs = `data-kind="${kind}" data-key="${esc(key)}" data-idx="${idx}"`;
   return `<div class="comment-editor">
@@ -934,8 +1026,10 @@ function renderThread(key, kind, editAt = null) {
   const foot = editAt != null ? "" : `<div class="cv-foot">
     <button class="mini-btn" data-act="reply" ${attrs} data-idx="${msgs.length}">返信</button>
     ${isAwaiting(key, kind) ? `<span class="pending">AIの回答待ち(「レビュー完了」で送信)</span>` : ""}</div>`;
-  host.innerHTML = `<div class="comment-view">
-    <div class="cv-head"><span class="label">${kind === "group" ? "グループコメント" : "コメント"}</span>
+  const headLabel = kind === "doc" ? "書き直し依頼"
+    : kind === "group" ? "グループコメント" : "コメント";
+  host.innerHTML = `<div class="comment-view${kind === "doc" ? " doc" : ""}">
+    <div class="cv-head"><span class="label">${headLabel}</span>
       <span class="spacer"></span>
       <button class="link-btn" data-act="resolve" ${attrs}>✓ 解決</button>
       <button class="link-btn danger" data-act="del" ${attrs}>削除</button></div>
@@ -944,12 +1038,21 @@ function renderThread(key, kind, editAt = null) {
 }
 
 /* ---------- counters / drawer ---------- */
-/* スレッドを持つコメントを [key, kind] で列挙する(グループ→行の順) */
+/* スレッドを持つコメントを [key, kind] で列挙する(解説→グループ→行の順) */
 function eachThread() {
   const out = [];
+  for (const key of Object.keys(state.docComments)) if (msgsOf(key, "doc").length) out.push([key, "doc"]);
   for (const g of groups) if (msgsOf(g.id, "group").length) out.push([g.id, "group"]);
   for (const key of Object.keys(state.comments)) if (msgsOf(key, "line").length) out.push([key, "line"]);
   return out;
+}
+
+/* コメントの場所を人が読める形にする */
+function threadWhere(key, kind) {
+  if (kind === "doc") return `解説「${docLabels.get(key) || key}」の書き直し依頼`;
+  if (kind === "group") return "グループ: " + (groups.find(g => g.id === key)?.title || key);
+  const m = commentMeta(key);
+  return `${m.file} ${m.line}`;
 }
 
 function refreshCounters() {
@@ -967,15 +1070,13 @@ function renderDrawer() {
   const items = eachThread().map(([key, kind]) => {
     const msgs = msgsOf(key, kind), reps = repsOf(key, kind);
     const done = !!doneStore(kind)[key];
-    const where = kind === "group"
-      ? "グループ: " + (groups.find(g => g.id === key)?.title || key)
-      : (m => `${m.file} ${m.line}`)(commentMeta(key));
+    const where = threadWhere(key, kind);
     const turns = [
       msgs.length > 1 ? `返信 ${msgs.length - 1}` : "",
       reps.length ? `回答 ${reps.length}` : "",
       !done && isAwaiting(key, kind) ? "未回答" : "",
     ].filter(Boolean).join(" / ");
-    return `<div class="drawer-item${done ? " resolved" : ""}" data-goto-${kind === "group" ? "group" : "line"}="${esc(key)}">
+    return `<div class="drawer-item${done ? " resolved" : ""}" data-goto-kind="${kind}" data-goto-key="${esc(key)}">
       <div class="where"><span class="w">${done ? "✓ " : ""}${esc(where)}</span>
         ${done ? `<button class="link-btn" data-act="unresolve" data-kind="${kind}" data-key="${esc(key)}">再開</button>` : ""}</div>
       <div class="body">${esc(msgs[msgs.length - 1])}</div>
@@ -1005,22 +1106,33 @@ function buildMarkdown() {
     lines.push("");
   }
 
-  lines.push("## 人間コメント");
-  const all = eachThread();
-  if (!all.length) lines.push("- なし");
-  for (const [key, kind] of all) {
+  const threadLines = (key, kind) => {
     const msgs = msgsOf(key, kind), reps = repsOf(key, kind);
     const done = doneStore(kind)[key];
     const flags = [done ? "解決済" : "", !done && isAwaiting(key, kind) ? "未回答" : ""].filter(Boolean);
-    const where = kind === "group"
-      ? `[グループ ${key}] ${groups.find(g => g.id === key)?.title || ""}`
-      : (m => `${m.file} ${m.line} (\`${m.code.trim()}\`)`)(commentMeta(key));
-    lines.push(`- ${flags.map(f => `[${f}] `).join("")}${where} \`${key}\``);
+    const where = kind === "line"
+      ? (m => `${m.file} ${m.line} (\`${m.code.trim()}\`)`)(commentMeta(key))
+      : kind === "group" ? `[グループ ${key}] ${groups.find(g => g.id === key)?.title || ""}`
+      : `解説「${docLabels.get(key) || key}」の書き直し依頼`;
+    const out = [`- ${flags.map(f => `[${f}] `).join("")}${where} \`${key}\``];
     for (let i = 0; i < Math.max(msgs.length, reps.length); i++) {
-      if (msgs[i] != null) lines.push(`  - 人間: ${msgs[i].replace(/\n/g, "\n    ")}`);
-      if (reps[i] != null) lines.push(`  - AI: ${reps[i].replace(/\n/g, "\n    ")}`);
+      if (msgs[i] != null) out.push(`  - 人間: ${msgs[i].replace(/\n/g, "\n    ")}`);
+      if (reps[i] != null) out.push(`  - AI: ${reps[i].replace(/\n/g, "\n    ")}`);
     }
+    return out;
+  };
+
+  const docs = eachThread().filter(([, k]) => k === "doc");
+  if (docs.length) {
+    lines.push("## 解説の書き直し依頼");
+    for (const [key, kind] of docs) lines.push(...threadLines(key, kind));
+    lines.push("");
   }
+
+  lines.push("## 人間コメント");
+  const rest = eachThread().filter(([, k]) => k !== "doc");
+  if (!rest.length) lines.push("- なし");
+  for (const [key, kind] of rest) lines.push(...threadLines(key, kind));
   return lines.join("\n");
 }
 
@@ -1072,6 +1184,9 @@ async function finishReview() {
       .map(([key]) => ({ key, ...commentMeta(key), ...common(key, "line") })),
     groupComments: eachThread().filter(([, kind]) => kind === "group")
       .map(([gid]) => ({ group: gid, ...common(gid, "group") })),
+    // AIが書いた解説文への書き直し依頼(review-data.json 側を直す)
+    docComments: eachThread().filter(([, kind]) => kind === "doc")
+      .map(([key]) => ({ target: key, label: docLabels.get(key) || key, ...common(key, "doc") })),
     markdown: buildMarkdown(),
   };
   try {
@@ -1095,9 +1210,10 @@ document.addEventListener("click", e => {
   if (fj) { document.getElementById("hunk-" + fj.dataset.fileJump)?.scrollIntoView(); return; }
   const item = e.target.closest(".drawer-item");
   if (item && !e.target.closest("button")) {
-    let target = null;
-    if (item.dataset.gotoGroup) target = document.getElementById(item.dataset.gotoGroup);
-    if (item.dataset.gotoLine) target = document.querySelector(`tr[data-slot="${CSS.escape(item.dataset.gotoLine)}"]`);
+    const { gotoKey: key, gotoKind: kind } = item.dataset;
+    const host = key ? threadHost(key, kind) : null;
+    const target = kind === "group" ? document.getElementById(key)
+      : kind === "line" ? host?.closest("tr") : host;
     target?.scrollIntoView({ block: "center" });
     return;
   }
@@ -1142,6 +1258,7 @@ document.getElementById("hide-tests").addEventListener("change", e =>
   document.body.classList.toggle("hide-tests", e.target.checked));
 document.getElementById("drawer-close").addEventListener("click", () => toggleDrawer(false));
 document.getElementById("finish-btn").addEventListener("click", finishReview);
+document.getElementById("update-apply").addEventListener("click", applyDataUpdate);
 document.getElementById("help-btn").addEventListener("click", () =>
   document.getElementById("help-overlay").classList.add("show"));
 document.querySelectorAll(".overlay").forEach(o =>
@@ -1182,6 +1299,15 @@ document.addEventListener("keydown", e => {
 /* ---------- init ---------- */
 for (const [key, kind] of eachThread()) renderThread(key, kind);
 refreshCounters();
+// 解説の書き直しを反映して作り直した直後は、元の位置に戻す
+{
+  const y = sessionStorage.getItem(SS_SCROLL);
+  if (y != null) { sessionStorage.removeItem(SS_SCROLL); window.scrollTo(0, +y); }
+  if (sessionStorage.getItem(SS_UPDATED)) {
+    sessionStorage.removeItem(SS_UPDATED);
+    toast("解説の書き直しを反映しました");
+  }
+}
 </script>
 </body>
 </html>

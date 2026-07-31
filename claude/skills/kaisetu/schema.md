@@ -93,9 +93,29 @@
   ],
   "groupComments": [
     { "group": "g1", "replies": ["ご指摘のとおりです。設計は〜"] }
+  ],
+  "docComments": [
+    { "target": "overview", "replies": ["3点に絞り、legacy-pathの話を先頭にしました。"] }
   ]
 }
 ```
+
+## 解説の書き直し依頼
+
+画面の概要・グループの意図・セクション解説には「書き直しを依頼」ボタンが付いている。
+依頼はコメントと同じスレッドとして result.json の `docComments` に入る。`target` は書き直す対象:
+
+| target | 書き直すフィールド |
+|---|---|
+| `overview` | トップレベルの `tagline` / `overview` |
+| `group:<gid>` | そのグループの `intent` / `impact` |
+| `section:<sid>` | そのセクションの `title` / `explain`(`sid` はセクションの `id`) |
+
+対応方法は **review-data.json の該当フィールドを書き直して保存するだけ**。
+サーバがファイルを読み直し、画面が更新を検知して作り直す(コメントは保持される)。
+
+**`groups[].id` / `sections[].id` / `hunks` の構成は変えない。**
+コメントは hunk ID と行番号にぶら下がっているので、差分の構成を変えると位置がずれる。
 
 ## 結果ファイル(review-data.result.json)
 
@@ -123,6 +143,9 @@
   "groupComments": [
     { "group": "g1", "messages": [ … ], "resolved": false, "awaiting": true }
   ],
+  "docComments": [                // AIが書いた解説文の書き直し依頼
+    { "target": "overview", "label": "概要", "messages": [ … ], "resolved": false, "awaiting": true }
+  ],
   "markdown": "…"                 // 人間可読なまとめ(スレッドを入れ子の箇条書きで表現)
 }
 ```
@@ -132,6 +155,9 @@
 - グループは `risk` 順 (high → medium → low) に表示される。JSON内の順序はリスク順に並べておくこと(同リスク内の順序はJSONの順序を維持)。
 - sectionの `explain` は、そのsectionの最初のhunkの先頭に「AI解説」コメントとして表示される。
 - `annotations` の `type: "question"` があるグループは一覧で「疑問」バッジが付く。
-- 人間コメント(diff行・グループ)は localStorage に保存される(キーはJSON内容のハッシュ。データを作り直すと状態はリセットされる)。
+- 人間コメントは localStorage とサーバの state.json に保存される。localStorageのキーは差分の構成
+  (hunk IDと本文)から作るので、解説文を書き直してもコメントは保持される。
 - コメントはスレッド。AI回答の下に「返信」ボタンが出て、人間が続けて書ける。
   末尾が人間発言のスレッドには「AIの回答待ち」と表示され、ヘッダーのコメント件数に「未回答 N」が出る。
+- review-data.json を書き直すと、画面が数秒で検知して作り直す(コメント入力中は
+  「画面に反映する」バーが出るだけで、勝手には作り直さない)。
