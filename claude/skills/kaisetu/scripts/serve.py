@@ -4,6 +4,7 @@
 review-data.json を埋め込んだレビュー画面をローカル配信し、ブラウザを開く。
 画面の「レビュー完了」ボタンで結果JSONを書き出す。サーバは終了せず、
 画面はその後も閲覧・追加コメント・再送信ができる。
+review-data.json はリクエストごとに読み直すので、解説を書き直すと画面が自動で追従する。
 呼び出し側のエージェントは結果JSONの出現を監視して読み、不要になったらプロセスをkillする。
 
 Usage:
@@ -24,15 +25,21 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 
-def render(data: dict, state_text: str = "null") -> str:
+PLACEHOLDERS = ("__REVIEW_DATA__", "__REVIEW_STATE__", "__REVIEW_VERSION__")
+
+
+def render(data: dict, state_text: str = "null", version: str = "static") -> str:
     template = (ROOT / "template.html").read_text(encoding="utf-8")
     payload = json.dumps(data, ensure_ascii=False)
     # <script>内埋め込みのため、終了タグとして解釈されうる並びをエスケープ
     payload = payload.replace("</", "<\\/")
     state_payload = state_text.replace("</", "<\\/")
-    if "__REVIEW_DATA__" not in template or "__REVIEW_STATE__" not in template:
-        sys.exit("template.html に __REVIEW_DATA__ / __REVIEW_STATE__ プレースホルダがありません")
-    return template.replace("__REVIEW_DATA__", payload).replace("__REVIEW_STATE__", state_payload)
+    missing = [p for p in PLACEHOLDERS if p not in template]
+    if missing:
+        sys.exit(f"template.html に {' / '.join(missing)} プレースホルダがありません")
+    return (template.replace("__REVIEW_DATA__", payload)
+                    .replace("__REVIEW_STATE__", state_payload)
+                    .replace("__REVIEW_VERSION__", version))
 
 
 def free_port() -> int:
@@ -52,15 +59,21 @@ def main() -> None:
     args = ap.parse_args()
 
     data_path = pathlib.Path(args.data).resolve()
-    data = json.loads(data_path.read_text(encoding="utf-8"))
     state_path = data_path.with_suffix(".state.json")    # 自動保存(途中経過)。画面はここから復元できる
+
+    # レビューデータは毎回読み直す。解説を書き直したら、画面が更新を検知して作り直す
+    def load_data() -> dict:
+        return json.loads(data_path.read_text(encoding="utf-8"))
+
+    def data_version() -> str:
+        return str(data_path.stat().st_mtime_ns)
 
     def state_text() -> str:
         return state_path.read_text(encoding="utf-8") if state_path.is_file() else "null"
 
     if args.build is not None:
         out = data_path.with_suffix(".html") if args.build == "-" else pathlib.Path(args.build)
-        out.write_text(render(data, state_text()), encoding="utf-8")
+        out.write_text(render(load_data(), state_text()), encoding="utf-8")
         print(out)
         return
 
@@ -85,13 +98,18 @@ def main() -> None:
 
         def do_GET(self):
             if self.path in ("/", "/index.html"):
-                # 毎回レンダリングし、最新のstate(コメント途中経過)を埋め込む
-                self._respond(200, render(data, state_text()).encode("utf-8"), "text/html; charset=utf-8")
+                # 毎回レンダリングし、最新のレビューデータとstate(コメント途中経過)を埋め込む
+                body = render(load_data(), state_text(), data_version()).encode("utf-8")
+                self._respond(200, body, "text/html; charset=utf-8")
             elif self.path == "/api/replies":
                 body = replies_path.read_bytes() if replies_path.is_file() else b"{}"
                 self._respond(200, body, "application/json; charset=utf-8")
+            elif self.path == "/api/version":
+                # 画面がポーリングし、変化したらレビューデータを読み直して作り直す
+                body = json.dumps({"version": data_version()}).encode("utf-8")
+                self._respond(200, body, "application/json; charset=utf-8")
             elif self.path == "/plan":
-                plan = data.get("plan")
+                plan = load_data().get("plan")
                 if not plan:
                     self._respond(404, b"plan not set")
                     return
