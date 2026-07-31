@@ -1,17 +1,17 @@
 ---
-name: kaisetsu-list
-description: kaisetsuの過去レビューを一覧表示し、ユーザーが選んだレビューの画面(ローカルサーバ)を再表示する。選択後はサーバ起動のみ行い、コメント対応は画面で「レビュー完了」が押されてから行う。
+name: kaisetu-list
+description: kaisetuの過去レビューを一覧表示し、ユーザーが選んだレビューの画面(ローカルサーバ)を再表示する。選択後はサーバ起動のみ行い、コメント対応は画面で「レビュー完了」が押されてから行う。
 ---
 
-# kaisetsu-list
+# kaisetu-list
 
-`/kaisetsu` で行ったレビューの履歴を一覧し、選ばれたレビューを再開するスキル。
-レビューは `~/.kaisetsu/<リポジトリ名>/<YYYYMMDD-HHMMSS>/review-data.json` に保存されている。
+`/kaisetu` で行ったレビューの履歴を一覧し、選ばれたレビューを再開するスキル。
+レビューは `~/.kaisetu/<リポジトリ名>/<YYYYMMDD-HHMMSS>/review-data.json` に保存されている。
 
 ## ① 一覧の収集
 
 ```bash
-find ~/.kaisetsu -mindepth 3 -maxdepth 3 -name 'review-data.json' | sort -r
+find ~/.kaisetu -mindepth 3 -maxdepth 3 -name 'review-data.json' | sort -r
 ```
 
 各レビューについて以下を読み取る。**`review-data.json` はdiff全文を含むためReadしないこと。**
@@ -43,9 +43,9 @@ find ~/.kaisetsu -mindepth 3 -maxdepth 3 -name 'review-data.json' | sort -r
 
 1. 古い `review-data.result.json` があれば削除する(完了検知が即発火するのを防ぐ。
    画面上のコメントはブラウザのlocalStorageから復元されるので消えない)。
-2. `~/.claude/skills/kaisetsu/SKILL.md` の手順③④以降に従い、その `review-data.json` で
+2. `~/.claude/skills/kaisetu/SKILL.md` の手順③④以降に従い、その `review-data.json` で
    サーバを起動する(`repoRoot` をCWDにする)。完了検知のバックグラウンド待機も同様に仕掛ける。
 3. 「レビュー画面を開きました」とだけ伝えて待つ。ユーザーが画面で「レビュー完了」を押したら、
-   kaisetsu本体の手順⑤⑥どおり結果を読んで対応する。
+   kaisetu本体の手順⑤⑥どおり結果を読んで対応する。
 
 以後のファイル操作・差分参照は `repoRoot` を基準に行う。

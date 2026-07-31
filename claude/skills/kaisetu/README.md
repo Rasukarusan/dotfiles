@@ -1,7 +1,7 @@
-# kaisetsu
+# kaisetu
 
 差分を「意図ごとのグループ × リスク順 × AI解説つき」で表示する、自作のレビュー画面 + エージェントスキル。
-Claude Codeでは `/kaisetsu`、Codexでは `$kaisetsu` として呼ぶとローカルサーバが立ち、ブラウザでレビュー →「レビュー完了」で結果がセッションへ返る。
+Claude Codeでは `/kaisetu`、Codexでは `$kaisetu` として呼ぶとローカルサーバが立ち、ブラウザでレビュー →「レビュー完了」で結果がセッションへ返る。
 
 **レビュー(良し悪しの判断)は人間の仕事。AIは差分を読みやすく整理し、解説を付けるところまで。**
 
@@ -15,7 +15,7 @@ Claude Codeでは `/kaisetsu`、Codexでは `$kaisetsu` として呼ぶとロー
 
 | ファイル | 役割 |
 |---|---|
-| `SKILL.md` | `/kaisetsu` スキル本体(差分整理と画面起動の手順) |
+| `SKILL.md` | `/kaisetu` スキル本体(差分整理と画面起動の手順) |
 | `schema.md` | LLMが生成する `review-data.json` の仕様 |
 | `template.html` | レビュー画面(自己完結・依存なし) |
 | `scripts/serve.py` | ローカルサーバ(Python3標準ライブラリのみ)。`--build` で静的HTML出力も可 |
@@ -23,7 +23,7 @@ Claude Codeでは `/kaisetsu`、Codexでは `$kaisetsu` として呼ぶとロー
 
 ## セットアップ
 
-`dotfiles/claude/skills/kaisetsu/` に置く。`~/.claude/skills` と `~/.agents/skills` はdotfilesへのsymlinkなので、Claude CodeとCodexの両方へ反映される。
+`dotfiles/claude/skills/kaisetu/` に置く。`~/.claude/skills` と `~/.agents/skills` はdotfilesへのsymlinkなので、Claude CodeとCodexの両方へ反映される。
 各クライアントを再起動するとスキルが使えるようになる。
 
 ## 手動での動作確認
@@ -36,7 +36,7 @@ python3 scripts/serve.py example/sample-data.json --build  # 静的HTMLを出力
 ## フロー
 
 ```
-/kaisetsu [範囲]
+/kaisetu [範囲]
   → Claudeが差分を収集し、planを踏まえて意図単位にグループ化・解説付け
   → review-data.json 生成 → serve.py 起動 → ブラウザが開く
   → 人間: 行コメント / グループコメント
@@ -44,4 +44,4 @@ python3 scripts/serve.py example/sample-data.json --build  # 静的HTMLを出力
   → Claudeが結果を読み、コメントに対応 → やりとりが終わったらサーバをkill
 ```
 
-過去のレビューは `~/.kaisetsu/<リポジトリ>/<日時>/` に残り、`/kaisetsu-list` で一覧・再開できる。
+過去のレビューは `~/.kaisetu/<リポジトリ>/<日時>/` に残り、`/kaisetu-list` で一覧・再開できる。

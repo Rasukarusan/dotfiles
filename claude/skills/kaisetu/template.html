@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>kaisetsu</title>
+<title>kaisetu</title>
 <style>
 :root {
   --bg: #f4f5f7;
@@ -500,7 +500,7 @@ function fingerprint(s) {
   for (let i = 0; i < s.length; i++) h = (h * 33) ^ s.charCodeAt(i);
   return (h >>> 0).toString(36);
 }
-const LS_KEY = "kaisetsu:" + fingerprint(document.getElementById("review-data").textContent);
+const LS_KEY = "kaisetu:" + fingerprint(document.getElementById("review-data").textContent);
 let state = { comments: {}, groupComments: {}, resolved: {}, groupResolved: {} };
 let replies = { comments: {}, groupComments: {} }; // AIからのコメント回答(/api/replies をポーリング)
 // 復元: localStorage と サーバ埋め込みのstate.json の新しい方(_savedAtで比較)を使う
@@ -605,7 +605,7 @@ function resolveAnchor(rows, ann) {
 }
 
 /* ---------- render ---------- */
-document.title = (DATA.title || "kaisetsu") + " — kaisetsu";
+document.title = (DATA.title || "kaisetu") + " — kaisetu";
 document.getElementById("title").textContent = DATA.title || "";
 const st = DATA.stats || {};
 document.getElementById("stats").innerHTML =
@@ -950,7 +950,7 @@ function toggleDrawer(open) {
 /* ---------- summary markdown ---------- */
 function buildMarkdown() {
   const lines = [];
-  lines.push(`# kaisetsu レビュー結果: ${DATA.title || ""}`);
+  lines.push(`# kaisetu レビュー結果: ${DATA.title || ""}`);
   lines.push(`- 範囲: ${DATA.base || "-"} / plan: ${DATA.plan || "なし"} / 生成: ${DATA.generatedAt || "-"}`);
   lines.push("");
   if (DATA.tagline || DATA.overview) {
