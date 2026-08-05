@@ -1682,15 +1682,46 @@ _git_worktree_remove() {
   done
 }
 
-# 自分が関連するPR一覧を取得
+# 自分が関連するPR一覧を取得(自分が最後にapproveしたPRは除外)
+# -a, --all を付けるとapprove済みも含めて全て表示する
+# 引数にリポジトリ(owner/repo)を渡すと、そのリポジトリを対象にする
 alias prl='_github_pr_involves'
 _github_pr_involves() {
-  local repos=($(git remote get-url origin | sed "s/.*://g;s/.git//g"))
-  if [ $# -ne 0 ]; then
-    local repos=("$@")
+  local include_approved=0
+  local repos=()
+  local arg
+  for arg in "$@"; do
+    case "$arg" in
+      -a|--all) include_approved=1 ;;
+      -h|--help)
+        printf 'usage: prl [-a|--all] [owner/repo ...]\n  -a, --all  自分がapprove済みのPRも表示する\n'
+        return 0
+        ;;
+      -*)
+        printf "\e[31m不明なオプション: %s\e[m\n" "$arg" >&2
+        return 1
+        ;;
+      *) repos+=("$arg") ;;
+    esac
+  done
+  if [ ${#repos[@]} -eq 0 ]; then
+    repos=($(git remote get-url origin | sed "s/.*://g;s/.git//g"))
   fi
+
+  local me=$(gh api user --jq '.login')
+
+  local repo
   for repo in "${repos[@]}";do
-    gh pr list --repo "$repo" --search "NOT bump in:title is:open is:pr involves:@me" --json number,title,url,reviewDecision,author --template '{{range .}}【'"$repo"'】#{{.number}}{{"\t"}}{{.title}}{{"\t"}}{{.url}}{{"\t"}}{{.author.login}}{{"\n"}}{{end}}' &
+    # 自分の最新レビューがAPPROVEDのPRは、--all指定時のみ緑色で表示する
+    local filter='.[]
+      | ([(.reviews // [])[]
+          | select(.author.login == "'"$me"'")
+          | select(.state == "APPROVED" or .state == "CHANGES_REQUESTED" or .state == "DISMISSED")
+         ] | last | .state) as $my_review_state
+      | select('"$include_approved"' == 1 or $my_review_state != "APPROVED")
+      | "【'"$repo"'】#\(.number)\t\(.title)\t\(.url)\t\(.author.login)"
+      | if $my_review_state == "APPROVED" then "\u001b[32m\(.)\u001b[0m" else . end'
+    gh pr list --repo "$repo" --search "NOT bump in:title is:open is:pr involves:@me" --json number,title,url,reviewDecision,author,reviews --jq "$filter" &
   done
   wait
 }
