@@ -2,3 +2,5 @@ zsh/.zshrc.local
 zsh/local
 vim/autoload/local.vim
 claude/local/*
+claude/skills/kaisetu
+claude/skills/kaisetu-list
