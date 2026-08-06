@@ -198,6 +198,15 @@ link "$DOTFILES_DIR/claude/skills"        "$HOME/.claude/skills"
 link "$DOTFILES_DIR/claude/statusline.sh" "$HOME/.claude/statusLine.sh"
 link "$DOTFILES_DIR/claude/hooks"        "$HOME/.claude/hooks"
 
+# kaisetu スキル (別リポジトリ ~/Documents/github/kaisetu で管理)
+KAISETU_DIR="$HOME/Documents/github/kaisetu"
+if [ -d "$KAISETU_DIR" ]; then
+  link "$KAISETU_DIR/kaisetu"      "$DOTFILES_DIR/claude/skills/kaisetu"
+  link "$KAISETU_DIR/kaisetu-list" "$DOTFILES_DIR/claude/skills/kaisetu-list"
+else
+  echo "  skip: kaisetu ($KAISETU_DIR not found)"
+fi
+
 # claude-notify (通知アプリのビルド)
 echo "==> claude-notify"
 mkdir -p "$HOME/.claude/bin"
