@@ -215,6 +215,29 @@ function! s:format_php() abort
   :r! php-cs-fixer -q fix % --config=$HOME/.php_cs
   :e! " 再読み込み
 endfunction
+" =============================================
+" プレビュー。markdownはcoc-markdown-preview-enhanced、
+" htmlはデフォルトブラウザで開く
+" =============================================
+function! s:preview() abort
+  if &filetype ==# 'html' || expand('%:e') =~? '^x\?html\?$'
+    call s:preview_html()
+  else
+    execute 'CocCommand markdown-preview-enhanced.openPreview'
+  endif
+endfunction
+function! s:preview_html() abort
+  let l:path = expand('%:p')
+  if empty(l:path)
+    " 無名バッファは一時ファイルに書き出す
+    let l:path = tempname() . '.html'
+    call writefile(getline(1, '$'), l:path)
+  else
+    " 相対パスの参照を壊さないよう、元ファイルに保存してから開く
+    silent update
+  endif
+  call system('open ' . shellescape(l:path))
+endfunction
 " 拡張子別のファイル設定
 augroup vimrc
     autocmd!
@@ -407,8 +430,8 @@ cabbrev vs vertical rightbelow new
 cabbrev vh split
 " .envファイルを開くための入力補完
 cabbrev Env tabe libs/.env
-" coc-markdown-preview-enhancedのコマンド
-command! MarkdownPreview :CocCommand markdown-preview-enhanced.openPreview
+" markdownはcoc-markdown-preview-enhanced、htmlはブラウザでプレビュー
+command! MarkdownPreview call s:preview()
 " Shift+MでMarkdownPreviewを実行
 nnoremap <S-m> :MarkdownPreview<CR>
 " Hexモードでバイナリを開く
