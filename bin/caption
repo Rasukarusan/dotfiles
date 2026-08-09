@@ -1,45 +1,112 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# 画面下部に字幕オーバーレイを表示する(E2E動作確認動画の撮影用)。
+# 画面に字幕オーバーレイを表示する(画面録画の実況・E2E動作確認動画用)。
 # 本体は bin/claude-caption/ の Swift アプリ。未起動なら自動起動する。
 #
-# 字幕はドラッグで移動でき、クリックすると右上に出る × で消せる。
+# 番号で複数の字幕を出し分ける。既定は1番。
+# 字幕はドラッグで移動でき、移動先は番号ごとに記憶される。
+# クリックすると左上に番号、右上に × が出る。× を押すとその字幕だけ消える。
 #
 # 使い方:
-#   caption "ログアウト状態です"   # 字幕を表示・更新
-#   caption --hide                 # 字幕を非表示(アプリは起動したまま)
-#   caption --reset                # 表示位置を画面下部中央に戻す
-#   caption --quit                 # アプリを終了
+#   caption "ログイン画面です"    # 1番に表示
+#   caption add "こっちが変更後"  # 空いている番号に追加(番号を考えなくてよい)
+#   caption 2 "こっちが変更後"    # 2番に表示(下中央から上に積まれる)
+#   caption --hide 2              # 2番を消す
+#   caption --hide                # 全部消す
+#   caption --reset 2             # 2番の位置を既定に戻す(番号省略で全部)
+#   caption --list                # 表示中の字幕を一覧
+#   caption --quit                # アプリを終了
+#
+# 先頭が数字のテキストを1番に出したいときは `caption 1 2024年の画面` のように番号を明示する。
 
-FILE="/tmp/claude-caption.txt"
+STATE_DIR="/tmp/claude-caption"
 APP="$HOME/.local/bin/claude-caption"
+
+die() {
+  echo "error: $*" >&2
+  exit 1
+}
+
+valid_slot() {
+  [[ $1 =~ ^[0-9]+$ ]] || die "番号は数字で指定してください: $1"
+}
+
+launch_if_needed() {
+  pgrep -xq claude-caption 2>/dev/null && return 0
+  [[ -x $APP ]] || die "$APP がありません。bin/claude-caption/build.sh を実行してください"
+  nohup "$APP" >/dev/null 2>&1 &
+}
+
+mkdir -p "$STATE_DIR"
 
 case "${1:-}" in
   --quit)
     pkill -x claude-caption 2>/dev/null || true
-    rm -f "$FILE"
+    rm -rf "$STATE_DIR"
+    exit 0
+    ;;
+  --list)
+    shopt -s nullglob
+    found=0
+    for f in "$STATE_DIR"/*.txt; do
+      slot=$(basename "$f" .txt)
+      [[ -s $f ]] || continue
+      found=1
+      printf '%s: %s\n' "$slot" "$(cat "$f")"
+    done
+    (( found )) || echo "表示中の字幕はありません"
+    exit 0
+    ;;
+  --hide)
+    shift
+    if [[ -n ${1:-} ]]; then
+      valid_slot "$1"
+      rm -f "$STATE_DIR/$1.txt"
+    else
+      shopt -s nullglob
+      rm -f "$STATE_DIR"/*.txt
+    fi
     exit 0
     ;;
   --reset)
-    # 移動後の位置はアプリのメモリ上にしかないので、入れ直して既定位置に戻す
-    text=$(cat "$FILE" 2>/dev/null || true)
-    pkill -x claude-caption 2>/dev/null || true
-    sleep 0.3
-    printf '%s' "$text" >"$FILE"
+    shift
+    if [[ -n ${1:-} ]]; then
+      valid_slot "$1"
+      rm -f "$STATE_DIR/$1.pos"
+    else
+      shopt -s nullglob
+      rm -f "$STATE_DIR"/*.pos
+    fi
+    exit 0
     ;;
-  --hide | "")
-    : >"$FILE"
+  add)
+    shift
+    [[ $# -gt 0 ]] || die "テキストを指定してください"
+    slot=1
+    while [[ -s "$STATE_DIR/$slot.txt" ]]; do slot=$((slot + 1)); done
+    printf '%s' "$*" >"$STATE_DIR/$slot.txt"
+    launch_if_needed
+    echo "${slot}番に表示しました"
+    exit 0
     ;;
-  *)
-    printf '%s' "$*" >"$FILE"
+  "")
+    shopt -s nullglob
+    rm -f "$STATE_DIR"/*.txt
+    exit 0
     ;;
 esac
 
-if ! pgrep -xq claude-caption 2>/dev/null; then
-  if [[ ! -x "$APP" ]]; then
-    echo "error: $APP がありません。bin/claude-caption/build.sh を実行してください" >&2
-    exit 1
-  fi
-  nohup "$APP" >/dev/null 2>&1 &
+slot=1
+if [[ $1 =~ ^[0-9]+$ ]]; then
+  slot=$1
+  shift
 fi
+
+if [[ $# -eq 0 ]]; then
+  rm -f "$STATE_DIR/$slot.txt"
+  exit 0
+fi
+
+printf '%s' "$*" >"$STATE_DIR/$slot.txt"
+launch_if_needed
