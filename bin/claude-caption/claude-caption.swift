@@ -29,8 +29,27 @@ func color(fromHex hex: String?, fallback: NSColor) -> NSColor {
 let textColor = color(fromHex: env["CAPTION_COLOR"], fallback: .white)
 let badgeColor = color(fromHex: env["CAPTION_BADGE_COLOR"], fallback: color(fromHex: "#7FD4F5", fallback: .white))
 
+/// 字幕を画面のどこに置くか。ドラッグで動かした場合はそちらが優先される。
+enum Anchor: String {
+    case bottom, top, center
+    case topLeft = "top-left"
+    case topRight = "top-right"
+    case bottomLeft = "bottom-left"
+    case bottomRight = "bottom-right"
+
+    var isTopSide: Bool { self == .top || self == .topLeft || self == .topRight }
+}
+
+/// 字幕ごとの見た目。
+struct Style: Equatable {
+    var alpha: CGFloat = 1
+    var color: NSColor = textColor
+    var anchor: Anchor = .bottom
+}
+
 let padH: CGFloat = 28
 let padV: CGFloat = 16
+let sideMargin: CGFloat = 24
 let closeSize: CGFloat = 18
 let stackGap: CGFloat = 8
 let bottomMargin: CGFloat = 48
@@ -131,9 +150,10 @@ final class CaptionWindow: NSObject, NSTextFieldDelegate {
     private let slotBadge: SlotBadgeView
     private var controlsHideTimer: Timer?
 
-    /// ドラッグで決まった位置(中央x, 下端y)。nil なら既定位置に並べる。
+    /// ドラッグで決まった位置(中央x, 下端y)。nil なら anchor の位置に並べる。
     var pinned: NSPoint?
     private(set) var text = ""
+    private(set) var style = Style()
     private(set) var isEditing = false
 
     var onDismiss: ((Int) -> Void)?
@@ -266,7 +286,44 @@ final class CaptionWindow: NSObject, NSTextFieldDelegate {
 
     func setText(_ value: String) {
         text = value
-        label.stringValue = value
+        label.attributedStringValue = Self.styled(value, style: style)
+    }
+
+    func setStyle(_ value: Style) {
+        style = value
+        label.attributedStringValue = Self.styled(text, style: value)
+    }
+
+    /// 行頭の `>` が付いた行だけを不透明で描き、他は style.alpha まで落とす。
+    /// 複数行は箇条書きとして読ませたいので左揃えにする。
+    static func styled(_ raw: String, style: Style) -> NSAttributedString {
+        let lines = raw.components(separatedBy: "\n")
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.alignment = lines.count > 1 ? .left : .center
+        paragraph.lineSpacing = 3
+        paragraph.lineBreakMode = .byWordWrapping
+
+        let font = NSFont.systemFont(ofSize: fontSize, weight: .bold)
+        let result = NSMutableAttributedString()
+        for (index, line) in lines.enumerated() {
+            var body = line
+            var alpha = style.alpha
+            if body.hasPrefix(">") {
+                body.removeFirst()
+                if body.hasPrefix(" ") { body.removeFirst() }
+                alpha = 1
+            }
+            if index > 0 { result.append(NSAttributedString(string: "\n")) }
+            result.append(NSAttributedString(
+                string: body,
+                attributes: [
+                    .font: font,
+                    .foregroundColor: style.color.withAlphaComponent(alpha),
+                    .paragraphStyle: paragraph,
+                ]
+            ))
+        }
+        return result
     }
 
     func measure(maxWidth: CGFloat) -> NSSize {
@@ -367,7 +424,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - 状態の読み取り
 
     private func textPath(_ slot: Int) -> String { "\(stateDir)/\(slot).txt" }
-    private func posPath(_ slot: Int) -> String { "\(stateDir)/\(slot).pos" }
+    /// ドラッグで動かした座標。--pos の指定先(.pos)とは別物
+    private func xyPath(_ slot: Int) -> String { "\(stateDir)/\(slot).xy" }
+
+    private func readValue(_ slot: Int, _ suffix: String) -> String? {
+        guard let raw = try? String(contentsOfFile: "\(stateDir)/\(slot).\(suffix)", encoding: .utf8) else { return nil }
+        let value = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        return value.isEmpty ? nil : value
+    }
+
+    private func readStyle(_ slot: Int) -> Style {
+        var style = Style()
+        if let alpha = readValue(slot, "alpha").flatMap({ Double($0) }) {
+            style.alpha = CGFloat(min(max(alpha, 0), 1))
+        }
+        style.color = color(fromHex: readValue(slot, "color"), fallback: textColor)
+        if let anchor = readValue(slot, "pos").flatMap({ Anchor(rawValue: $0) }) {
+            style.anchor = anchor
+        }
+        return style
+    }
 
     private func readTexts() -> [Int: String] {
         let names = (try? FileManager.default.contentsOfDirectory(atPath: stateDir)) ?? []
@@ -381,9 +457,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return result
     }
 
-    /// 位置はディスクを正とする。caption --reset で .pos が消えれば既定位置に戻る。
+    /// 位置はディスクを正とする。caption --reset で .xy が消えれば anchor の位置に戻る。
     private func readPinned(_ slot: Int) -> NSPoint? {
-        guard let raw = try? String(contentsOfFile: posPath(slot), encoding: .utf8) else { return nil }
+        guard let raw = readValue(slot, "xy") else { return nil }
         let parts = raw.split(separator: " ").compactMap { Double($0) }
         guard parts.count == 2 else { return nil }
         return NSPoint(x: parts[0], y: parts[1])
@@ -408,12 +484,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     window.pinned = pinned
                     needsRelayout = true
                 }
+                let style = readStyle(slot)
+                if style != window.style {
+                    window.setStyle(style)
+                    needsRelayout = true
+                }
                 if window.text != text {
                     window.crossfade(to: text) { [weak self] in self?.relayout() }
                     needsRelayout = false
                 }
             } else {
                 let window = makeWindow(slot: slot)
+                window.setStyle(readStyle(slot))
                 window.setText(text)
                 window.pinned = readPinned(slot)
                 windows[slot] = window
@@ -428,22 +510,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func makeWindow(slot: Int) -> CaptionWindow {
         let window = CaptionWindow(slot: slot)
-        window.onDismiss = { [weak self] slot in
-            guard let self else { return }
-            // ファイルを消せば、次の poll で通常の消去経路に乗る。
-            // 位置も一緒に捨てて、次に出すときは既定位置から始める
-            try? FileManager.default.removeItem(atPath: textPath(slot))
-            try? FileManager.default.removeItem(atPath: posPath(slot))
-        }
+        window.onDismiss = { [weak self] in self?.forget(slot: $0) }
         window.onMoved = { [weak self] slot, point in
             guard let self else { return }
-            try? "\(point.x) \(point.y)".write(toFile: posPath(slot), atomically: true, encoding: .utf8)
+            try? "\(point.x) \(point.y)".write(toFile: xyPath(slot), atomically: true, encoding: .utf8)
         }
         window.onCommit = { [weak self] slot, value in
             guard let self else { return }
             if value.isEmpty {
-                try? FileManager.default.removeItem(atPath: textPath(slot))
-                try? FileManager.default.removeItem(atPath: posPath(slot))
+                forget(slot: slot)
                 return
             }
             // 先に画面へ反映してからファイルに書く。poll が差分なしと見なすので再フェードしない
@@ -455,14 +530,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return window
     }
 
+    /// 消えた字幕の状態(文言・位置・見た目)をまとめて捨てる。
+    private func forget(slot: Int) {
+        for suffix in ["txt", "xy", "alpha", "color", "pos"] {
+            try? FileManager.default.removeItem(atPath: "\(stateDir)/\(slot).\(suffix)")
+        }
+    }
+
     // MARK: - 配置
 
-    /// 位置を指定されていない字幕は、番号順に下中央から上へ積む。
+    /// ドラッグされていない字幕は、指定された位置ごとに番号順で積む。
     private func relayout() {
         // 常駐アプリはキーウィンドウを持たないため NSScreen.main が nil になりうる
         guard let screen = NSScreen.main ?? NSScreen.screens.first else { return }
         let vf = screen.visibleFrame
-        var stackOffset: CGFloat = 0
+        var stackOffsets: [Anchor: CGFloat] = [:]
 
         for slot in windows.keys.sorted() {
             guard let window = windows[slot] else { continue }
@@ -472,14 +554,40 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             if let pinned = window.pinned {
                 origin = NSPoint(x: pinned.x - size.width / 2, y: pinned.y)
             } else {
-                origin = NSPoint(x: vf.midX - size.width / 2, y: vf.minY + bottomMargin + stackOffset)
-                stackOffset += size.height + stackGap
+                let anchor = window.style.anchor
+                let offset = stackOffsets[anchor] ?? 0
+                origin = self.origin(for: anchor, size: size, in: vf, offset: offset)
+                stackOffsets[anchor] = offset + size.height + stackGap
             }
             // 文言が長くなっても画面外にはみ出さないようにする
             origin.x = min(max(origin.x, vf.minX + 8), vf.maxX - size.width - 8)
             origin.y = min(max(origin.y, vf.minY + 8), vf.maxY - size.height - 8)
             window.place(origin: origin, size: size)
         }
+    }
+
+    /// 上側の位置は下へ、下側の位置は上へ積み上げる。
+    private func origin(for anchor: Anchor, size: NSSize, in vf: NSRect, offset: CGFloat) -> NSPoint {
+        let x: CGFloat
+        switch anchor {
+        case .topLeft, .bottomLeft:
+            x = vf.minX + sideMargin
+        case .topRight, .bottomRight:
+            x = vf.maxX - size.width - sideMargin
+        case .top, .bottom, .center:
+            x = vf.midX - size.width / 2
+        }
+
+        let y: CGFloat
+        switch anchor {
+        case .top, .topLeft, .topRight:
+            y = vf.maxY - size.height - bottomMargin - offset
+        case .center:
+            y = vf.midY - size.height / 2 - offset
+        case .bottom, .bottomLeft, .bottomRight:
+            y = vf.minY + bottomMargin + offset
+        }
+        return NSPoint(x: x, y: y)
     }
 }
 
