@@ -341,8 +341,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func makeWindow(slot: Int) -> CaptionWindow {
         let window = CaptionWindow(slot: slot)
         window.onDismiss = { [weak self] slot in
-            // ファイルを消せば、次の poll で通常の消去経路に乗る
-            try? FileManager.default.removeItem(atPath: self?.textPath(slot) ?? "")
+            guard let self else { return }
+            // ファイルを消せば、次の poll で通常の消去経路に乗る。
+            // 位置も一緒に捨てて、次に出すときは既定位置から始める
+            try? FileManager.default.removeItem(atPath: textPath(slot))
+            try? FileManager.default.removeItem(atPath: posPath(slot))
         }
         window.onMoved = { [weak self] slot, point in
             guard let self else { return }
