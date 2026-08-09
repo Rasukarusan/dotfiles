@@ -6,8 +6,8 @@ import Cocoa
 // ファイルが消えるか空になれば、その字幕を消す。文言の操作は caption コマンド(bin/caption)から行う。
 //
 // 字幕はドラッグで移動でき、移動先は <番号>.pos に保存して番号ごとに覚える。
-// クリックすると左上に番号バッジ、右上に閉じるボタンが出る。
-// 録画に写り込まないよう、どちらも数秒で自動的に消える。
+// クリックするとその場編集に入り、左上に番号、右上に閉じるボタンが出る。
+// Enter で確定、Escape で取り消し。録画に写り込まないよう、確定すると消える。
 
 let stateDir = "/tmp/claude-caption"
 let env = ProcessInfo.processInfo.environment
@@ -27,7 +27,7 @@ func color(fromHex hex: String?, fallback: NSColor) -> NSColor {
 }
 
 let textColor = color(fromHex: env["CAPTION_COLOR"], fallback: .white)
-let badgeColor = color(fromHex: env["CAPTION_BADGE_COLOR"], fallback: NSColor(red: 1, green: 0.84, blue: 0.31, alpha: 1))
+let badgeColor = color(fromHex: env["CAPTION_BADGE_COLOR"], fallback: color(fromHex: "#7FD4F5", fallback: .white))
 
 let padH: CGFloat = 28
 let padV: CGFloat = 16
@@ -75,7 +75,7 @@ final class SlotBadgeView: NSView {
         let text = NSAttributedString(
             string: "\(number)",
             attributes: [
-                .font: NSFont.systemFont(ofSize: bounds.height * 0.9, weight: .bold),
+                .font: NSFont.systemFont(ofSize: bounds.height * 0.62, weight: .regular),
                 .foregroundColor: badgeColor,
             ]
         )
@@ -115,12 +115,18 @@ final class CloseButtonView: NSView {
     }
 }
 
+/// キーボード入力を受け取れるパネル。borderless は既定でキーウィンドウになれない。
+final class CaptionPanel: NSPanel {
+    override var canBecomeKey: Bool { true }
+}
+
 /// 字幕1つ分のウィンドウ。
-final class CaptionWindow {
+final class CaptionWindow: NSObject, NSTextFieldDelegate {
     let slot: Int
-    let panel: NSPanel
+    let panel: CaptionPanel
     private let box: CaptionBoxView
     private let label: NSTextField
+    private let editor: NSTextField
     private let closeButton: CloseButtonView
     private let slotBadge: SlotBadgeView
     private var controlsHideTimer: Timer?
@@ -128,9 +134,12 @@ final class CaptionWindow {
     /// ドラッグで決まった位置(中央x, 下端y)。nil なら既定位置に並べる。
     var pinned: NSPoint?
     private(set) var text = ""
+    private(set) var isEditing = false
 
     var onDismiss: ((Int) -> Void)?
     var onMoved: ((Int, NSPoint) -> Void)?
+    var onCommit: ((Int, String) -> Void)?
+    var onEditingLayoutChange: (() -> Void)?
 
     init(slot: Int) {
         self.slot = slot
@@ -142,6 +151,16 @@ final class CaptionWindow {
         label.maximumNumberOfLines = 0
         label.lineBreakMode = .byWordWrapping
         label.usesSingleLineMode = false
+
+        // 見た目を label に揃えて、編集に入っても字幕がその場で変形しないようにする
+        editor = NSTextField(string: "")
+        editor.font = label.font
+        editor.textColor = textColor
+        editor.alignment = .center
+        editor.isBordered = false
+        editor.drawsBackground = false
+        editor.focusRingType = .none
+        editor.isHidden = true
 
         closeButton = CloseButtonView(frame: NSRect(x: 0, y: 0, width: closeSize, height: closeSize))
         closeButton.isHidden = true
@@ -158,10 +177,11 @@ final class CaptionWindow {
         box.layer?.borderWidth = 1
         box.layer?.borderColor = NSColor.white.withAlphaComponent(0.22).cgColor
         box.addSubview(label)
+        box.addSubview(editor)
         box.addSubview(closeButton)
         box.addSubview(slotBadge)
 
-        panel = NSPanel(
+        panel = CaptionPanel(
             contentRect: .zero,
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
@@ -177,16 +197,70 @@ final class CaptionWindow {
         panel.contentView = box
         panel.alphaValue = 0
 
+        super.init()
+
+        editor.delegate = self
         closeButton.onClick = { [weak self] in
             guard let self else { return }
+            endEditing(commit: false)
             onDismiss?(self.slot)
         }
-        box.onClick = { [weak self] in self?.toggleControls() }
+        box.onClick = { [weak self] in self?.beginEditing() }
         box.onDragEnd = { [weak self] in
             guard let self else { return }
             let p = NSPoint(x: panel.frame.midX, y: panel.frame.minY)
             pinned = p
             onMoved?(self.slot, p)
+        }
+    }
+
+    // MARK: - 編集
+
+    /// クリックでその場編集に入る。字幕アプリは通常フォーカスを奪わないので、
+    /// ここだけ明示的にアクティブにしてキー入力を受け取る。
+    func beginEditing() {
+        guard !isEditing else { return }
+        isEditing = true
+        editor.stringValue = text
+        editor.isHidden = false
+        label.isHidden = true
+        showControls(autoHide: false)
+        onEditingLayoutChange?()
+
+        NSApp.activate(ignoringOtherApps: true)
+        panel.makeKeyAndOrderFront(nil)
+        panel.makeFirstResponder(editor)
+        editor.currentEditor()?.selectAll(nil)
+    }
+
+    func endEditing(commit: Bool) {
+        guard isEditing else { return }
+        isEditing = false
+        let value = editor.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        editor.isHidden = true
+        label.isHidden = false
+        hideControls()
+        panel.makeFirstResponder(nil)
+        // 元のアプリにフォーカスを返す(hide だと字幕まで消えてしまう)
+        NSApp.deactivate()
+        if commit { onCommit?(slot, value) }
+    }
+
+    func controlTextDidEndEditing(_ notification: Notification) {
+        // ウィンドウがキーでなくなった場合など、Enter 以外の抜け方も確定として扱う
+        endEditing(commit: true)
+    }
+
+    func control(_ control: NSControl, textView: NSTextView, doCommandBy selector: Selector) -> Bool {
+        switch selector {
+        case #selector(NSResponder.insertNewline(_:)):
+            endEditing(commit: true)
+            return true
+        case #selector(NSResponder.cancelOperation(_:)):
+            endEditing(commit: false)
+            return true
+        default:
+            return false
         }
     }
 
@@ -198,17 +272,21 @@ final class CaptionWindow {
     func measure(maxWidth: CGFloat) -> NSSize {
         guard let cell = label.cell else { return .zero }
         let bounds = NSRect(x: 0, y: 0, width: maxWidth, height: .greatestFiniteMagnitude)
-        let size = cell.cellSize(forBounds: bounds)
+        var size = cell.cellSize(forBounds: bounds)
+        // 空文字だと箱が潰れて掴めなくなるので、編集中は最低幅を確保する
+        if isEditing { size.width = max(size.width, 240) }
         return NSSize(width: ceil(size.width) + padH * 2, height: ceil(size.height) + padV * 2)
     }
 
     func place(origin: NSPoint, size: NSSize) {
-        label.frame = NSRect(
+        let textFrame = NSRect(
             x: padH,
             y: padV,
             width: size.width - padH * 2,
             height: size.height - padV * 2
         )
+        label.frame = textFrame
+        editor.frame = textFrame
         // 番号バッジと閉じるボタンは上端の余白に収める(文字には重ならない)
         slotBadge.frame = NSRect(x: 6, y: size.height - closeSize - 4, width: closeSize, height: closeSize)
         closeButton.frame = NSRect(
@@ -257,14 +335,12 @@ final class CaptionWindow {
         panel.orderOut(nil)
     }
 
-    private func toggleControls() {
-        closeButton.isHidden ? showControls() : hideControls()
-    }
-
-    private func showControls() {
+    private func showControls(autoHide: Bool = true) {
         closeButton.isHidden = false
         slotBadge.isHidden = false
         controlsHideTimer?.invalidate()
+        controlsHideTimer = nil
+        guard autoHide else { return }
         controlsHideTimer = Timer.scheduledTimer(withTimeInterval: closeAutoHideDelay, repeats: false) { [weak self] _ in
             self?.hideControls()
         }
@@ -325,6 +401,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         for (slot, text) in texts {
             if let window = windows[slot] {
+                // 編集中は入力を上書きしない
+                if window.isEditing { continue }
                 let pinned = readPinned(slot)
                 if pinned != window.pinned {
                     window.pinned = pinned
@@ -361,6 +439,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             guard let self else { return }
             try? "\(point.x) \(point.y)".write(toFile: posPath(slot), atomically: true, encoding: .utf8)
         }
+        window.onCommit = { [weak self] slot, value in
+            guard let self else { return }
+            if value.isEmpty {
+                try? FileManager.default.removeItem(atPath: textPath(slot))
+                try? FileManager.default.removeItem(atPath: posPath(slot))
+                return
+            }
+            // 先に画面へ反映してからファイルに書く。poll が差分なしと見なすので再フェードしない
+            windows[slot]?.setText(value)
+            relayout()
+            try? value.write(toFile: textPath(slot), atomically: true, encoding: .utf8)
+        }
+        window.onEditingLayoutChange = { [weak self] in self?.relayout() }
         return window
     }
 
