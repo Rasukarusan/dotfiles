@@ -4,9 +4,12 @@ set -euo pipefail
 # 画面下部に字幕オーバーレイを表示する(E2E動作確認動画の撮影用)。
 # 本体は bin/claude-caption/ の Swift アプリ。未起動なら自動起動する。
 #
+# 字幕はドラッグで移動でき、クリックすると右上に出る × で消せる。
+#
 # 使い方:
 #   caption "ログアウト状態です"   # 字幕を表示・更新
 #   caption --hide                 # 字幕を非表示(アプリは起動したまま)
+#   caption --reset                # 表示位置を画面下部中央に戻す
 #   caption --quit                 # アプリを終了
 
 FILE="/tmp/claude-caption.txt"
@@ -17,6 +20,13 @@ case "${1:-}" in
     pkill -x claude-caption 2>/dev/null || true
     rm -f "$FILE"
     exit 0
+    ;;
+  --reset)
+    # 移動後の位置はアプリのメモリ上にしかないので、入れ直して既定位置に戻す
+    text=$(cat "$FILE" 2>/dev/null || true)
+    pkill -x claude-caption 2>/dev/null || true
+    sleep 0.3
+    printf '%s' "$text" >"$FILE"
     ;;
   --hide | "")
     : >"$FILE"
