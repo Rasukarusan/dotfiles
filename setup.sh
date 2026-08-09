@@ -224,6 +224,10 @@ bash "$DOTFILES_DIR/bin/tmux-ime/build.sh"
 echo "==> mdtree"
 bash "$DOTFILES_DIR/bin/mdtree/build.sh"
 
+# claude-caption (E2E動作確認動画用の字幕オーバーレイをビルド。caption コマンドで操作)
+echo "==> claude-caption"
+bash "$DOTFILES_DIR/bin/claude-caption/build.sh"
+
 # ~/.codex
 echo "==> ~/.codex"
 mkdir -p "$HOME/.codex"
