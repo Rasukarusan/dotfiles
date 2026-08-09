@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# 画面録画してPRに貼れるmp4を作る(E2E動作確認動画用)。
+# 録画は macOS 標準の screencapture -v。字幕を出したい場合は caption コマンドを併用する。
+#
+# 使い方:
+#   rec start [出力パス]   # 録画開始(バックグラウンド)。省略時 ~/Desktop/e2e-<ブランチ>-<時刻>.mp4
+#   rec stop               # 録画停止 → mp4に圧縮 → Finderで表示
+#   rec status             # 録画中かどうか
+#   rec abort              # 録画停止して破棄
+#
+# 録画にはターミナルアプリへの「画面収録」権限が必要
+# (システム設定 > プライバシーとセキュリティ > 画面収録)。
+
+STATE_DIR="${TMPDIR:-/tmp}/claude-rec"
+PID_FILE="$STATE_DIR/pid"
+RAW_FILE="$STATE_DIR/raw"
+OUT_FILE="$STATE_DIR/out"
+
+# GitHubがPR本文にアップロードできる動画の上限
+MAX_MB=10
+
+die() {
+  echo "error: $*" >&2
+  exit 1
+}
+
+running_pid() {
+  [[ -f $PID_FILE ]] || return 1
+  local pid
+  pid=$(cat "$PID_FILE")
+  kill -0 "$pid" 2>/dev/null || return 1
+  echo "$pid"
+}
+
+cmd_start() {
+  if running_pid >/dev/null; then
+    die "すでに録画中です($(cat "$RAW_FILE"))。rec stop で停止してください"
+  fi
+
+  local out=${1:-}
+  if [[ -z $out ]]; then
+    local branch stamp
+    branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null | tr '/' '-' || true)
+    stamp=$(date +%H%M%S)
+    out="$HOME/Desktop/e2e-${branch:-recording}-${stamp}.mp4"
+  fi
+  [[ $out = /* ]] || out="$PWD/$out"
+
+  mkdir -p "$STATE_DIR" "$(dirname "$out")"
+  local raw="$STATE_DIR/$(basename "${out%.*}").mov"
+  rm -f "$raw"
+
+  # -k クリックを可視化 / -C カーソルを含める / -x 開始終了音を鳴らさない
+  nohup screencapture -v -k -C -x "$raw" >/dev/null 2>&1 &
+  local pid=$!
+
+  sleep 1
+  kill -0 "$pid" 2>/dev/null || die "録画を開始できませんでした。ターミナルに画面収録の権限があるか確認してください"
+
+  echo "$pid" >"$PID_FILE"
+  echo "$raw" >"$RAW_FILE"
+  echo "$out" >"$OUT_FILE"
+  echo "録画開始: $out"
+}
+
+# screencapture は SIGINT で録画を確定して終了する
+stop_process() {
+  local pid=$1
+  kill -INT "$pid" 2>/dev/null || true
+  for _ in $(seq 1 100); do
+    kill -0 "$pid" 2>/dev/null || return 0
+    sleep 0.1
+  done
+  kill -TERM "$pid" 2>/dev/null || true
+  sleep 1
+}
+
+cmd_stop() {
+  local pid
+  pid=$(running_pid) || die "録画していません"
+  local raw out
+  raw=$(cat "$RAW_FILE")
+  out=$(cat "$OUT_FILE")
+
+  stop_process "$pid"
+  rm -f "$PID_FILE"
+  [[ -s $raw ]] || die "録画ファイルが空です: $raw"
+
+  if command -v ffmpeg >/dev/null 2>&1; then
+    # Retinaの実解像度のままだと巨大なので半分に落とし、H.264(yuv420p)で widely playable にする
+    ffmpeg -y -loglevel error -i "$raw" \
+      -vf "scale=trunc(iw/4)*2:trunc(ih/4)*2" \
+      -c:v libx264 -preset veryfast -crf 28 -pix_fmt yuv420p \
+      -movflags +faststart -an "$out"
+    rm -f "$raw"
+  else
+    echo "warn: ffmpeg が無いため無変換の .mov を出力します" >&2
+    out="${out%.*}.mov"
+    mv "$raw" "$out"
+  fi
+
+  local bytes mb
+  bytes=$(stat -f %z "$out")
+  mb=$(echo "scale=1; $bytes / 1048576" | bc)
+  echo "録画完了: $out (${mb}MB)"
+  if (( bytes > MAX_MB * 1048576 )); then
+    echo "warn: GitHubのアップロード上限 ${MAX_MB}MB を超えています。録画を短くするか crf を上げてください" >&2
+  fi
+  open -R "$out"
+}
+
+cmd_abort() {
+  local pid
+  pid=$(running_pid) || die "録画していません"
+  stop_process "$pid"
+  rm -f "$PID_FILE"
+  rm -f "$(cat "$RAW_FILE")"
+  echo "録画を破棄しました"
+}
+
+cmd_status() {
+  if running_pid >/dev/null; then
+    echo "録画中: $(cat "$OUT_FILE")"
+  else
+    echo "録画していません"
+  fi
+}
+
+case "${1:-}" in
+  start) shift; cmd_start "${1:-}" ;;
+  stop) cmd_stop ;;
+  abort) cmd_abort ;;
+  status) cmd_status ;;
+  *)
+    echo "usage: rec {start [出力パス]|stop|abort|status}" >&2
+    exit 1
+    ;;
+esac
