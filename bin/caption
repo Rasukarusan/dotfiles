@@ -5,7 +5,8 @@ set -euo pipefail
 # 本体は bin/claude-caption/ の Swift アプリ。未起動なら自動起動する。
 #
 # 番号で複数の字幕を出し分ける。既定は1番。
-# 字幕はドラッグで移動でき、移動先は番号ごとに記憶される。
+# 字幕はドラッグで移動でき、移動先は表示している間だけ番号ごとに記憶される。
+# 消すと位置も忘れるので、次に出したときは既定位置から始まる。
 # クリックすると左上に番号、右上に × が出る。× を押すとその字幕だけ消える。
 #
 # 使い方:
@@ -30,6 +31,16 @@ die() {
 
 valid_slot() {
   [[ $1 =~ ^[0-9]+$ ]] || die "番号は数字で指定してください: $1"
+}
+
+# 消えた字幕の位置は残さない。次に出すときは既定位置から始める
+hide_slot() {
+  rm -f "$STATE_DIR/$1.txt" "$STATE_DIR/$1.pos"
+}
+
+hide_all() {
+  shopt -s nullglob
+  rm -f "$STATE_DIR"/*.txt "$STATE_DIR"/*.pos
 }
 
 launch_if_needed() {
@@ -62,10 +73,9 @@ case "${1:-}" in
     shift
     if [[ -n ${1:-} ]]; then
       valid_slot "$1"
-      rm -f "$STATE_DIR/$1.txt"
+      hide_slot "$1"
     else
-      shopt -s nullglob
-      rm -f "$STATE_DIR"/*.txt
+      hide_all
     fi
     exit 0
     ;;
@@ -91,8 +101,7 @@ case "${1:-}" in
     exit 0
     ;;
   "")
-    shopt -s nullglob
-    rm -f "$STATE_DIR"/*.txt
+    hide_all
     exit 0
     ;;
 esac
@@ -104,7 +113,7 @@ if [[ $1 =~ ^[0-9]+$ ]]; then
 fi
 
 if [[ $# -eq 0 ]]; then
-  rm -f "$STATE_DIR/$slot.txt"
+  hide_slot "$slot"
   exit 0
 fi
 
