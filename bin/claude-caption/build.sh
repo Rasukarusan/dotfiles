@@ -10,4 +10,7 @@ mkdir -p "$HOME/.local/bin"
 swiftc -O -o "$HOME/.local/bin/claude-caption" -framework Cocoa "$SCRIPT_DIR/claude-caption.swift"
 chmod +x "$SCRIPT_DIR/../caption"
 
+# 起動しっぱなしだと古いバイナリが動き続けるので落とす(次の caption 実行で新しい方が起動する)
+pkill -x claude-caption 2>/dev/null || true
+
 echo "  built: $HOME/.local/bin/claude-caption"
