@@ -20,6 +20,11 @@ set -euo pipefail
 #   caption --quit                # アプリを終了
 #
 # 先頭が数字のテキストを1番に出したいときは `caption 1 2024年の画面` のように番号を明示する。
+#
+# 見た目は環境変数で変えられる(アプリ起動時に読むので --quit してから指定する):
+#   CAPTION_FONT_SIZE=32          文字の大きさ
+#   CAPTION_COLOR="#FFFFFF"       字幕の文字色
+#   CAPTION_BADGE_COLOR="#00E5FF" 左上の番号の色
 
 STATE_DIR="/tmp/claude-caption"
 APP="$HOME/.local/bin/claude-caption"
