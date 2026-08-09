@@ -10,7 +10,24 @@ import Cocoa
 // 録画に写り込まないよう、どちらも数秒で自動的に消える。
 
 let stateDir = "/tmp/claude-caption"
-let fontSize = CGFloat(ProcessInfo.processInfo.environment["CAPTION_FONT_SIZE"].flatMap { Double($0) } ?? 26)
+let env = ProcessInfo.processInfo.environment
+let fontSize = CGFloat(env["CAPTION_FONT_SIZE"].flatMap { Double($0) } ?? 26)
+
+/// "#RRGGBB" 形式を読む。読めなければ fallback を使う。
+func color(fromHex hex: String?, fallback: NSColor) -> NSColor {
+    guard var value = hex?.trimmingCharacters(in: .whitespaces) else { return fallback }
+    if value.hasPrefix("#") { value.removeFirst() }
+    guard value.count == 6, let rgb = UInt32(value, radix: 16) else { return fallback }
+    return NSColor(
+        red: CGFloat((rgb >> 16) & 0xFF) / 255,
+        green: CGFloat((rgb >> 8) & 0xFF) / 255,
+        blue: CGFloat(rgb & 0xFF) / 255,
+        alpha: 1
+    )
+}
+
+let textColor = color(fromHex: env["CAPTION_COLOR"], fallback: .white)
+let badgeColor = color(fromHex: env["CAPTION_BADGE_COLOR"], fallback: NSColor(red: 1, green: 0.84, blue: 0.31, alpha: 1))
 
 let padH: CGFloat = 28
 let padV: CGFloat = 16
@@ -50,23 +67,16 @@ final class CaptionBoxView: NSView {
     }
 }
 
-/// 左上に出る番号バッジ。どの番号を指定すれば操作できるかを示す。
+/// 左上に出る番号。どの番号を指定すれば操作できるかを示す。
 final class SlotBadgeView: NSView {
     var number = 1
 
     override func draw(_ dirtyRect: NSRect) {
-        let circle = NSBezierPath(ovalIn: bounds.insetBy(dx: 0.5, dy: 0.5))
-        NSColor.white.withAlphaComponent(0.25).setFill()
-        circle.fill()
-        NSColor.white.withAlphaComponent(0.5).setStroke()
-        circle.lineWidth = 1
-        circle.stroke()
-
         let text = NSAttributedString(
             string: "\(number)",
             attributes: [
-                .font: NSFont.systemFont(ofSize: bounds.height * 0.62, weight: .bold),
-                .foregroundColor: NSColor.white,
+                .font: NSFont.systemFont(ofSize: bounds.height * 0.9, weight: .bold),
+                .foregroundColor: badgeColor,
             ]
         )
         let size = text.size()
@@ -127,7 +137,7 @@ final class CaptionWindow {
 
         label = NSTextField(labelWithString: "")
         label.font = .systemFont(ofSize: fontSize, weight: .bold)
-        label.textColor = .white
+        label.textColor = textColor
         label.alignment = .center
         label.maximumNumberOfLines = 0
         label.lineBreakMode = .byWordWrapping
