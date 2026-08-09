@@ -13,16 +13,30 @@ set -euo pipefail
 # 使い方:
 #   caption "ログイン画面です"    # 1番に表示
 #   caption add "こっちが変更後"  # 空いている番号に追加(番号を考えなくてよい)
-#   caption 2 "こっちが変更後"    # 2番に表示(下中央から上に積まれる)
+#   caption 2 "こっちが変更後"    # 2番に表示(同じ位置の字幕は番号順に積まれる)
 #   caption --hide 2              # 2番を消す
 #   caption --hide                # 全部消す
 #   caption --reset 2             # 2番の位置を既定に戻す(番号省略で全部)
 #   caption --list                # 表示中の字幕を一覧
 #   caption --quit                # アプリを終了
 #
+# 字幕ごとのオプション(番号の後、テキストの前に置く。指定した内容は消すまで残る):
+#   --pos <位置>   bottom(既定) / top / center / top-left / top-right
+#                  / bottom-left / bottom-right
+#   --alpha <0-1>  文字の不透明度。薄くして脇役にする
+#   --color <色>   文字色 ("#RRGGBB")
+#
+# 行頭に `>` を付けた行だけは --alpha を無視して不透明で出る。
+# 全体フローを薄く出しつつ、今いる行だけをはっきり見せるのに使う:
+#
+#   caption 2 --pos top-right --alpha 0.4 "① ログイン画面
+#   > ② ログインする
+#   ③ ダッシュボードを確認"
+#   caption "② ログインボタンを押します"
+#
 # 先頭が数字のテキストを1番に出したいときは `caption 1 2024年の画面` のように番号を明示する。
 #
-# 見た目は環境変数で変えられる(アプリ起動時に読むので --quit してから指定する):
+# 全体の既定値は環境変数で変えられる(アプリ起動時に読むので --quit してから指定する):
 #   CAPTION_FONT_SIZE=32          文字の大きさ
 #   CAPTION_COLOR="#FFFFFF"       字幕の文字色
 #   CAPTION_BADGE_COLOR="#00E5FF" 左上の番号の色
@@ -39,14 +53,47 @@ valid_slot() {
   [[ $1 =~ ^[0-9]+$ ]] || die "番号は数字で指定してください: $1"
 }
 
-# 消えた字幕の位置は残さない。次に出すときは既定位置から始める
+# 消えた字幕の状態(文言・位置・見た目)は残さない。次に出すときは既定から始める
 hide_slot() {
-  rm -f "$STATE_DIR/$1.txt" "$STATE_DIR/$1.pos"
+  rm -f "$STATE_DIR/$1".{txt,xy,alpha,color,pos}
 }
 
 hide_all() {
   shopt -s nullglob
-  rm -f "$STATE_DIR"/*.txt "$STATE_DIR"/*.pos
+  rm -f "$STATE_DIR"/*
+}
+
+# 番号の後ろに置かれた見た目のオプションを読み、残りをテキストとして返す
+STYLE_ARGS=()
+parse_style() {
+  STYLE_ARGS=()
+  while [[ ${1:-} == --* ]]; do
+    case $1 in
+      --pos)
+        [[ ${2:-} =~ ^(bottom|top|center|top-left|top-right|bottom-left|bottom-right)$ ]] ||
+          die "--pos の指定が不正です: ${2:-}"
+        STYLE_ARGS+=("pos:$2")
+        ;;
+      --alpha)
+        [[ ${2:-} =~ ^(0(\.[0-9]+)?|1(\.0+)?)$ ]] || die "--alpha は 0〜1 で指定してください: ${2:-}"
+        STYLE_ARGS+=("alpha:$2")
+        ;;
+      --color)
+        [[ ${2:-} =~ ^#?[0-9A-Fa-f]{6}$ ]] || die "--color は #RRGGBB で指定してください: ${2:-}"
+        STYLE_ARGS+=("color:$2")
+        ;;
+      *) die "不明なオプションです: $1" ;;
+    esac
+    shift 2
+  done
+  REST=("$@")
+}
+
+write_style() {
+  local slot=$1
+  for entry in ${STYLE_ARGS+"${STYLE_ARGS[@]}"}; do
+    printf '%s' "${entry#*:}" >"$STATE_DIR/$slot.${entry%%:*}"
+  done
 }
 
 launch_if_needed() {
@@ -89,18 +136,21 @@ case "${1:-}" in
     shift
     if [[ -n ${1:-} ]]; then
       valid_slot "$1"
-      rm -f "$STATE_DIR/$1.pos"
+      rm -f "$STATE_DIR/$1.xy"
     else
       shopt -s nullglob
-      rm -f "$STATE_DIR"/*.pos
+      rm -f "$STATE_DIR"/*.xy
     fi
     exit 0
     ;;
   add)
     shift
+    parse_style "$@"
+    set -- ${REST+"${REST[@]}"}
     [[ $# -gt 0 ]] || die "テキストを指定してください"
     slot=1
     while [[ -s "$STATE_DIR/$slot.txt" ]]; do slot=$((slot + 1)); done
+    write_style "$slot"
     printf '%s' "$*" >"$STATE_DIR/$slot.txt"
     launch_if_needed
     echo "${slot}番に表示しました"
@@ -118,10 +168,19 @@ if [[ $1 =~ ^[0-9]+$ ]]; then
   shift
 fi
 
+parse_style "$@"
+set -- ${REST+"${REST[@]}"}
+
 if [[ $# -eq 0 ]]; then
+  # オプションだけを渡した場合は見た目の変更として扱い、字幕は消さない
+  if [[ ${#STYLE_ARGS[@]} -gt 0 ]]; then
+    write_style "$slot"
+    exit 0
+  fi
   hide_slot "$slot"
   exit 0
 fi
 
+write_style "$slot"
 printf '%s' "$*" >"$STATE_DIR/$slot.txt"
 launch_if_needed
