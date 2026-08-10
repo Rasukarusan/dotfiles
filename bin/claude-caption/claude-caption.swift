@@ -7,7 +7,7 @@ import Cocoa
 //
 // 字幕はドラッグで移動でき、移動先は <番号>.pos に保存して番号ごとに覚える。
 // クリックするとその場編集に入り、左上に番号、右上に閉じるボタンが出る。
-// Shift+Enter で改行、Enter で確定、Escape で取り消し。
+// Shift+Enter で改行。Enter・Escape・字幕の外をクリック のいずれでも確定する。
 // 番号と閉じるボタンは録画に写り込まないよう、確定すると消える。
 
 let stateDir = "/tmp/claude-caption"
@@ -141,7 +141,7 @@ final class CaptionPanel: NSPanel {
 }
 
 /// 字幕1つ分のウィンドウ。
-final class CaptionWindow: NSObject, NSTextFieldDelegate {
+final class CaptionWindow: NSObject, NSTextFieldDelegate, NSWindowDelegate {
     let slot: Int
     let panel: CaptionPanel
     private let box: CaptionBoxView
@@ -227,6 +227,7 @@ final class CaptionWindow: NSObject, NSTextFieldDelegate {
         super.init()
 
         editor.delegate = self
+        panel.delegate = self
         closeButton.onClick = { [weak self] in
             guard let self else { return }
             endEditing(commit: false)
@@ -281,7 +282,12 @@ final class CaptionWindow: NSObject, NSTextFieldDelegate {
     }
 
     func controlTextDidEndEditing(_ notification: Notification) {
-        // ウィンドウがキーでなくなった場合など、Enter 以外の抜け方も確定として扱う
+        // Enter 以外の抜け方も確定として扱う
+        endEditing(commit: true)
+    }
+
+    /// 字幕の外をクリックしたときもそこで確定する。
+    func windowDidResignKey(_ notification: Notification) {
         endEditing(commit: true)
     }
 
@@ -299,8 +305,9 @@ final class CaptionWindow: NSObject, NSTextFieldDelegate {
              #selector(NSResponder.insertNewlineIgnoringFieldEditor(_:)):
             textView.insertText("\n", replacementRange: textView.selectedRange())
             return true
+        // Escape も保存で抜ける。書いたものが消えるほうが事故になりやすい
         case #selector(NSResponder.cancelOperation(_:)):
-            endEditing(commit: false)
+            endEditing(commit: true)
             return true
         default:
             return false
@@ -574,21 +581,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: - 配置
 
-    /// 字幕を出す画面。screencapture が録るのはメインディスプレイなので、そこに固定する。
-    /// NSScreen.main はフォーカスのある画面を指すため、複数ディスプレイだと字幕が飛んでしまう。
-    private var captionScreen: NSScreen? {
+    /// 位置を指定していない字幕を出す画面。screencapture が録るのはメインディスプレイなので、
+    /// そこに固定する。NSScreen.main はフォーカスのある画面を指すため、これに頼ると
+    /// 複数ディスプレイのときに字幕が勝手に移ってしまう。
+    private var defaultScreen: NSScreen? {
         NSScreen.screens.first { $0.frame.origin == .zero } ?? NSScreen.main ?? NSScreen.screens.first
     }
 
     /// ドラッグされていない字幕は、指定された位置ごとに番号順で積む。
     private func relayout() {
-        guard let screen = captionScreen else { return }
-        let vf = screen.visibleFrame
+        guard let defaultScreen else { return }
+        let defaultFrame = defaultScreen.visibleFrame
         var stackOffsets: [Anchor: CGFloat] = [:]
 
         for slot in windows.keys.sorted() {
             guard let window = windows[slot] else { continue }
-            let size = window.measure(maxWidth: vf.width * 0.8 - padH * 2)
+
+            // ドラッグされた字幕は、置かれた画面をそのまま基準にする(別ディスプレイでもよい)
+            let frame = window.pinned
+                .flatMap { p in NSScreen.screens.first { $0.frame.contains(p) }?.visibleFrame }
+                ?? defaultFrame
+            let size = window.measure(maxWidth: frame.width * 0.8 - padH * 2)
 
             var origin: NSPoint
             if let pinned = window.pinned {
@@ -596,12 +609,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             } else {
                 let anchor = window.style.anchor
                 let offset = stackOffsets[anchor] ?? 0
-                origin = self.origin(for: anchor, size: size, in: vf, offset: offset)
+                origin = self.origin(for: anchor, size: size, in: frame, offset: offset)
                 stackOffsets[anchor] = offset + size.height + stackGap
             }
             // 文言が長くなっても画面外にはみ出さないようにする
-            origin.x = min(max(origin.x, vf.minX + 8), vf.maxX - size.width - 8)
-            origin.y = min(max(origin.y, vf.minY + 8), vf.maxY - size.height - 8)
+            origin.x = min(max(origin.x, frame.minX + 8), frame.maxX - size.width - 8)
+            origin.y = min(max(origin.y, frame.minY + 8), frame.maxY - size.height - 8)
             window.place(origin: origin, size: size)
         }
     }
