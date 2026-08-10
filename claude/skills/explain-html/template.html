@@ -1,535 +1,959 @@
 <!doctype html>
 <html lang="ja">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>【チケット】説明資料: 【一行タイトル】</title>
-<!--
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>【チケット】説明資料: 【一行タイトル】</title>
+  <!--
   この CSS はそのまま流用してよい。ライト固定 (ダークモード対応は書かない)。
   body 以下は各パーツの見本。使うものだけ残して中身を差し替える。
   SVG は座標検証済みの実例。図の内容に合わせて文字と座標を変える。
 -->
-<style>
-  :root {
-    color-scheme: light;
-    --bg: #f8f9fb;
-    --card: #ffffff;
-    --ink: #1f2430;
-    --sub: #5b6472;
-    --line: #dde2ea;
-    --accent: #2563eb;
-    --accent-soft: #eaf1fe;
-    --done: #2da44e;
-    --done-soft: #dcf5e3;
-    --partial: #b58500;
-    --partial-soft: #fff3c4;
-    --todo: #6e7781;
-    --todo-soft: #eef1f4;
-    --code-bg: #f1f3f7;
-    /* 対比させたい 2 概念の色。題材に合わせて変える */
-    --pair-a: #0f766e;
-    --pair-a-soft: #ddf1ee;
-    --pair-b: #b45309;
-    --pair-b-soft: #fdeedd;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--ink);
-    font-family: "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
-    line-height: 1.75;
-    font-size: 15px;
-  }
-  main { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
-  header.hero { margin-bottom: 2.5rem; }
-  .kicker { color: var(--accent); font-weight: 700; letter-spacing: .08em; font-size: .8rem; }
-  h1 { font-size: 1.7rem; line-height: 1.4; margin: .3rem 0 .8rem; }
-  h2 { font-size: 1.25rem; margin: 0 0 1rem; padding-left: .7rem; border-left: 4px solid var(--accent); }
-  h3 { font-size: 1rem; margin: 1.2rem 0 .4rem; }
-  p { margin: .5rem 0; }
-  section {
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 1.6rem 1.8rem;
-    margin-bottom: 1.6rem;
-  }
-  .lead { font-size: 1.02rem; color: var(--sub); }
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f8f9fb;
+      --card: #ffffff;
+      --ink: #1f2430;
+      --sub: #5b6472;
+      --line: #dde2ea;
+      --accent: #2563eb;
+      --accent-soft: #eaf1fe;
+      --done: #2da44e;
+      --done-soft: #dcf5e3;
+      --partial: #b58500;
+      --partial-soft: #fff3c4;
+      --todo: #6e7781;
+      --todo-soft: #eef1f4;
+      --code-bg: #f1f3f7;
+      /* 対比させたい 2 概念の色。題材に合わせて変える */
+      --pair-a: #0f766e;
+      --pair-a-soft: #ddf1ee;
+      --pair-b: #b45309;
+      --pair-b-soft: #fdeedd;
+    }
 
-  /* 概要ボックス: 技術記述 = 意味 */
-  .summary { background: var(--accent-soft); border-radius: 10px; padding: 1rem 1.3rem; margin-top: 1rem; }
-  .summary strong { color: var(--accent); }
-  .summary li { color: var(--sub); margin: .7rem 0; }
-  .summary .mean { display: block; color: var(--ink); font-weight: 600; margin-top: .15rem; }
-  .summary .mean::before { content: "＝"; color: var(--accent); font-weight: 700; }
+    * {
+      box-sizing: border-box;
+    }
 
-  code {
-    background: var(--code-bg);
-    border-radius: 4px;
-    padding: .1em .4em;
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: .85em;
-  }
-  table { border-collapse: collapse; width: 100%; margin: .6rem 0; }
-  th, td { border: 1px solid var(--line); padding: .45rem .7rem; text-align: left; vertical-align: top; }
-  th { background: var(--code-bg); font-size: .85rem; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+      line-height: 1.75;
+      font-size: 15px;
+    }
 
-  /* 登場人物 */
-  .actors { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .8rem; margin-top: .8rem; }
-  .actor { border: 1px solid var(--line); border-radius: 10px; padding: .8rem 1rem; }
-  .actor b { display: block; margin-bottom: .2rem; }
-  .actor span { font-size: .85rem; color: var(--sub); }
-  .actors.main { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
-  .actor.key { border: 2px solid var(--accent); background: var(--accent-soft); }
-  .actor.key b { color: var(--accent); font-size: 1rem; }
-  .actor.key span { color: var(--ink); }
-  .actor .did {
-    display: block; margin-top: .5rem; padding-top: .45rem;
-    border-top: 1px dashed rgba(37, 99, 235, .35);
-    font-size: .82rem; color: var(--accent); font-weight: 600;
-  }
-  .actors.minor { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); margin-top: .6rem; }
-  .actors.minor .actor { background: #fcfdfe; padding: .6rem .9rem; }
-  .actors.minor .actor b { font-size: .9rem; color: var(--sub); }
-  .actors.minor .actor span { font-size: .8rem; }
-  .sec-label { font-size: .8rem; font-weight: 700; color: var(--sub); letter-spacing: .04em; margin-top: 1.3rem; }
-  .sec-label.hot { color: var(--accent); }
+    main {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 5rem;
+    }
 
-  /* 図 */
-  .scroll { overflow-x: auto; }
-  svg { display: block; margin: 1rem auto; }
-  svg.seq { min-width: 760px; }
-  .sv-actor { fill: var(--accent-soft); stroke: var(--accent); rx: 8; }
-  .sv-actor-label { fill: var(--ink); font-weight: 700; font-size: 13px; text-anchor: middle; }
-  .sv-life { stroke: var(--line); stroke-dasharray: 4 4; }
-  .sv-msg { stroke: var(--ink); fill: none; marker-end: url(#arrow); }
-  .sv-ret { stroke: var(--sub); fill: none; stroke-dasharray: 5 4; marker-end: url(#arrow-sub); }
-  .sv-label { fill: var(--ink); font-size: 12px; text-anchor: middle; }
-  .sv-label-sub { fill: var(--sub); font-size: 12px; text-anchor: middle; }
-  .sv-note { fill: var(--partial-soft); stroke: var(--partial); }
-  .sv-note-text { fill: var(--ink); font-size: 12px; text-anchor: middle; }
-  .venn { max-width: 430px; width: 100%; }
-  .venn text { font-size: 12px; text-anchor: middle; }
-  .fig-cap { text-align: center; color: var(--sub); font-size: .85rem; margin-top: -.3rem; }
-  .er, .tl, .keys { width: 100%; height: auto; }
-  .er { max-width: 860px; }
-  /* 注意: `.er text { font-size }` のような指定を足さないこと。属性の font-size が全部潰れる */
-  .box-new { fill: var(--accent-soft); stroke: var(--accent); }
-  .box-old { fill: #f4f6f9; stroke: #b9c2cf; }
-  .box-label { font-weight: 700; font-size: 13px; text-anchor: middle; fill: var(--ink); }
-  .box-sub { font-size: 11px; text-anchor: middle; fill: var(--sub); }
-  .rel { stroke: #98a2b3; fill: none; marker-end: url(#er-arrow); }
-  .rel-label { font-size: 11px; fill: var(--sub); text-anchor: middle; }
+    header.hero {
+      margin-bottom: 2.5rem;
+    }
 
-  /* 設計判断 */
-  .why { display: grid; gap: .9rem; margin-top: .8rem; }
-  .why-item { border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 8px; padding: .8rem 1.1rem; }
-  .why-item b { display: block; }
-  .why-item p { margin: .25rem 0 0; color: var(--sub); font-size: .92rem; }
+    .kicker {
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: .08em;
+      font-size: .8rem;
+    }
 
-  /* 状態バッジ */
-  .badge { display: inline-block; border-radius: 99px; padding: .05em .7em; font-size: .78rem; font-weight: 700; white-space: nowrap; }
-  .b-done { background: var(--done-soft); color: var(--done); }
-  .b-partial { background: var(--partial-soft); color: var(--partial); }
-  .b-todo { background: var(--todo-soft); color: var(--todo); }
+    h1 {
+      font-size: 1.7rem;
+      line-height: 1.4;
+      margin: .3rem 0 .8rem;
+    }
 
-  .callout {
-    background: var(--partial-soft); border: 1px solid var(--partial);
-    border-radius: 8px; padding: .8rem 1.1rem; font-size: .92rem; margin-top: .9rem;
-  }
-  ol.steps { padding-left: 1.4rem; }
-  ol.steps li { margin: .45rem 0; }
-  ul.compact { margin: .3rem 0; padding-left: 1.3rem; }
-  ul.compact li { margin: .2rem 0; }
+    h2 {
+      font-size: 1.25rem;
+      margin: 0 0 1rem;
+      padding-left: .7rem;
+      border-left: 4px solid var(--accent);
+    }
 
-  /* コードブロック */
-  pre.code {
-    background: #1f2430; color: #e6e9ef; border-radius: 8px;
-    padding: 1rem 1.2rem; overflow-x: auto;
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    font-size: .82rem; line-height: 1.7; margin: .8rem 0;
-  }
-  pre.code .k { color: #9ecbff; }   /* キー */
-  pre.code .s { color: #a5e6a5; }   /* 値 */
-  pre.code .c { color: #9aa4b2; }   /* コメント */
-  pre.code .hl { color: #ffd479; font-weight: 700; }  /* 注目させたい行 */
+    h3 {
+      font-size: 1rem;
+      margin: 1.2rem 0 .4rem;
+    }
 
-  /* 実データのミニテーブル */
-  .example { display: grid; gap: .9rem; margin: 1rem 0; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-  .mini { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-  .mini > .cap { font-size: .78rem; font-weight: 700; padding: .4rem .8rem; background: var(--code-bg); border-bottom: 1px solid var(--line); }
-  .mini table { margin: 0; font-size: .82rem; }
-  .mini th, .mini td { border: none; border-bottom: 1px solid var(--line); padding: .35rem .8rem; }
-  .mini tr:last-child td { border-bottom: none; }
-  .mini .yes { color: var(--done); font-weight: 700; }
-  .mini .no { color: var(--todo); }
-  .mini.c-a > .cap { background: var(--pair-a-soft); color: var(--pair-a); }
-  .mini.c-b > .cap { background: var(--pair-b-soft); color: var(--pair-b); }
-  .result { background: var(--accent-soft); border-radius: 10px; padding: .9rem 1.2rem; font-size: .92rem; }
-  .result b { color: var(--accent); }
+    p {
+      margin: .5rem 0;
+    }
 
-  footer { color: var(--sub); font-size: .8rem; text-align: center; margin-top: 2rem; }
-  a { color: var(--accent); }
-</style>
+    section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 1.6rem 1.8rem;
+      margin-bottom: 1.6rem;
+    }
+
+    .lead {
+      font-size: 1.02rem;
+      color: var(--sub);
+    }
+
+    /* 概要ボックス: 技術記述 = 意味 */
+    .summary {
+      background: var(--accent-soft);
+      border-radius: 10px;
+      padding: 1rem 1.3rem;
+      margin-top: 1rem;
+    }
+
+    .summary strong {
+      color: var(--accent);
+    }
+
+    .summary li {
+      color: var(--sub);
+      margin: .7rem 0;
+    }
+
+    .summary .mean {
+      display: block;
+      color: var(--ink);
+      font-weight: 600;
+      margin-top: .15rem;
+    }
+
+    .summary .mean::before {
+      content: "＝";
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    code {
+      background: var(--code-bg);
+      border-radius: 4px;
+      padding: .1em .4em;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: .85em;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: .6rem 0;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: .45rem .7rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--code-bg);
+      font-size: .85rem;
+    }
+
+    /* 登場人物 */
+    .actors {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: .8rem;
+      margin-top: .8rem;
+    }
+
+    .actor {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: .8rem 1rem;
+    }
+
+    .actor b {
+      display: block;
+      margin-bottom: .2rem;
+    }
+
+    .actor span {
+      font-size: .85rem;
+      color: var(--sub);
+    }
+
+    .actors.main {
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+
+    .actor.key {
+      border: 2px solid var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .actor.key b {
+      color: var(--accent);
+      font-size: 1rem;
+    }
+
+    .actor.key span {
+      color: var(--ink);
+    }
+
+    .actor .did {
+      display: block;
+      margin-top: .5rem;
+      padding-top: .45rem;
+      border-top: 1px dashed rgba(37, 99, 235, .35);
+      font-size: .82rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .actors.minor {
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      margin-top: .6rem;
+    }
+
+    .actors.minor .actor {
+      background: #fcfdfe;
+      padding: .6rem .9rem;
+    }
+
+    .actors.minor .actor b {
+      font-size: .9rem;
+      color: var(--sub);
+    }
+
+    .actors.minor .actor span {
+      font-size: .8rem;
+    }
+
+    .sec-label {
+      font-size: .8rem;
+      font-weight: 700;
+      color: var(--sub);
+      letter-spacing: .04em;
+      margin-top: 1.3rem;
+    }
+
+    .sec-label.hot {
+      color: var(--accent);
+    }
+
+    /* 図 */
+    .scroll {
+      overflow-x: auto;
+    }
+
+    svg {
+      display: block;
+      margin: 1rem auto;
+    }
+
+    svg.seq {
+      min-width: 760px;
+    }
+
+    .sv-actor {
+      fill: var(--accent-soft);
+      stroke: var(--accent);
+      rx: 8;
+    }
+
+    .sv-actor-label {
+      fill: var(--ink);
+      font-weight: 700;
+      font-size: 13px;
+      text-anchor: middle;
+    }
+
+    .sv-life {
+      stroke: var(--line);
+      stroke-dasharray: 4 4;
+    }
+
+    .sv-msg {
+      stroke: var(--ink);
+      fill: none;
+      marker-end: url(#arrow);
+    }
+
+    .sv-ret {
+      stroke: var(--sub);
+      fill: none;
+      stroke-dasharray: 5 4;
+      marker-end: url(#arrow-sub);
+    }
+
+    .sv-label {
+      fill: var(--ink);
+      font-size: 12px;
+      text-anchor: middle;
+    }
+
+    .sv-label-sub {
+      fill: var(--sub);
+      font-size: 12px;
+      text-anchor: middle;
+    }
+
+    .sv-note {
+      fill: var(--partial-soft);
+      stroke: var(--partial);
+    }
+
+    .sv-note-text {
+      fill: var(--ink);
+      font-size: 12px;
+      text-anchor: middle;
+    }
+
+    .venn {
+      max-width: 430px;
+      width: 100%;
+    }
+
+    .venn text {
+      font-size: 12px;
+      text-anchor: middle;
+    }
+
+    .fig-cap {
+      text-align: center;
+      color: var(--sub);
+      font-size: .85rem;
+      margin-top: -.3rem;
+    }
+
+    .er,
+    .tl,
+    .keys {
+      width: 100%;
+      height: auto;
+    }
+
+    .er {
+      max-width: 860px;
+    }
+
+    /* 注意: `.er text { font-size }` のような指定を足さないこと。属性の font-size が全部潰れる */
+    .box-new {
+      fill: var(--accent-soft);
+      stroke: var(--accent);
+    }
+
+    .box-old {
+      fill: #f4f6f9;
+      stroke: #b9c2cf;
+    }
+
+    .box-label {
+      font-weight: 700;
+      font-size: 13px;
+      text-anchor: middle;
+      fill: var(--ink);
+    }
+
+    .box-sub {
+      font-size: 11px;
+      text-anchor: middle;
+      fill: var(--sub);
+    }
+
+    .rel {
+      stroke: #98a2b3;
+      fill: none;
+      marker-end: url(#er-arrow);
+    }
+
+    .rel-label {
+      font-size: 11px;
+      fill: var(--sub);
+      text-anchor: middle;
+    }
+
+    /* 設計判断 */
+    .why {
+      display: grid;
+      gap: .9rem;
+      margin-top: .8rem;
+    }
+
+    .why-item {
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      padding: .8rem 1.1rem;
+    }
+
+    .why-item b {
+      display: block;
+    }
+
+    .why-item p {
+      margin: .25rem 0 0;
+      color: var(--sub);
+      font-size: .92rem;
+    }
+
+    /* 状態バッジ */
+    .badge {
+      display: inline-block;
+      border-radius: 99px;
+      padding: .05em .7em;
+      font-size: .78rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .b-done {
+      background: var(--done-soft);
+      color: var(--done);
+    }
+
+    .b-partial {
+      background: var(--partial-soft);
+      color: var(--partial);
+    }
+
+    .b-todo {
+      background: var(--todo-soft);
+      color: var(--todo);
+    }
+
+    .callout {
+      background: var(--partial-soft);
+      border: 1px solid var(--partial);
+      border-radius: 8px;
+      padding: .8rem 1.1rem;
+      font-size: .92rem;
+      margin-top: .9rem;
+    }
+
+    ol.steps {
+      padding-left: 1.4rem;
+    }
+
+    ol.steps li {
+      margin: .45rem 0;
+    }
+
+    ul.compact {
+      margin: .3rem 0;
+      padding-left: 1.3rem;
+    }
+
+    ul.compact li {
+      margin: .2rem 0;
+    }
+
+    /* コードブロック */
+    pre.code {
+      background: #1f2430;
+      color: #e6e9ef;
+      border-radius: 8px;
+      padding: 1rem 1.2rem;
+      overflow-x: auto;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: .82rem;
+      line-height: 1.7;
+      margin: .8rem 0;
+    }
+
+    pre.code .k {
+      color: #9ecbff;
+    }
+
+    /* キー */
+    pre.code .s {
+      color: #a5e6a5;
+    }
+
+    /* 値 */
+    pre.code .c {
+      color: #9aa4b2;
+    }
+
+    /* コメント */
+    pre.code .hl {
+      color: #ffd479;
+      font-weight: 700;
+    }
+
+    /* 注目させたい行 */
+
+    /* 実データのミニテーブル */
+    .example {
+      display: grid;
+      gap: .9rem;
+      margin: 1rem 0;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    .mini {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .mini>.cap {
+      font-size: .78rem;
+      font-weight: 700;
+      padding: .4rem .8rem;
+      background: var(--code-bg);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .mini table {
+      margin: 0;
+      font-size: .82rem;
+    }
+
+    .mini th,
+    .mini td {
+      border: none;
+      border-bottom: 1px solid var(--line);
+      padding: .35rem .8rem;
+    }
+
+    .mini tr:last-child td {
+      border-bottom: none;
+    }
+
+    .mini .yes {
+      color: var(--done);
+      font-weight: 700;
+    }
+
+    .mini .no {
+      color: var(--todo);
+    }
+
+    .mini.c-a>.cap {
+      background: var(--pair-a-soft);
+      color: var(--pair-a);
+    }
+
+    .mini.c-b>.cap {
+      background: var(--pair-b-soft);
+      color: var(--pair-b);
+    }
+
+    .result {
+      background: var(--accent-soft);
+      border-radius: 10px;
+      padding: .9rem 1.2rem;
+      font-size: .92rem;
+    }
+
+    .result b {
+      color: var(--accent);
+    }
+
+    footer {
+      color: var(--sub);
+      font-size: .8rem;
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    a {
+      color: var(--accent);
+    }
+
+  </style>
 </head>
+
 <body>
-<main>
+  <main>
 
-<!-- ============ ヘッダー + 概要 (この資料で一番読まれる場所) ============ -->
-<header class="hero">
-  <div class="kicker">【チケット】チーム向け説明資料</div>
-  <h1>【何を実装したか】<br>— 【一行で言うと】 —</h1>
-  <p class="lead">【前提: 直前までどうなっていて、今回どこを埋めたのか】</p>
-  <div class="summary">
-    <strong>概要</strong>
-    <ol class="steps" style="margin:.3rem 0 0">
-      <li>
-        【技術記述: 何を作ったか。ファイル名・テーブル名・関数名を入れてよい】
-        <span class="mean">【利用者・運用者から見て何が変わったか。実装の言い換えにしない】</span>
-      </li>
-      <li>
-        【技術記述】
-        <span class="mean">【意味】</span>
-      </li>
-      <li>
-        【技術記述】
-        <span class="mean">【意味】</span>
-      </li>
-    </ol>
-  </div>
-</header>
+    <!-- ============ ヘッダー + 概要 (この資料で一番読まれる場所) ============ -->
+    <header class="hero">
+      <div class="kicker">【チケット】チーム向け説明資料</div>
+      <h1>【何を実装したか】<br>— 【一行で言うと】 —</h1>
+      <p class="lead">【前提: 直前までどうなっていて、今回どこを埋めたのか】</p>
+      <div class="summary">
+        <strong>概要</strong>
+        <ol class="steps" style="margin:.3rem 0 0">
+          <li>
+            【技術記述: 何を作ったか。ファイル名・テーブル名・関数名を入れてよい】
+            <span class="mean">【利用者・運用者から見て何が変わったか。実装の言い換えにしない】</span>
+          </li>
+          <li>
+            【技術記述】
+            <span class="mean">【意味】</span>
+          </li>
+          <li>
+            【技術記述】
+            <span class="mean">【意味】</span>
+          </li>
+        </ol>
+      </div>
+    </header>
 
-<!-- ============ 登場人物: 主役 (青・大) と脇役 (グレー・小) ============ -->
-<section>
-  <h2>登場人物</h2>
-  <p class="sec-label hot">ここだけ押さえれば読める — 今回コードが大きく変わった3つ</p>
-  <div class="actors main">
-    <div class="actor key">
-      <b>【名前】</b>
-      <span>【普段の役割】</span>
-      <span class="did">今回: 【何をしたか】<br>＝【どういう意味か】</span>
-    </div>
-    <!-- 主役は 3 つ前後まで。増えると「押さえるべきもの」が伝わらない -->
-  </div>
+    <!-- ============ 登場人物: 主役 (青・大) と脇役 (グレー・小) ============ -->
+    <section>
+      <h2>登場人物</h2>
+      <p class="sec-label hot">ここだけ押さえれば読める — 今回コードが大きく変わった3つ</p>
+      <div class="actors main">
+        <div class="actor key">
+          <b>【名前】</b>
+          <span>【普段の役割】</span>
+          <span class="did">今回: 【何をしたか】<br>＝【どういう意味か】</span>
+        </div>
+        <!-- 主役は 3 つ前後まで。増えると「押さえるべきもの」が伝わらない -->
+      </div>
 
-  <p class="sec-label">支えている既存のもの (今回は使い方が増えただけ)</p>
-  <div class="actors minor">
-    <div class="actor"><b>【名前】</b><span>【役割】</span></div>
-  </div>
-</section>
+      <p class="sec-label">支えている既存のもの (今回は使い方が増えただけ)</p>
+      <div class="actors minor">
+        <div class="actor"><b>【名前】</b><span>【役割】</span></div>
+      </div>
+    </section>
 
-<!-- ============ データモデル: ベン図 → ER 図 → 表 → 実データ → 出力 ============ -->
-<section>
-  <h2>DB の変更 — 【何をデータに持つようにしたか】</h2>
-  <p>【なぜこの構造が要るのか。1〜2 文】</p>
+    <!-- ============ データモデル: ベン図 → ER 図 → 表 → 実データ → 出力 ============ -->
+    <section>
+      <h2>DB の変更 — 【何をデータに持つようにしたか】</h2>
+      <p>【なぜこの構造が要るのか。1〜2 文】</p>
 
-  <!-- 集合の重なりを説明する図。2 概念の対比があるときだけ使う -->
-  <svg class="venn" viewBox="0 0 430 280" role="img" aria-label="【図の説明】">
-    <circle cx="160" cy="150" r="88" fill="var(--pair-a)" fill-opacity="0.14" stroke="var(--pair-a)" stroke-width="1.5"/>
-    <circle cx="270" cy="150" r="88" fill="var(--pair-b)" fill-opacity="0.14" stroke="var(--pair-b)" stroke-width="1.5"/>
-    <text x="84" y="24" font-size="11" font-weight="700" fill="var(--pair-a)">【左のテーブル名】</text>
-    <text x="84" y="44" font-size="13" fill="var(--ink)">【左の意味】</text>
-    <text x="84" y="62" font-size="11" fill="var(--sub)">【平たく言うと】</text>
-    <text x="346" y="24" font-size="11" font-weight="700" fill="var(--pair-b)">【右のテーブル名】</text>
-    <text x="346" y="44" font-size="13" fill="var(--ink)">【右の意味】</text>
-    <text x="346" y="62" font-size="11" fill="var(--sub)">【平たく言うと】</text>
-    <text x="215" y="146" font-size="14" font-weight="700" fill="var(--ink)">【重なりの名前】</text>
-    <text x="215" y="167" font-size="11" fill="var(--sub)">【それが何になるか】</text>
-    <text x="106" y="214" font-size="11" fill="var(--sub)">左だけ → 【どうなる】</text>
-    <text x="326" y="214" font-size="11" fill="var(--sub)">右だけ → 【どうなる】</text>
-  </svg>
+      <!-- 集合の重なりを説明する図。2 概念の対比があるときだけ使う -->
+      <svg class="venn" viewBox="0 0 430 280" role="img" aria-label="【図の説明】">
+        <circle cx="160" cy="150" r="88" fill="var(--pair-a)" fill-opacity="0.14" stroke="var(--pair-a)"
+          stroke-width="1.5" />
+        <circle cx="270" cy="150" r="88" fill="var(--pair-b)" fill-opacity="0.14" stroke="var(--pair-b)"
+          stroke-width="1.5" />
+        <text x="84" y="24" font-size="11" font-weight="700" fill="var(--pair-a)">【左のテーブル名】</text>
+        <text x="84" y="44" font-size="13" fill="var(--ink)">【左の意味】</text>
+        <text x="84" y="62" font-size="11" fill="var(--sub)">【平たく言うと】</text>
+        <text x="346" y="24" font-size="11" font-weight="700" fill="var(--pair-b)">【右のテーブル名】</text>
+        <text x="346" y="44" font-size="13" fill="var(--ink)">【右の意味】</text>
+        <text x="346" y="62" font-size="11" fill="var(--sub)">【平たく言うと】</text>
+        <text x="215" y="146" font-size="14" font-weight="700" fill="var(--ink)">【重なりの名前】</text>
+        <text x="215" y="167" font-size="11" fill="var(--sub)">【それが何になるか】</text>
+        <text x="106" y="214" font-size="11" fill="var(--sub)">左だけ → 【どうなる】</text>
+        <text x="326" y="214" font-size="11" fill="var(--sub)">右だけ → 【どうなる】</text>
+      </svg>
 
-  <h3>どこにぶら下がるか</h3>
-  <div class="scroll">
-  <svg class="er" viewBox="0 0 860 390" role="img" aria-label="【図の説明】">
-    <defs>
-      <marker id="er-arrow" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
-        <path d="M0,0 L9,4 L0,8 z" fill="context-stroke"/>
-      </marker>
-    </defs>
-    <!-- 既存テーブル: box-old (グレー) -->
-    <rect class="box-old" x="40" y="30" width="160" height="46" rx="8"/>
-    <text class="box-label" x="120" y="50">【既存】</text>
-    <text class="box-sub"   x="120" y="66">【説明】</text>
-    <rect class="box-old" x="350" y="30" width="160" height="46" rx="8"/>
-    <text class="box-label" x="430" y="50">【既存】</text>
-    <text class="box-sub"   x="430" y="66">【説明】</text>
-    <rect class="box-old" x="660" y="30" width="160" height="46" rx="8"/>
-    <text class="box-label" x="740" y="50">【既存】</text>
-    <text class="box-sub"   x="740" y="66">【説明】</text>
-    <!-- 新規テーブル: box-new (青) -->
-    <rect class="box-new" x="250" y="170" width="180" height="46" rx="8"/>
-    <text class="box-label" x="340" y="190">【新規】</text>
-    <text class="box-sub"   x="340" y="206">【説明】</text>
-    <rect class="box-new" x="600" y="170" width="190" height="46" rx="8"/>
-    <text class="box-label" x="695" y="190">【新規】</text>
-    <text class="box-sub"   x="695" y="206">【説明】</text>
-    <rect class="box-new" x="390" y="290" width="160" height="46" rx="8"/>
-    <text class="box-label" x="470" y="310">【新規】</text>
-    <text class="box-sub"   x="470" y="326">【説明】</text>
-    <!-- 関係線 -->
-    <line class="rel" x1="350" y1="53" x2="206" y2="53"/>
-    <line class="rel" x1="510" y1="53" x2="654" y2="53"/>
-    <line class="rel" x1="345" y1="170" x2="398" y2="80"/>
-    <line class="rel" x1="705" y1="170" x2="738" y2="80"/>
-    <line class="rel" x1="368" y1="216" x2="438" y2="288"/>
-    <line class="rel" x1="655" y1="216" x2="530" y2="288"/>
-    <text class="rel-label" x="278" y="46">【関係】</text>
-    <text class="rel-label" x="582" y="46">【関係】</text>
-    <!-- 凡例は必ず入れる -->
-    <rect class="box-new" x="40" y="352" width="16" height="14" rx="3"/>
-    <text x="64" y="364" font-size="11" fill="#5b6472">今回追加</text>
-    <rect class="box-old" x="140" y="352" width="16" height="14" rx="3"/>
-    <text x="164" y="364" font-size="11" fill="#5b6472">既存</text>
-  </svg>
-  </div>
-  <p class="fig-cap">【この構造から言える大事なこと】</p>
+      <h3>どこにぶら下がるか</h3>
+      <div class="scroll">
+        <svg class="er" viewBox="0 0 860 390" role="img" aria-label="【図の説明】">
+          <defs>
+            <marker id="er-arrow" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
+              <path d="M0,0 L9,4 L0,8 z" fill="context-stroke" />
+            </marker>
+          </defs>
+          <!-- 既存テーブル: box-old (グレー) -->
+          <rect class="box-old" x="40" y="30" width="160" height="46" rx="8" />
+          <text class="box-label" x="120" y="50">【既存】</text>
+          <text class="box-sub" x="120" y="66">【説明】</text>
+          <rect class="box-old" x="350" y="30" width="160" height="46" rx="8" />
+          <text class="box-label" x="430" y="50">【既存】</text>
+          <text class="box-sub" x="430" y="66">【説明】</text>
+          <rect class="box-old" x="660" y="30" width="160" height="46" rx="8" />
+          <text class="box-label" x="740" y="50">【既存】</text>
+          <text class="box-sub" x="740" y="66">【説明】</text>
+          <!-- 新規テーブル: box-new (青) -->
+          <rect class="box-new" x="250" y="170" width="180" height="46" rx="8" />
+          <text class="box-label" x="340" y="190">【新規】</text>
+          <text class="box-sub" x="340" y="206">【説明】</text>
+          <rect class="box-new" x="600" y="170" width="190" height="46" rx="8" />
+          <text class="box-label" x="695" y="190">【新規】</text>
+          <text class="box-sub" x="695" y="206">【説明】</text>
+          <rect class="box-new" x="390" y="290" width="160" height="46" rx="8" />
+          <text class="box-label" x="470" y="310">【新規】</text>
+          <text class="box-sub" x="470" y="326">【説明】</text>
+          <!-- 関係線 -->
+          <line class="rel" x1="350" y1="53" x2="206" y2="53" />
+          <line class="rel" x1="510" y1="53" x2="654" y2="53" />
+          <line class="rel" x1="345" y1="170" x2="398" y2="80" />
+          <line class="rel" x1="705" y1="170" x2="738" y2="80" />
+          <line class="rel" x1="368" y1="216" x2="438" y2="288" />
+          <line class="rel" x1="655" y1="216" x2="530" y2="288" />
+          <text class="rel-label" x="278" y="46">【関係】</text>
+          <text class="rel-label" x="582" y="46">【関係】</text>
+          <!-- 凡例は必ず入れる -->
+          <rect class="box-new" x="40" y="352" width="16" height="14" rx="3" />
+          <text x="64" y="364" font-size="11" fill="#5b6472">今回追加</text>
+          <rect class="box-old" x="140" y="352" width="16" height="14" rx="3" />
+          <text x="164" y="364" font-size="11" fill="#5b6472">既存</text>
+        </svg>
+      </div>
+      <p class="fig-cap">【この構造から言える大事なこと】</p>
 
-  <h3>追加したテーブル</h3>
-  <table>
-    <tr><th style="width:9em">分類</th><th style="width:12em">テーブル</th><th>役割</th></tr>
-    <tr><td>【分類】</td><td><code>【table】</code></td><td>【役割。なぜその形なのかも一言】</td></tr>
-  </table>
-  <div class="callout"><b>【運用上の注意。migration があるなら preview の要否など】</b></div>
-
-  <h3>実際のデータで見る</h3>
-  <div class="example">
-    <div class="mini c-a">
-      <div class="cap">【入力 1 のテーブル名】</div>
+      <h3>追加したテーブル</h3>
       <table>
-        <tr><th>【列】</th><th>【列】</th></tr>
-        <tr><td>【値】</td><td class="yes">【値】</td></tr>
+        <tr>
+          <th style="width:9em">分類</th>
+          <th style="width:12em">テーブル</th>
+          <th>役割</th>
+        </tr>
+        <tr>
+          <td>【分類】</td>
+          <td><code>【table】</code></td>
+          <td>【役割。なぜその形なのかも一言】</td>
+        </tr>
       </table>
-    </div>
-    <div class="mini c-b">
-      <div class="cap">【入力 2 のテーブル名】</div>
-      <table>
-        <tr><th>【列】</th><th>【列】</th></tr>
-        <tr><td>【値】</td><td>【値】</td></tr>
-        <tr><td colspan="2" class="no">【無い行があることも書く】</td></tr>
-      </table>
-    </div>
-    <div class="mini">
-      <div class="cap">結果 — 【何になるか】</div>
-      <table>
-        <tr><th>【対象】</th><th>【結果】</th></tr>
-        <tr><td>【A】</td><td><span class="yes">【通る】</span></td></tr>
-        <tr><td>【B】</td><td><span class="no">【通らない】</span></td></tr>
-      </table>
-    </div>
-  </div>
-  <div class="result">【この例から読み取ってほしいこと。「同じ条件なのに片方は通らない」など】</div>
+      <div class="callout"><b>【運用上の注意。migration があるなら preview の要否など】</b></div>
 
-  <h3>最終的にこうなる</h3>
-  <pre class="code"><span class="c">// 【何のデータか】</span>
+      <h3>実際のデータで見る</h3>
+      <div class="example">
+        <div class="mini c-a">
+          <div class="cap">【入力 1 のテーブル名】</div>
+          <table>
+            <tr>
+              <th>【列】</th>
+              <th>【列】</th>
+            </tr>
+            <tr>
+              <td>【値】</td>
+              <td class="yes">【値】</td>
+            </tr>
+          </table>
+        </div>
+        <div class="mini c-b">
+          <div class="cap">【入力 2 のテーブル名】</div>
+          <table>
+            <tr>
+              <th>【列】</th>
+              <th>【列】</th>
+            </tr>
+            <tr>
+              <td>【値】</td>
+              <td>【値】</td>
+            </tr>
+            <tr>
+              <td colspan="2" class="no">【無い行があることも書く】</td>
+            </tr>
+          </table>
+        </div>
+        <div class="mini">
+          <div class="cap">結果 — 【何になるか】</div>
+          <table>
+            <tr>
+              <th>【対象】</th>
+              <th>【結果】</th>
+            </tr>
+            <tr>
+              <td>【A】</td>
+              <td><span class="yes">【通る】</span></td>
+            </tr>
+            <tr>
+              <td>【B】</td>
+              <td><span class="no">【通らない】</span></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="result">【この例から読み取ってほしいこと。「同じ条件なのに片方は通らない」など】</div>
+
+      <h3>最終的にこうなる</h3>
+      <pre class="code"><span class="c">// 【何のデータか】</span>
 {
   <span class="k">"key"</span>:  <span class="s">"value"</span>,        <span class="c">// 【説明】</span>
   <span class="hl">"注目"</span>: [<span class="s">"a"</span>, <span class="s">"b"</span>],   <span class="c">// ← ここが主役</span>
 }</pre>
-</section>
+    </section>
 
-<!-- ============ 方式が変わったことの before/after 図 ============ -->
-<section>
-  <h2>インフラ・env の変更 — 【何が変わったか】</h2>
-  <div class="scroll">
-  <svg class="keys" viewBox="0 0 860 330" style="min-width:640px" role="img" aria-label="【図の説明】">
-    <defs>
-      <marker id="k-arrow" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
-        <path d="M0,0 L9,4 L0,8 z" fill="context-stroke"/>
-      </marker>
-    </defs>
-    <text x="0" y="16" font-size="13" font-weight="700" fill="#d1242f">これまで — 【方式名】</text>
-    <rect x="80" y="34" width="160" height="48" rx="8" fill="#f4f6f9" stroke="#b9c2cf"/>
-    <text x="160" y="54" font-size="13" font-weight="700" text-anchor="middle" fill="#1f2430">【A】</text>
-    <text x="160" y="71" font-size="11" text-anchor="middle" fill="#d1242f">【問題のある状態】</text>
-    <rect x="560" y="34" width="160" height="48" rx="8" fill="#f4f6f9" stroke="#b9c2cf"/>
-    <text x="640" y="54" font-size="13" font-weight="700" text-anchor="middle" fill="#1f2430">【B】</text>
-    <text x="640" y="71" font-size="11" text-anchor="middle" fill="#d1242f">【問題のある状態】</text>
-    <line x1="246" y1="58" x2="552" y2="58" stroke="#1f2430" marker-end="url(#k-arrow)"/>
-    <text x="399" y="46" font-size="11" text-anchor="middle" fill="#1f2430">【やりとり】</text>
-    <text x="80" y="104" font-size="11" fill="#d1242f">【何が困るのか】</text>
+    <!-- ============ 方式が変わったことの before/after 図 ============ -->
+    <section>
+      <h2>インフラ・env の変更 — 【何が変わったか】</h2>
+      <div class="scroll">
+        <svg class="keys" viewBox="0 0 860 330" style="min-width:640px" role="img" aria-label="【図の説明】">
+          <defs>
+            <marker id="k-arrow" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
+              <path d="M0,0 L9,4 L0,8 z" fill="context-stroke" />
+            </marker>
+          </defs>
+          <text x="0" y="16" font-size="13" font-weight="700" fill="#d1242f">これまで — 【方式名】</text>
+          <rect x="80" y="34" width="160" height="48" rx="8" fill="#f4f6f9" stroke="#b9c2cf" />
+          <text x="160" y="54" font-size="13" font-weight="700" text-anchor="middle" fill="#1f2430">【A】</text>
+          <text x="160" y="71" font-size="11" text-anchor="middle" fill="#d1242f">【問題のある状態】</text>
+          <rect x="560" y="34" width="160" height="48" rx="8" fill="#f4f6f9" stroke="#b9c2cf" />
+          <text x="640" y="54" font-size="13" font-weight="700" text-anchor="middle" fill="#1f2430">【B】</text>
+          <text x="640" y="71" font-size="11" text-anchor="middle" fill="#d1242f">【問題のある状態】</text>
+          <line x1="246" y1="58" x2="552" y2="58" stroke="#1f2430" marker-end="url(#k-arrow)" />
+          <text x="399" y="46" font-size="11" text-anchor="middle" fill="#1f2430">【やりとり】</text>
+          <text x="80" y="104" font-size="11" fill="#d1242f">【何が困るのか】</text>
 
-    <line x1="0" y1="128" x2="860" y2="128" stroke="#dde2ea"/>
+          <line x1="0" y1="128" x2="860" y2="128" stroke="#dde2ea" />
 
-    <text x="0" y="160" font-size="13" font-weight="700" fill="#2da44e">今回 — 【新方式】</text>
-    <rect x="40" y="184" width="150" height="48" rx="8" fill="#eaf1fe" stroke="#2563eb"/>
-    <text x="115" y="204" font-size="13" font-weight="700" text-anchor="middle" fill="#1f2430">【A】</text>
-    <text x="115" y="221" font-size="11" text-anchor="middle" fill="#2563eb">【役割】</text>
-    <rect x="320" y="184" width="150" height="48" rx="8" fill="#f4f6f9" stroke="#b9c2cf"/>
-    <text x="395" y="204" font-size="13" font-weight="700" text-anchor="middle" fill="#1f2430">【B】</text>
-    <text x="395" y="221" font-size="11" text-anchor="middle" fill="#5b6472">【役割】</text>
-    <rect x="620" y="184" width="150" height="48" rx="8" fill="#f4f6f9" stroke="#b9c2cf"/>
-    <text x="695" y="204" font-size="13" font-weight="700" text-anchor="middle" fill="#1f2430">【C】</text>
-    <text x="695" y="221" font-size="11" text-anchor="middle" fill="#2da44e">【役割】</text>
-    <line x1="196" y1="208" x2="312" y2="208" stroke="#1f2430" marker-end="url(#k-arrow)"/>
-    <text x="254" y="196" font-size="11" text-anchor="middle" fill="#1f2430">【やりとり】</text>
-    <line x1="476" y1="208" x2="612" y2="208" stroke="#1f2430" marker-end="url(#k-arrow)"/>
-    <text x="544" y="196" font-size="11" text-anchor="middle" fill="#1f2430">【やりとり】</text>
-    <path d="M115,236 Q400,300 686,238" fill="none" stroke="#2da44e" stroke-dasharray="5 4" marker-end="url(#k-arrow)"/>
-    <text x="400" y="292" font-size="11" text-anchor="middle" fill="#2da44e">【回り込む経路】</text>
-    <text x="0" y="322" font-size="11" fill="#2da44e">【何が良くなったのか】</text>
-  </svg>
-  </div>
+          <text x="0" y="160" font-size="13" font-weight="700" fill="#2da44e">今回 — 【新方式】</text>
+          <rect x="40" y="184" width="150" height="48" rx="8" fill="#eaf1fe" stroke="#2563eb" />
+          <text x="115" y="204" font-size="13" font-weight="700" text-anchor="middle" fill="#1f2430">【A】</text>
+          <text x="115" y="221" font-size="11" text-anchor="middle" fill="#2563eb">【役割】</text>
+          <rect x="320" y="184" width="150" height="48" rx="8" fill="#f4f6f9" stroke="#b9c2cf" />
+          <text x="395" y="204" font-size="13" font-weight="700" text-anchor="middle" fill="#1f2430">【B】</text>
+          <text x="395" y="221" font-size="11" text-anchor="middle" fill="#5b6472">【役割】</text>
+          <rect x="620" y="184" width="150" height="48" rx="8" fill="#f4f6f9" stroke="#b9c2cf" />
+          <text x="695" y="204" font-size="13" font-weight="700" text-anchor="middle" fill="#1f2430">【C】</text>
+          <text x="695" y="221" font-size="11" text-anchor="middle" fill="#2da44e">【役割】</text>
+          <line x1="196" y1="208" x2="312" y2="208" stroke="#1f2430" marker-end="url(#k-arrow)" />
+          <text x="254" y="196" font-size="11" text-anchor="middle" fill="#1f2430">【やりとり】</text>
+          <line x1="476" y1="208" x2="612" y2="208" stroke="#1f2430" marker-end="url(#k-arrow)" />
+          <text x="544" y="196" font-size="11" text-anchor="middle" fill="#1f2430">【やりとり】</text>
+          <path d="M115,236 Q400,300 686,238" fill="none" stroke="#2da44e" stroke-dasharray="5 4"
+            marker-end="url(#k-arrow)" />
+          <text x="400" y="292" font-size="11" text-anchor="middle" fill="#2da44e">【回り込む経路】</text>
+          <text x="0" y="322" font-size="11" fill="#2da44e">【何が良くなったのか】</text>
+        </svg>
+      </div>
 
-  <table style="margin-top:1.2rem">
-    <tr><th style="width:15em">変更</th><th>内容</th></tr>
-    <tr><td><b>【変更】</b><br><span style="color:var(--sub);font-size:.85rem">追加 / 削除</span></td><td>【内容】</td></tr>
-  </table>
-  <div class="callout"><b>【手順の順序など、間違えると壊れること】</b></div>
-  <h3>人間 / GHA 側の作業</h3>
-  <ul class="compact"><li>【人手が要る作業】</li></ul>
-</section>
+      <table style="margin-top:1.2rem">
+        <tr>
+          <th style="width:15em">変更</th>
+          <th>内容</th>
+        </tr>
+        <tr>
+          <td><b>【変更】</b><br><span style="color:var(--sub);font-size:.85rem">追加 / 削除</span></td>
+          <td>【内容】</td>
+        </tr>
+      </table>
+      <div class="callout"><b>【手順の順序など、間違えると壊れること】</b></div>
+      <h3>人間 / GHA 側の作業</h3>
+      <ul class="compact">
+        <li>【人手が要る作業】</li>
+      </ul>
+    </section>
 
-<!-- ============ 設計判断 ============ -->
-<section>
-  <h2>設計判断 (なぜこうしたか)</h2>
-  <div class="why">
-    <div class="why-item">
-      <b>【判断を一言で】</b>
-      <p>【なぜそうしたか。採らなかった案がある場合はそれも】</p>
-    </div>
-  </div>
-</section>
+    <!-- ============ 設計判断 ============ -->
+    <section>
+      <h2>設計判断 (なぜこうしたか)</h2>
+      <div class="why">
+        <div class="why-item">
+          <b>【判断を一言で】</b>
+          <p>【なぜそうしたか。採らなかった案がある場合はそれも】</p>
+        </div>
+      </div>
+    </section>
 
-<!-- ============ 処理の流れ: シーケンス図 ============ -->
-<section>
-  <h2>処理の流れ — 【何をするまで】</h2>
-  <p>【前提を 1 文】</p>
-  <div class="scroll">
-  <svg class="seq" viewBox="0 0 960 560" width="100%" role="img" aria-label="【図の説明】">
-    <defs>
-      <marker id="arrow" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
-        <path d="M0,0 L9,4 L0,8 z" fill="context-stroke"/>
-      </marker>
-      <marker id="arrow-sub" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
-        <path d="M0,0 L9,4 L0,8 z" fill="context-stroke"/>
-      </marker>
-    </defs>
-    <!-- アクターは 4 本まで。増えるなら note で表現する -->
-    <rect class="sv-actor" x="40"  y="20" width="120" height="38" rx="8"/>
-    <text class="sv-actor-label" x="100" y="44">【A】</text>
-    <rect class="sv-actor" x="265" y="20" width="150" height="38" rx="8"/>
-    <text class="sv-actor-label" x="340" y="44">【B】</text>
-    <rect class="sv-actor" x="545" y="20" width="150" height="38" rx="8"/>
-    <text class="sv-actor-label" x="620" y="44">【C】</text>
-    <rect class="sv-actor" x="800" y="20" width="130" height="38" rx="8"/>
-    <text class="sv-actor-label" x="865" y="44">【D】</text>
+    <!-- ============ 処理の流れ: シーケンス図 ============ -->
+    <section>
+      <h2>処理の流れ — 【何をするまで】</h2>
+      <p>【前提を 1 文】</p>
+      <div class="scroll">
+        <svg class="seq" viewBox="0 0 960 560" width="100%" role="img" aria-label="【図の説明】">
+          <defs>
+            <marker id="arrow" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
+              <path d="M0,0 L9,4 L0,8 z" fill="context-stroke" />
+            </marker>
+            <marker id="arrow-sub" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto">
+              <path d="M0,0 L9,4 L0,8 z" fill="context-stroke" />
+            </marker>
+          </defs>
+          <!-- アクターは 4 本まで。増えるなら note で表現する -->
+          <rect class="sv-actor" x="40" y="20" width="120" height="38" rx="8" />
+          <text class="sv-actor-label" x="100" y="44">【A】</text>
+          <rect class="sv-actor" x="265" y="20" width="150" height="38" rx="8" />
+          <text class="sv-actor-label" x="340" y="44">【B】</text>
+          <rect class="sv-actor" x="545" y="20" width="150" height="38" rx="8" />
+          <text class="sv-actor-label" x="620" y="44">【C】</text>
+          <rect class="sv-actor" x="800" y="20" width="130" height="38" rx="8" />
+          <text class="sv-actor-label" x="865" y="44">【D】</text>
 
-    <line class="sv-life" x1="100" y1="58" x2="100" y2="500"/>
-    <line class="sv-life" x1="340" y1="58" x2="340" y2="500"/>
-    <line class="sv-life" x1="620" y1="58" x2="620" y2="500"/>
-    <line class="sv-life" x1="865" y1="58" x2="865" y2="500"/>
+          <line class="sv-life" x1="100" y1="58" x2="100" y2="500" />
+          <line class="sv-life" x1="340" y1="58" x2="340" y2="500" />
+          <line class="sv-life" x1="620" y1="58" x2="620" y2="500" />
+          <line class="sv-life" x1="865" y1="58" x2="865" y2="500" />
 
-    <!-- 往路は sv-msg (実線)、復路は sv-ret (点線)。ラベルは線の 7px 上 -->
-    <text class="sv-label" x="220" y="88">1. 【メッセージ】</text>
-    <line class="sv-msg" x1="100" y1="95" x2="340" y2="95"/>
+          <!-- 往路は sv-msg (実線)、復路は sv-ret (点線)。ラベルは線の 7px 上 -->
+          <text class="sv-label" x="220" y="88">1. 【メッセージ】</text>
+          <line class="sv-msg" x1="100" y1="95" x2="340" y2="95" />
 
-    <!-- 内部処理は note で表す (自己メッセージは描かない) -->
-    <rect class="sv-note" x="200" y="112" width="290" height="32" rx="6"/>
-    <text class="sv-note-text" x="345" y="132">2. 【内部でやること】</text>
+          <!-- 内部処理は note で表す (自己メッセージは描かない) -->
+          <rect class="sv-note" x="200" y="112" width="290" height="32" rx="6" />
+          <text class="sv-note-text" x="345" y="132">2. 【内部でやること】</text>
 
-    <text class="sv-label" x="480" y="176">3. 【メッセージ】</text>
-    <line class="sv-msg" x1="340" y1="183" x2="620" y2="183"/>
-    <text class="sv-label-sub" x="480" y="212">4. 【応答】</text>
-    <line class="sv-ret" x1="620" y1="219" x2="340" y2="219"/>
+          <text class="sv-label" x="480" y="176">3. 【メッセージ】</text>
+          <line class="sv-msg" x1="340" y1="183" x2="620" y2="183" />
+          <text class="sv-label-sub" x="480" y="212">4. 【応答】</text>
+          <line class="sv-ret" x1="620" y1="219" x2="340" y2="219" />
 
-    <rect class="sv-note" x="120" y="480" width="720" height="48" rx="6"/>
-    <text class="sv-note-text" x="480" y="499">【図全体で言いたいこと 1 行目】</text>
-    <text class="sv-note-text" x="480" y="517">【2 行目】</text>
-  </svg>
-  </div>
-  <h3>各ステップの補足</h3>
-  <ol class="steps"><li><b>1–2:</b> 【図に書ききれない詳細】</li></ol>
-</section>
+          <rect class="sv-note" x="120" y="480" width="720" height="48" rx="6" />
+          <text class="sv-note-text" x="480" y="499">【図全体で言いたいこと 1 行目】</text>
+          <text class="sv-note-text" x="480" y="517">【2 行目】</text>
+        </svg>
+      </div>
+      <h3>各ステップの補足</h3>
+      <ol class="steps">
+        <li><b>1–2:</b> 【図に書ききれない詳細】</li>
+      </ol>
+    </section>
 
-<!-- ============ 並行性・競合: before/after のタイムライン ============ -->
-<section>
-  <h2>なぜ【この仕組み】が要るのか</h2>
-  <p>【前提の説明。これを知らないと図が読めない、という知識を先に書く】</p>
-  <div class="scroll">
-  <svg class="tl" viewBox="0 0 880 400" style="min-width:700px" role="img" aria-label="【図の説明】">
-    <text x="0" y="16" font-size="13" font-weight="700" fill="#d1242f">【対策しないと】</text>
-    <text x="0" y="64" font-size="11" fill="#5b6472">【レーン A】</text>
-    <line x1="95" y1="60" x2="860" y2="60" stroke="#dde2ea" stroke-width="2"/>
-    <circle cx="170" cy="60" r="5" fill="#2563eb"/>
-    <text x="170" y="44" font-size="11" text-anchor="middle" fill="#1f2430">【イベント】</text>
-    <circle cx="330" cy="60" r="5" fill="#2563eb"/>
-    <text x="330" y="44" font-size="11" text-anchor="middle" fill="#1f2430">【イベント】</text>
+    <!-- ============ 並行性・競合: before/after のタイムライン ============ -->
+    <section>
+      <h2>なぜ【この仕組み】が要るのか</h2>
+      <p>【前提の説明。これを知らないと図が読めない、という知識を先に書く】</p>
+      <div class="scroll">
+        <svg class="tl" viewBox="0 0 880 400" style="min-width:700px" role="img" aria-label="【図の説明】">
+          <text x="0" y="16" font-size="13" font-weight="700" fill="#d1242f">【対策しないと】</text>
+          <text x="0" y="64" font-size="11" fill="#5b6472">【レーン A】</text>
+          <line x1="95" y1="60" x2="860" y2="60" stroke="#dde2ea" stroke-width="2" />
+          <circle cx="170" cy="60" r="5" fill="#2563eb" />
+          <text x="170" y="44" font-size="11" text-anchor="middle" fill="#1f2430">【イベント】</text>
+          <circle cx="330" cy="60" r="5" fill="#2563eb" />
+          <text x="330" y="44" font-size="11" text-anchor="middle" fill="#1f2430">【イベント】</text>
 
-    <text x="0" y="134" font-size="11" fill="#5b6472">【レーン B】</text>
-    <line x1="95" y1="130" x2="860" y2="130" stroke="#dde2ea" stroke-width="2"/>
-    <circle cx="170" cy="130" r="5" fill="#98a2b3"/>
-    <text x="170" y="150" font-size="11" text-anchor="middle" fill="#5b6472">【イベント】</text>
-    <circle cx="430" cy="130" r="5" fill="#d1242f"/>
-    <text x="430" y="150" font-size="11" text-anchor="middle" fill="#d1242f">【まずいイベント】</text>
+          <text x="0" y="134" font-size="11" fill="#5b6472">【レーン B】</text>
+          <line x1="95" y1="130" x2="860" y2="130" stroke="#dde2ea" stroke-width="2" />
+          <circle cx="170" cy="130" r="5" fill="#98a2b3" />
+          <text x="170" y="150" font-size="11" text-anchor="middle" fill="#5b6472">【イベント】</text>
+          <circle cx="430" cy="130" r="5" fill="#d1242f" />
+          <text x="430" y="150" font-size="11" text-anchor="middle" fill="#d1242f">【まずいイベント】</text>
 
-    <rect x="560" y="72" width="300" height="46" rx="8" fill="#ffebe9" stroke="#d1242f"/>
-    <text x="710" y="90" font-size="11" text-anchor="middle" fill="#1f2430">【何が起きるか】</text>
-    <text x="710" y="108" font-size="12" text-anchor="middle" font-weight="700" fill="#d1242f">→ 【結果】</text>
-    <line x1="440" y1="122" x2="556" y2="100" stroke="#d1242f" stroke-dasharray="4 3"/>
+          <rect x="560" y="72" width="300" height="46" rx="8" fill="#ffebe9" stroke="#d1242f" />
+          <text x="710" y="90" font-size="11" text-anchor="middle" fill="#1f2430">【何が起きるか】</text>
+          <text x="710" y="108" font-size="12" text-anchor="middle" font-weight="700" fill="#d1242f">→ 【結果】</text>
+          <line x1="440" y1="122" x2="556" y2="100" stroke="#d1242f" stroke-dasharray="4 3" />
 
-    <line x1="0" y1="185" x2="880" y2="185" stroke="#dde2ea"/>
+          <line x1="0" y1="185" x2="880" y2="185" stroke="#dde2ea" />
 
-    <text x="0" y="218" font-size="13" font-weight="700" fill="#2da44e">今回の実装</text>
-    <text x="0" y="270" font-size="11" fill="#5b6472">【レーン A】</text>
-    <line x1="95" y1="266" x2="860" y2="266" stroke="#dde2ea" stroke-width="2"/>
-    <circle cx="160" cy="266" r="5" fill="#2da44e"/>
-    <text x="160" y="250" font-size="11" text-anchor="middle" fill="#1f2430">【イベント】</text>
-    <circle cx="300" cy="266" r="5" fill="#2563eb"/>
-    <text x="300" y="250" font-size="11" text-anchor="middle" fill="#1f2430">【イベント】</text>
+          <text x="0" y="218" font-size="13" font-weight="700" fill="#2da44e">今回の実装</text>
+          <text x="0" y="270" font-size="11" fill="#5b6472">【レーン A】</text>
+          <line x1="95" y1="266" x2="860" y2="266" stroke="#dde2ea" stroke-width="2" />
+          <circle cx="160" cy="266" r="5" fill="#2da44e" />
+          <text x="160" y="250" font-size="11" text-anchor="middle" fill="#1f2430">【イベント】</text>
+          <circle cx="300" cy="266" r="5" fill="#2563eb" />
+          <text x="300" y="250" font-size="11" text-anchor="middle" fill="#1f2430">【イベント】</text>
 
-    <text x="0" y="340" font-size="11" fill="#5b6472">【レーン B】</text>
-    <line x1="95" y1="336" x2="860" y2="336" stroke="#dde2ea" stroke-width="2"/>
-    <circle cx="160" cy="336" r="5" fill="#98a2b3"/>
-    <text x="160" y="356" font-size="11" text-anchor="middle" fill="#5b6472">【待つ】</text>
-    <line x1="168" y1="336" x2="690" y2="336" stroke="#98a2b3" stroke-dasharray="3 3"/>
-    <circle cx="700" cy="336" r="5" fill="#2da44e"/>
-    <text x="700" y="356" font-size="11" text-anchor="middle" fill="#1f2430">【合流】</text>
+          <text x="0" y="340" font-size="11" fill="#5b6472">【レーン B】</text>
+          <line x1="95" y1="336" x2="860" y2="336" stroke="#dde2ea" stroke-width="2" />
+          <circle cx="160" cy="336" r="5" fill="#98a2b3" />
+          <text x="160" y="356" font-size="11" text-anchor="middle" fill="#5b6472">【待つ】</text>
+          <line x1="168" y1="336" x2="690" y2="336" stroke="#98a2b3" stroke-dasharray="3 3" />
+          <circle cx="700" cy="336" r="5" fill="#2da44e" />
+          <text x="700" y="356" font-size="11" text-anchor="middle" fill="#1f2430">【合流】</text>
 
-    <rect x="700" y="228" width="176" height="28" rx="8" fill="#dcf5e3" stroke="#2da44e"/>
-    <text x="788" y="247" font-size="11" text-anchor="middle" fill="#1f2430">【解決した状態】</text>
-  </svg>
-  </div>
-  <ul class="compact"><li><b>【要点】</b> 【説明】</li></ul>
-</section>
+          <rect x="700" y="228" width="176" height="28" rx="8" fill="#dcf5e3" stroke="#2da44e" />
+          <text x="788" y="247" font-size="11" text-anchor="middle" fill="#1f2430">【解決した状態】</text>
+        </svg>
+      </div>
+      <ul class="compact">
+        <li><b>【要点】</b> 【説明】</li>
+      </ul>
+    </section>
 
-<!-- ============ 新しく入ったライブラリ (新規のみ) ============ -->
-<section>
-  <h2>新しく入ったライブラリ</h2>
-  <table>
-    <tr><th style="width:9em">どこに</th><th style="width:13em">何を</th><th>役割</th></tr>
-    <tr><td><b>【app】</b></td><td><a href="【URL】"><code>【lib】</code></a></td><td>【何に使うか】</td></tr>
-  </table>
-  <p style="color:var(--sub); font-size:.9rem">【ライブラリに任せた部分と、自作した部分の切り分け】</p>
-</section>
+    <!-- ============ 新しく入ったライブラリ (新規のみ) ============ -->
+    <section>
+      <h2>新しく入ったライブラリ</h2>
+      <table>
+        <tr>
+          <th style="width:9em">どこに</th>
+          <th style="width:13em">何を</th>
+          <th>役割</th>
+        </tr>
+        <tr>
+          <td><b>【app】</b></td>
+          <td><a href="【URL】"><code>【lib】</code></a></td>
+          <td>【何に使うか】</td>
+        </tr>
+      </table>
+      <p style="color:var(--sub); font-size:.9rem">【ライブラリに任せた部分と、自作した部分の切り分け】</p>
+    </section>
 
-<!-- ============ スコープ ============ -->
-<section>
-  <h2>スコープ: やったこと / 簡易 / 後続</h2>
-  <table>
-    <tr><th style="width:9em">状態</th><th>内容</th></tr>
-    <tr><td><span class="badge b-done">実装済み</span></td><td><ul class="compact"><li>【項目】</li></ul></td></tr>
-    <tr><td><span class="badge b-partial">簡易実装</span></td><td><ul class="compact"><li>【項目と、なぜ簡易で止めたか】</li></ul></td></tr>
-    <tr><td><span class="badge b-todo">後続 PR</span></td><td><ul class="compact"><li>【項目】</li></ul></td></tr>
-  </table>
-</section>
+    <footer>
+      ブランチ: 【branch】（【コミット】 / 【差分】 / PR 【番号 or 未作成】）<br>
+      docs: 【関連ドキュメントのパス】
+    </footer>
 
-<!-- ============ 手元で試す ============ -->
-<section>
-  <h2>手元で試す</h2>
-  <p class="lead" style="margin-bottom:.8rem">【seed やテストデータの前提】</p>
-  <ol class="steps">
-    <li>【手順】</li>
-    <li>【差が見える手順は、期待する結果を表で並べる】</li>
-  </ol>
-</section>
-
-<footer>
-  ブランチ: 【branch】（【コミット】 / 【差分】 / PR 【番号 or 未作成】）<br>
-  docs: 【関連ドキュメントのパス】
-</footer>
-
-</main>
+  </main>
 </body>
+
 </html>
