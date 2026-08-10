@@ -22,7 +22,7 @@ set -euo pipefail
 # 字幕ごとのオプション(番号の後、テキストの前に置く。指定した内容は消すまで残る):
 #   --pos <位置>   bottom(既定) / top / center / top-left / top-right
 #                  / bottom-left / bottom-right
-#   --alpha <0-1>  文字の不透明度。薄くして脇役にする
+#   --alpha [0-1]  文字の不透明度。薄くして脇役にする。値を省くと 0.4
 #   --color <色>   文字色 ("#RRGGBB")
 #
 # 行頭に `>` を付けた行だけは --alpha を無視して不透明で出る。
@@ -63,6 +63,9 @@ hide_all() {
 }
 
 # 番号の後ろに置かれた見た目のオプションを読み、残りをテキストとして返す
+# --alpha を値なしで書いたときの薄さ
+DEFAULT_ALPHA=0.4
+
 STYLE_ARGS=()
 parse_style() {
   STYLE_ARGS=()
@@ -72,18 +75,27 @@ parse_style() {
         [[ ${2:-} =~ ^(bottom|top|center|top-left|top-right|bottom-left|bottom-right)$ ]] ||
           die "--pos の指定が不正です: ${2:-}"
         STYLE_ARGS+=("pos:$2")
+        shift 2
         ;;
       --alpha)
-        [[ ${2:-} =~ ^(0(\.[0-9]+)?|1(\.0+)?)$ ]] || die "--alpha は 0〜1 で指定してください: ${2:-}"
-        STYLE_ARGS+=("alpha:$2")
+        # 値は省ける。次が数値でなければ本文とみなして既定の薄さを使う
+        if [[ ${2:-} =~ ^(0(\.[0-9]+)?|1(\.0+)?)$ ]]; then
+          STYLE_ARGS+=("alpha:$2")
+          shift 2
+        elif [[ ${2:-} =~ ^[0-9.]+$ ]]; then
+          die "--alpha は 0〜1 で指定してください: $2"
+        else
+          STYLE_ARGS+=("alpha:$DEFAULT_ALPHA")
+          shift
+        fi
         ;;
       --color)
         [[ ${2:-} =~ ^#?[0-9A-Fa-f]{6}$ ]] || die "--color は #RRGGBB で指定してください: ${2:-}"
         STYLE_ARGS+=("color:$2")
+        shift 2
         ;;
       *) die "不明なオプションです: $1" ;;
     esac
-    shift 2
   done
   REST=("$@")
 }
