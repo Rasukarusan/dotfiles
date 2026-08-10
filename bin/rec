@@ -7,11 +7,16 @@ set -euo pipefail
 # 使い方:
 #   rec start [出力パス]   # 録画開始(バックグラウンド)。省略時 ~/Desktop/e2e-<ブランチ>-<時刻>.mp4
 #   rec stop               # 録画停止 → mp4に圧縮 → Finderで表示
+#                          # 45秒を超えた場合は 40秒に収まる -fast.mp4 も作る(等速版も残す)
 #   rec status             # 録画中かどうか
 #   rec abort              # 録画停止して破棄
 #
 # 録画にはターミナルアプリへの「画面収録」権限が必要
 # (システム設定 > プライバシーとセキュリティ > 画面収録)。
+#
+# 倍速版を作る基準は環境変数で変えられる:
+#   REC_MAX_SEC=45     これを超えたら倍速版を作る
+#   REC_TARGET_SEC=40  倍速版の長さ
 
 STATE_DIR="${TMPDIR:-/tmp}/claude-rec"
 PID_FILE="$STATE_DIR/pid"
@@ -20,6 +25,10 @@ OUT_FILE="$STATE_DIR/out"
 
 # GitHubがPR本文にアップロードできる動画の上限
 MAX_MB=10
+
+# これを超える長さなら倍速版も作る。倍速版はこの秒数に収まるようにする
+MAX_SEC=${REC_MAX_SEC:-45}
+TARGET_SEC=${REC_TARGET_SEC:-40}
 
 die() {
   echo "error: $*" >&2
@@ -88,12 +97,22 @@ cmd_stop() {
   rm -f "$PID_FILE"
   [[ -s $raw ]] || die "録画ファイルが空です: $raw"
 
+  local fast=""
   if command -v ffmpeg >/dev/null 2>&1; then
-    # Retinaの実解像度のままだと巨大なので半分に落とし、H.264(yuv420p)で widely playable にする
-    ffmpeg -y -loglevel error -i "$raw" \
-      -vf "scale=trunc(iw/4)*2:trunc(ih/4)*2" \
-      -c:v libx264 -preset veryfast -crf 28 -pix_fmt yuv420p \
-      -movflags +faststart -an "$out"
+    encode "$raw" "$out" 1
+    local duration
+    duration=$(probe_duration "$raw")
+    # 長い動画はレビュアーが最後まで見ない。等速版は残しつつ倍速版も置く
+    if awk -v d="$duration" "BEGIN{exit !(d > $MAX_SEC)}"; then
+      local factor
+      factor=$(awk -v d="$duration" "BEGIN{printf \"%.2f\", d / $TARGET_SEC}")
+      fast="${out%.*}-fast.mp4"
+      encode "$raw" "$fast" "$factor"
+      echo "倍速版: ${factor}倍"
+      if awk -v f="$factor" 'BEGIN{exit !(f > 2.5)}'; then
+        echo "warn: ${factor}倍は字幕を読むには速すぎます。ステップを減らして撮り直すのが確実です" >&2
+      fi
+    fi
     rm -f "$raw"
   else
     echo "warn: ffmpeg が無いため無変換の .mov を出力します" >&2
@@ -101,14 +120,35 @@ cmd_stop() {
     mv "$raw" "$out"
   fi
 
-  local bytes mb
-  bytes=$(stat -f %z "$out")
+  report "$out"
+  [[ -n $fast ]] && report "$fast"
+  open -R "${fast:-$out}"
+}
+
+probe_duration() {
+  ffprobe -v error -show_entries format=duration -of default=nk=1:nw=1 "$1"
+}
+
+# Retinaの実解像度のままだと巨大なので半分に落とし、H.264(yuv420p)で widely playable にする
+encode() {
+  local src=$1 dst=$2 factor=$3
+  local filter="scale=trunc(iw/4)*2:trunc(ih/4)*2"
+  [[ $factor != 1 ]] && filter="setpts=PTS/$factor,$filter"
+  ffmpeg -y -loglevel error -i "$src" \
+    -vf "$filter" \
+    -c:v libx264 -preset veryfast -crf 28 -pix_fmt yuv420p \
+    -movflags +faststart -an "$dst"
+}
+
+report() {
+  local file=$1 bytes mb sec
+  bytes=$(stat -f %z "$file")
   mb=$(echo "scale=1; $bytes / 1048576" | bc)
-  echo "録画完了: $out (${mb}MB)"
+  sec=$(printf '%.0f' "$(probe_duration "$file")" 2>/dev/null || echo '?')
+  echo "録画完了: $file (${sec}秒 / ${mb}MB)"
   if (( bytes > MAX_MB * 1048576 )); then
     echo "warn: GitHubのアップロード上限 ${MAX_MB}MB を超えています。録画を短くするか crf を上げてください" >&2
   fi
-  open -R "$out"
 }
 
 cmd_abort() {
