@@ -323,7 +323,8 @@ final class CaptionWindow: NSObject, NSTextFieldDelegate, NSWindowDelegate {
     private func applyEditorTextToLabel() {
         let value = editor.stringValue
         editor.alignment = value.contains("\n") ? .left : .center
-        label.attributedStringValue = Self.styled(value, style: style)
+        // 編集中は `>` も含めた生の文字列が見えているので、その幅で箱を測る
+        label.attributedStringValue = Self.styled(value, style: style, keepMarkers: true)
     }
 
     func setText(_ value: String) {
@@ -338,7 +339,8 @@ final class CaptionWindow: NSObject, NSTextFieldDelegate, NSWindowDelegate {
 
     /// 行頭の `>` が付いた行だけを不透明で描き、他は style.alpha まで落とす。
     /// 複数行は箇条書きとして読ませたいので左揃えにする。
-    static func styled(_ raw: String, style: Style) -> NSAttributedString {
+    /// keepMarkers を立てると `>` を残したまま描く(編集中の幅合わせ用)。
+    static func styled(_ raw: String, style: Style, keepMarkers: Bool = false) -> NSAttributedString {
         let lines = raw.components(separatedBy: "\n")
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = lines.count > 1 ? .left : .center
@@ -351,8 +353,10 @@ final class CaptionWindow: NSObject, NSTextFieldDelegate, NSWindowDelegate {
             var body = line
             var alpha = style.alpha
             if body.hasPrefix(">") {
-                body.removeFirst()
-                if body.hasPrefix(" ") { body.removeFirst() }
+                if !keepMarkers {
+                    body.removeFirst()
+                    if body.hasPrefix(" ") { body.removeFirst() }
+                }
                 alpha = 1
             }
             if index > 0 { result.append(NSAttributedString(string: "\n")) }
