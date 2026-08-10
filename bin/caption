@@ -169,15 +169,11 @@ if [[ $# -eq 0 ]]; then
 fi
 
 # 番号を省いたら新しい字幕として空いている番号に足す
-added=""
 if [[ -z $slot ]]; then
   slot=1
   while [[ -s "$STATE_DIR/$slot.txt" ]]; do slot=$((slot + 1)); done
-  added=1
 fi
 
 write_style "$slot"
 printf '%s' "$*" >"$STATE_DIR/$slot.txt"
 launch_if_needed
-[[ -n $added ]] && echo "${slot}番に表示しました"
-exit 0
