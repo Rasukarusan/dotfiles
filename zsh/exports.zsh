@@ -36,11 +36,6 @@ export FZF_DEFAULT_OPTS='
   --multi
   --bind ctrl-a:select-all,ctrl-d:deselect-all,ctrl-t:toggle-all
   '
-export MY_TARGET_GIT_DIR=(
-  ~/dotfiles
-  ~/scripts
-  ~/Documents/github/*
-)
 # brew install時の自動アップデートを無効化
 export HOMEBREW_NO_AUTO_UPDATE=1
 # ggrepをgrepにするため
