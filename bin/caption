@@ -7,13 +7,12 @@ set -euo pipefail
 # 番号で複数の字幕を出し分ける。既定は1番。
 # 字幕はドラッグで移動でき、移動先は表示している間だけ番号ごとに記憶される。
 # 消すと位置も忘れるので、次に出したときは既定位置から始まる。
-# クリックするとその場で文字を編集できる(Shift+Enterで改行、Enterで確定、Escapeで取り消し)。
+# クリックするとその場で文字を編集できる(Shift+Enterで改行、Enter・Escape・外をクリックで確定)。
 # 編集中は左上に番号、右上に × が出る。× を押すとその字幕だけ消える。
 #
 # 使い方:
-#   caption "ログイン画面です"    # 1番に表示
-#   caption add "こっちが変更後"  # 空いている番号に追加(番号を考えなくてよい)
-#   caption 2 "こっちが変更後"    # 2番に表示(同じ位置の字幕は番号順に積まれる)
+#   caption "ログイン画面です"    # 空いている番号に新しく足す(番号を考えなくてよい)
+#   caption 2 "こっちが変更後"    # 2番の文言を差し替える(無ければ2番に作る)
 #   caption --hide 2              # 2番を消す
 #   caption --hide                # 全部消す
 #   caption --reset 2             # 2番の位置を既定に戻す(番号省略で全部)
@@ -32,7 +31,7 @@ set -euo pipefail
 #   caption 2 --pos top-right --alpha 0.4 "① ログイン画面
 #   > ② ログインする
 #   ③ ダッシュボードを確認"
-#   caption "② ログインボタンを押します"
+#   caption 1 "② ログインボタンを押します"
 #
 # 先頭が数字のテキストを1番に出したいときは `caption 1 2024年の画面` のように番号を明示する。
 #
@@ -143,26 +142,13 @@ case "${1:-}" in
     fi
     exit 0
     ;;
-  add)
-    shift
-    parse_style "$@"
-    set -- ${REST+"${REST[@]}"}
-    [[ $# -gt 0 ]] || die "テキストを指定してください"
-    slot=1
-    while [[ -s "$STATE_DIR/$slot.txt" ]]; do slot=$((slot + 1)); done
-    write_style "$slot"
-    printf '%s' "$*" >"$STATE_DIR/$slot.txt"
-    launch_if_needed
-    echo "${slot}番に表示しました"
-    exit 0
-    ;;
   "")
     hide_all
     exit 0
     ;;
 esac
 
-slot=1
+slot=""
 if [[ $1 =~ ^[0-9]+$ ]]; then
   slot=$1
   shift
@@ -172,6 +158,7 @@ parse_style "$@"
 set -- ${REST+"${REST[@]}"}
 
 if [[ $# -eq 0 ]]; then
+  [[ -n $slot ]] || die "番号かテキストを指定してください"
   # オプションだけを渡した場合は見た目の変更として扱い、字幕は消さない
   if [[ ${#STYLE_ARGS[@]} -gt 0 ]]; then
     write_style "$slot"
@@ -181,6 +168,16 @@ if [[ $# -eq 0 ]]; then
   exit 0
 fi
 
+# 番号を省いたら新しい字幕として空いている番号に足す
+added=""
+if [[ -z $slot ]]; then
+  slot=1
+  while [[ -s "$STATE_DIR/$slot.txt" ]]; do slot=$((slot + 1)); done
+  added=1
+fi
+
 write_style "$slot"
 printf '%s' "$*" >"$STATE_DIR/$slot.txt"
 launch_if_needed
+[[ -n $added ]] && echo "${slot}番に表示しました"
+exit 0
