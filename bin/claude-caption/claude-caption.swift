@@ -7,7 +7,8 @@ import Cocoa
 //
 // 字幕はドラッグで移動でき、移動先は <番号>.pos に保存して番号ごとに覚える。
 // クリックするとその場編集に入り、左上に番号、右上に閉じるボタンが出る。
-// Enter で確定、Escape で取り消し。録画に写り込まないよう、確定すると消える。
+// Shift+Enter で改行、Enter で確定、Escape で取り消し。
+// 番号と閉じるボタンは録画に写り込まないよう、確定すると消える。
 
 let stateDir = "/tmp/claude-caption"
 let env = ProcessInfo.processInfo.environment
@@ -181,6 +182,12 @@ final class CaptionWindow: NSObject, NSTextFieldDelegate {
         editor.drawsBackground = false
         editor.focusRingType = .none
         editor.isHidden = true
+        // 複数行の字幕をそのまま編集できるようにする(Shift+Enter で改行)
+        editor.usesSingleLineMode = false
+        editor.lineBreakMode = .byWordWrapping
+        editor.maximumNumberOfLines = 0
+        editor.cell?.wraps = true
+        editor.cell?.isScrollable = false
 
         closeButton = CloseButtonView(frame: NSRect(x: 0, y: 0, width: closeSize, height: closeSize))
         closeButton.isHidden = true
@@ -242,6 +249,7 @@ final class CaptionWindow: NSObject, NSTextFieldDelegate {
         guard !isEditing else { return }
         isEditing = true
         editor.stringValue = text
+        applyEditorTextToLabel()
         editor.isHidden = false
         label.isHidden = true
         showControls(autoHide: false)
@@ -263,7 +271,13 @@ final class CaptionWindow: NSObject, NSTextFieldDelegate {
         panel.makeFirstResponder(nil)
         // 元のアプリにフォーカスを返す(hide だと字幕まで消えてしまう)
         NSApp.deactivate()
-        if commit { onCommit?(slot, value) }
+        if commit {
+            onCommit?(slot, value)
+        } else {
+            // 入力中の見た目に合わせて広げた箱を元に戻す
+            label.attributedStringValue = Self.styled(text, style: style)
+            onEditingLayoutChange?()
+        }
     }
 
     func controlTextDidEndEditing(_ notification: Notification) {
@@ -273,8 +287,17 @@ final class CaptionWindow: NSObject, NSTextFieldDelegate {
 
     func control(_ control: NSControl, textView: NSTextView, doCommandBy selector: Selector) -> Bool {
         switch selector {
+        // Shift+Enter も insertNewline で届くので、修飾キーで確定と改行を分ける
         case #selector(NSResponder.insertNewline(_:)):
-            endEditing(commit: true)
+            if NSApp.currentEvent?.modifierFlags.contains(.shift) == true {
+                textView.insertText("\n", replacementRange: textView.selectedRange())
+            } else {
+                endEditing(commit: true)
+            }
+            return true
+        case #selector(NSResponder.insertLineBreak(_:)),
+             #selector(NSResponder.insertNewlineIgnoringFieldEditor(_:)):
+            textView.insertText("\n", replacementRange: textView.selectedRange())
             return true
         case #selector(NSResponder.cancelOperation(_:)):
             endEditing(commit: false)
@@ -282,6 +305,18 @@ final class CaptionWindow: NSObject, NSTextFieldDelegate {
         default:
             return false
         }
+    }
+
+    /// 入力中も箱の大きさを合わせる。measure は label の内容を見るので、そちらへ流し込む。
+    func controlTextDidChange(_ notification: Notification) {
+        applyEditorTextToLabel()
+        onEditingLayoutChange?()
+    }
+
+    private func applyEditorTextToLabel() {
+        let value = editor.stringValue
+        editor.alignment = value.contains("\n") ? .left : .center
+        label.attributedStringValue = Self.styled(value, style: style)
     }
 
     func setText(_ value: String) {
@@ -539,10 +574,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: - 配置
 
+    /// 字幕を出す画面。screencapture が録るのはメインディスプレイなので、そこに固定する。
+    /// NSScreen.main はフォーカスのある画面を指すため、複数ディスプレイだと字幕が飛んでしまう。
+    private var captionScreen: NSScreen? {
+        NSScreen.screens.first { $0.frame.origin == .zero } ?? NSScreen.main ?? NSScreen.screens.first
+    }
+
     /// ドラッグされていない字幕は、指定された位置ごとに番号順で積む。
     private func relayout() {
-        // 常駐アプリはキーウィンドウを持たないため NSScreen.main が nil になりうる
-        guard let screen = NSScreen.main ?? NSScreen.screens.first else { return }
+        guard let screen = captionScreen else { return }
         let vf = screen.visibleFrame
         var stackOffsets: [Anchor: CGFloat] = [:]
 
