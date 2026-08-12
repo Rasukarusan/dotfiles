@@ -4,3 +4,4 @@ vim/autoload/local.vim
 claude/local/*
 claude/skills/kaisetu
 claude/skills/kaisetu-list
+claude/skills/kaisetu-html
