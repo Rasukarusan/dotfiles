@@ -52,6 +52,18 @@ PR に貼れるサイズ (10MB) を超える。
   落ちていればユーザーに起動を依頼して止まる。dev サーバーを勝手に起動しない
 - タブを開き、ログイン状態などの前提を整える
 - ページの読み込み・リダイレクトが完全に終わるまで待つ
+- **ブックマークバーを畳む。** 1 コマ目に新規タブページが映ると、ユーザー個人のブックマーク名
+  (社内 Slack・チケット・メール等) がそのまま動画に残る
+
+ブックマークバーの開閉はトグルなので、`screencapture` で今の状態を見てから畳む。
+
+```bash
+screencapture -x /tmp/pre.png && sips -Z 900 /tmp/pre.png >/dev/null   # 出ているか目視
+osascript -e 'tell application "Google Chrome" to activate'
+osascript -e 'tell application "System Events" to keystroke "b" using {command down, shift down}'
+```
+
+撮り終えたら同じキーで元に戻す。
 
 準備の過程は動画に入れない。ここで整えておくほど動画が短くなる。
 
@@ -113,6 +125,45 @@ caption 1 "② ログインボタンを押します"
   レビュアーが見ている画面と 1 対 1 で対応させる。実装の解説は PR 本文の仕事
 - 番号 (①②③) を振ると進行が追いやすい
 
+#### 1 ステップごとに映りを確認する
+
+MCP の `screenshot` は **そのタブの中身しか映さない**。どのタブがアクティブか・前面のアプリは
+写らないので、これだけを見て進めると、タブが切り替わらないまま撮り続けたことに最後まで
+気づけない。
+
+字幕を更新する Bash に、毎回アクティブタブの確認を混ぜる (往復は増えない)。
+
+```bash
+osascript -e 'tell application "Google Chrome" to get title of active tab of window id <id>'
+```
+
+タブを切り替えたステップは、画面そのものを撮って自分の目で見る。
+
+```bash
+screencapture -x /tmp/step.png && sips -Z 900 /tmp/step.png >/dev/null
+```
+
+期待と違えば、その場で直してから次へ進む。撮り終えてから気づくと全部撮り直しになる。
+
+#### ブラウザ操作の前提
+
+- **Chrome が前面でないとクリックが効かない。** 操作の前に
+  `osascript -e 'tell application "Google Chrome" to activate'` を入れる。
+- **`ref` は `read_page` / `find` の直後だけ有効。** 同じ `browser_batch` に
+  `read_page` → `click` を並べる。前のメッセージで取った ref は使わない。
+- **タブ切替は `navigate` の後に単独で実行する。** 同じメッセージに並べると `navigate` が
+  アクティブタブを奪い、切替が打ち消される。
+- **`tabs_create_mcp` のタブはバックグラウンドで開く。** 見せるには
+  `osascript -e 'tell application "Google Chrome" to set active tab index of window id <id> to N'`。
+- ウィンドウは **`front window` ではなく `window id`** で指定する。別ウィンドウに当たる。
+  id は撮影前に取っておく。
+
+#### 動画の長さはメッセージ数で決まる
+
+ツール呼び出し 1 往復あたり 10〜15 秒がそのまま動画に乗る。ステップ数より往復数が長さを
+支配するので、`browser_batch` で 1 メッセージにまとめる (`read_page` → 入力 → `click` →
+`read_page` → `click` まで一息で流せる)。
+
 最後のステップの結果を 2 秒ほど見せてから終える。
 
 ```bash
@@ -125,6 +176,7 @@ rec stop
 ### 5. 確認して報告する
 
 **撮って出しで報告しない。** `ffmpeg` でフレームを抜き、字幕と画面が意図通りかを自分の目で見る。
+ここは最後の砦で、破綻を見つける主役は撮影中の逐次確認のほう。
 
 ```bash
 ffmpeg -y -loglevel error -ss <秒> -i <mp4> -frames:v 1 -vf scale=900:-1 <出力png>
