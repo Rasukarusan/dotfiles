@@ -203,6 +203,7 @@ KAISETU_DIR="$HOME/Documents/github/kaisetu"
 if [ -d "$KAISETU_DIR" ]; then
   link "$KAISETU_DIR/kaisetu"      "$DOTFILES_DIR/claude/skills/kaisetu"
   link "$KAISETU_DIR/kaisetu-list" "$DOTFILES_DIR/claude/skills/kaisetu-list"
+  link "$KAISETU_DIR/kaisetu-html" "$DOTFILES_DIR/claude/skills/kaisetu-html"
 else
   echo "  skip: kaisetu ($KAISETU_DIR not found)"
 fi
