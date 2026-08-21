@@ -31,7 +31,6 @@ call plug#begin()
   Plug 'Rasukarusan/vim-tetris-delete'
   Plug '~/Documents/github/markview.nvim', { 'do': './install.sh' }
   Plug 'rust-lang/rust.vim'
-  Plug 'github/copilot.vim'
   Plug 'mfussenegger/nvim-dap'
   Plug 'nvim-neotest/nvim-nio' " nvim-dap-uiに必要
   Plug 'rcarriga/nvim-dap-ui'
@@ -39,8 +38,6 @@ call plug#begin()
   Plug 'theHamsta/nvim-dap-virtual-text'
   Plug 'monaqa/dial.nvim', { 'commit': '2c7e275' } " Neovim 0.10互換
   Plug '0xmovses/move.vim'
-  Plug 'nvim-lua/plenary.nvim' " Claude Codeに必要
-  Plug 'greggh/claude-code.nvim'
   " Plug 'glacambre/firenvim', { 'do': { _ -> firenvim#install(0) } }
   " Plug 'flyinshadow/php_localvarcheck.vim'
 call plug#end()
