@@ -45,9 +45,35 @@ let g:coc_global_extensions = [
   \, 'coc-jedi'
   \, 'coc-webview'
   \, 'coc-rust-analyzer'
+  \, 'coc-eslint'
+  \, 'coc-oxc'
+  \, 'coc-diagnostic'
+  \, 'coc-prettier'
 \]
-" CocConfigのdiagnostic.enableが効かなくなってしまったのでこちらで対応
-let b:coc_diagnostic_disable=1
+" 診断ジャンプ(旧ALEの<C-a><C-n>/<C-p>を踏襲)
+nmap <silent> <C-a><C-n> <Plug>(coc-diagnostic-next)
+nmap <silent> <C-a><C-p> <Plug>(coc-diagnostic-prev)
+
+" フロート(診断全文)表示中はカーソル行のvirtualtextを隠す(重複して見づらいため)。
+" カーソル移動でフロートが閉じたらdiagnosticRefreshで復元する。
+function! s:hide_cursor_virtualtext() abort
+  let l:ns = get(nvim_get_namespaces(), 'coc-diagnostic-virtualText', -1)
+  if l:ns == -1 | return | endif
+  let s:vt_hidden = 1
+  call nvim_buf_clear_namespace(0, l:ns, line('.') - 1, line('.'))
+endfunction
+function! s:restore_cursor_virtualtext() abort
+  if !get(s:, 'vt_hidden', 0) | return | endif
+  let s:vt_hidden = 0
+  if get(g:, 'coc_service_initialized', 0)
+    call CocActionAsync('diagnosticRefresh')
+  endif
+endfunction
+augroup coc_virtualtext_toggle
+  autocmd!
+  autocmd User CocOpenFloat call s:hide_cursor_virtualtext()
+  autocmd CursorMoved,CursorMovedI * call s:restore_cursor_virtualtext()
+augroup END
 
 " 補完メニューの色
 hi CocFloating guifg=#ffffff guibg=#001622
