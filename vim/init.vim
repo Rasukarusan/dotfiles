@@ -12,7 +12,6 @@ call plug#begin()
   Plug 'tpope/vim-fugitive'
   Plug 'thinca/vim-quickrun'
   Plug 'mattn/emmet-vim'
-  Plug 'w0rp/ale'
   Plug 'kana/vim-submode'
   Plug 'junegunn/vim-easy-align'
   Plug 'rhysd/git-messenger.vim'
@@ -216,6 +215,15 @@ function! s:format_php() abort
   :e! " 再読み込み
 endfunction
 " =============================================
+" 保存時に行末スペースと末尾の空行を削除(旧ALEのtrim_whitespace/remove_trailing_lines相当)
+" =============================================
+function! s:trim_whitespace() abort
+  let l:view = winsaveview()
+  keeppatterns %s/\s\+$//e
+  keeppatterns %s/\n\+\%$//e
+  call winrestview(l:view)
+endfunction
+" =============================================
 " プレビュー。markdownはcoc-markdown-preview-enhanced、
 " htmlはデフォルトブラウザで開く
 " =============================================
@@ -243,6 +251,7 @@ augroup vimrc
     autocmd!
     autocmd BufRead,BufNewFile *.sh :call s:insert_shebang() " shファイルを開いたときに自動でシェバン挿入
     autocmd InsertLeave * set nopaste
+    autocmd BufWritePre * :call s:trim_whitespace()
     " php-cs-fixerで自動フォーマット。aleでできなかったのでコマンド実行している。
     autocmd BufWritePost *.php :call s:format_php()
     " tree-sitterをONにするとPHPのインデントが効かなくなるのでその対応

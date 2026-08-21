@@ -1,5 +1,12 @@
 {
-  "diagnostic.enable": false,
+  "diagnostic.enable": true,
+  "diagnostic.virtualText": true,
+  "diagnostic.virtualTextCurrentLineOnly": false,
+  "diagnostic.virtualTextPrefix": " --> ",
+  "diagnostic.errorSign": ">>",
+  "diagnostic.warningSign": "--",
+  "typescript.validate.enable": false,
+  "javascript.validate.enable": false,
   "coc.preferences.jumpCommand": "tabe",
   "list.autoResize": false,
   "typescript.autoClosingTags": false,
@@ -13,23 +20,41 @@
   "languageserver": {
     "dockerfile": {
       "command": "docker-language-server",
-      "filetypes": ["dockerfile"],
-      "args": ["start", "--stdio"]
+      "filetypes": [
+        "dockerfile"
+      ],
+      "args": [
+        "start",
+        "--stdio"
+      ]
     },
     "swift": {
       "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/sourcekit-lsp",
-      "filetypes": ["swift"]
+      "filetypes": [
+        "swift"
+      ]
     },
     "golang": {
       "command": "gopls",
-      "rootPatterns": ["go.mod", ".vim/", ".git/", ".hg/"],
-      "filetypes": ["go"]
+      "rootPatterns": [
+        "go.mod",
+        ".vim/",
+        ".git/",
+        ".hg/"
+      ],
+      "filetypes": [
+        "go"
+      ]
     }
   },
   "tailwindCSS.headwind.runOnSave": false,
-  "tailwindCSS.htmlLanguages": ["typescriptreact"],
+  "tailwindCSS.htmlLanguages": [
+    "typescriptreact"
+  ],
   "snippets.extends": {
-    "typescriptreact": ["typescript"]
+    "typescriptreact": [
+      "typescript"
+    ]
   },
   "snippets.userSnippetsDirectory": "~/dotfiles/vim/UltiSnips",
   "coc.preferences.formatOnSaveFiletypes": [
@@ -38,7 +63,9 @@
     "html",
     "typescript",
     "javascriptreact",
-    "javascript"
+    "javascript",
+    "typescriptreact",
+    "markdown"
   ],
   "jedi": {
     "enable": false,
@@ -48,9 +75,62 @@
   "snippets.ultisnips.pythonPrompt": false,
   "pyright": {
     "inlayHints": {
-       "variableTypes": false,
-       "parameterTypes": false,
-       "functionReturnTypes": false
+      "variableTypes": false,
+      "parameterTypes": false,
+      "functionReturnTypes": false
     }
-  }
+  },
+  "eslint.autoFixOnSave": true,
+  "prettier.requireConfig": true,
+  "oxc.oxfmt.enable": true,
+  "diagnostic-languageserver.filetypes": {
+    "markdown": "textlint"
+  },
+  "diagnostic-languageserver.formatFiletypes": {
+    "markdown": "textlint"
+  },
+  "diagnostic-languageserver.linters": {
+    "textlint": {
+      "command": "textlint",
+      "debounce": 300,
+      "args": [
+        "--format",
+        "json",
+        "--stdin",
+        "--stdin-filename",
+        "%filepath"
+      ],
+      "sourceName": "textlint",
+      "parseJson": {
+        "errorsRoot": "[0].messages",
+        "line": "line",
+        "column": "column",
+        "message": "${message}",
+        "security": "severity"
+      },
+      "securities": {
+        "1": "warning",
+        "2": "error"
+      }
+    }
+  },
+  "diagnostic-languageserver.formatters": {
+    "textlint": {
+      "command": "sh",
+      "args": [
+        "-c",
+        "textlint --fix '%tempfile' >/dev/null 2>&1; cat '%tempfile'"
+      ],
+      "isStdout": true,
+      "ignoreExitCode": true
+    }
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "[markdown]": {
+    "coc.preferences.formatterExtension": "coc-diagnostic"
+  },
+  "oxc.oxfmt.formatterPriority": 2,
+  "diagnostic.checkCurrentLine": true
 }
