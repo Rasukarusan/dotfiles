@@ -189,19 +189,24 @@ alias pof="_git_push_fzf -f"
 # -S "pattern"でpatternを含む差分のみを表示することができる
 alias tigg='_git_log_preview_open'
 _git_log_preview_open() {
-  local hashCommit=$(git log --oneline "$@" \
+  local hashCommits=($(git log --oneline "$@" \
     | fzf-tmux -p80% \
       --prompt 'SELECT COMMIT>' \
+      --multi \
       --delimiter=' ' --with-nth 1.. \
       --preview 'git show --color=always {1}' \
-      --bind 'ctrl-y:execute-silent(echo {} | awk "{print \$1}" | tr -d "\n" | pbcopy)' \
+      --bind 'ctrl-y:execute-silent(echo -n {+1} | pbcopy)' \
       --preview-window=right:50% \
       --height=100% \
     | awk '{print $1}'
-  )
-  # echo $hashCommit
-  [ -z "$hashCommit" ] && return
-  git show ${hashCommit}
+  ))
+  [ ${#hashCommits[@]} -eq 0 ] && return
+  if [ ${#hashCommits[@]} -eq 1 ]; then
+    git show ${hashCommits[1]}
+  else
+    echo -n "${hashCommits[*]}" | pbcopy
+    echo "copied: ${hashCommits[*]}"
+  fi
 }
 
 # fzfを使ってプロセスKILL
