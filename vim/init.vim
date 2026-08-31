@@ -212,11 +212,14 @@ function! s:format_php() abort
   :e! " 再読み込み
 endfunction
 " =============================================
-" 保存時に行末スペースと末尾の空行を削除(旧ALEのtrim_whitespace/remove_trailing_lines相当)
+" 保存時に行末スペースと末尾の空行を削除。
+" markdownは行末2スペースが改行を意味するため、行末スペースは残す。
 " =============================================
 function! s:trim_whitespace() abort
   let l:view = winsaveview()
-  keeppatterns %s/\s\+$//e
+  if &filetype !=# 'markdown'
+    keeppatterns %s/\s\+$//e
+  endif
   keeppatterns %s/\n\+\%$//e
   call winrestview(l:view)
 endfunction
