@@ -46,7 +46,7 @@ neovim 初回起動後に `:PlugInstall` と `:checkhealth` を実行する。co
 
 ### bin/ — 自作 CLI / 常駐ツール
 スクリプト（zsh/bash/perl）と、`setup.sh` がビルドする Swift 製常駐ツールが混在する。
-- `my-karabiner/`, `tmux-ime/`: Swift 製。`build.sh` が `swiftc` でビルドし `.app` バンドル化 + LaunchAgent 登録する（TCC 入力監視権限を確実に効かせるため `.app` 化が必須）。Swift を編集したら該当 `build.sh` を再実行する。
+- `tmux-ime/`: Swift 製の入力ソース切替 CLI（`imselect`）。`build.sh` が `swiftc` でビルドして `~/.local/bin` に配置する。Swift を編集したら `build.sh` を再実行する。
 - `tmux-*`: tmux ペイン操作・ファイルピッカー連携スクリプト。
 
 ### local-llm/
