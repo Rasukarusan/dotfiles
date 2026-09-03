@@ -169,6 +169,13 @@ details[open] > summary .twisty { transform: rotate(90deg); }
 .breadcrumb .crumb.current { color: var(--text); font-weight: 600; }
 .breadcrumb .sep { margin: 0 6px; color: var(--border); }
 
+/* 編集が自動反映されたことを知らせる一瞬のハイライト */
+.breadcrumb.updated .crumb.current { animation: crumb-flash .6s ease-out; }
+@keyframes crumb-flash {
+  from { color: var(--accent); }
+  to { color: var(--text); }
+}
+
 /* ---- サイドバー折りたたみ ---- */
 #app.sidebar-collapsed #sidebar,
 #app.sidebar-collapsed #resizer { display: none; }
