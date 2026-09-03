@@ -25,6 +25,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"time"
 
 	chromahtml "github.com/alecthomas/chroma/v2/formatters/html"
 	"github.com/alecthomas/chroma/v2/lexers"
@@ -62,10 +63,17 @@ var (
 	currentFile string
 )
 
+// event は SSE でブラウザへ送る通知。kind は "select"(表示ファイルの切り替え)か
+// "change"(表示中ファイルが編集された)。
+type event struct {
+	kind string
+	path string
+}
+
 // subscribers は /api/events に接続中の各クライアントへの通知チャネル。
 var (
 	subMu       sync.Mutex
-	subscribers = map[chan string]bool{}
+	subscribers = map[chan event]bool{}
 )
 
 // md はコードブロックをハイライトする goldmark インスタンス。
@@ -147,6 +155,8 @@ func main() {
 	if !*noOpen {
 		openBrowser(url)
 	}
+	// 表示中ファイルの編集をブラウザへ反映させるための監視を常駐させる。
+	go watchCurrentFile(400 * time.Millisecond)
 	if err := http.Serve(ln, mux); err != nil {
 		log.Fatal(err)
 	}
@@ -295,24 +305,69 @@ func handleOpen(w http.ResponseWriter, r *http.Request) {
 	currentMu.Lock()
 	currentFile = path
 	currentMu.Unlock()
-	broadcast(path)
+	broadcast(event{kind: "select", path: path})
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// broadcast は接続中の全 SSE クライアントへ path を送る。バッファが詰まっている購読者はスキップする。
-func broadcast(path string) {
+// broadcast は接続中の全 SSE クライアントへ ev を送る。バッファが詰まっている購読者はスキップする。
+func broadcast(ev event) {
 	subMu.Lock()
 	defer subMu.Unlock()
 	for ch := range subscribers {
 		select {
-		case ch <- path:
+		case ch <- ev:
 		default:
 		}
 	}
 }
 
-// handleEvents は Server-Sent Events で表示ファイルの切り替えをブラウザへプッシュする。
-// これによりページをリロードしなくても `mdd` での新しい選択が即座に反映される。
+// watchCurrentFile は表示中ファイルの更新を interval ごとに検知し、"change" を通知する。
+// エディタの保存は「一時ファイルへ書いて rename」で行われることも多く、ファイル単位の
+// FSEvents/inotify 監視では inode 差し替えを取りこぼすため、mtime とサイズのポーリングで判定する。
+func watchCurrentFile(interval time.Duration) {
+	var (
+		watched string    // 前回チェックした表示ファイル(root からの相対パス)
+		modTime time.Time // watched の前回の mtime
+		size    int64     // watched の前回のサイズ
+		exists  bool      // watched が前回時点で存在したか
+	)
+	for {
+		time.Sleep(interval)
+
+		currentMu.Lock()
+		path := currentFile
+		currentMu.Unlock()
+		if path == "" {
+			watched, exists = "", false
+			continue
+		}
+		abs, ok := resolve(path)
+		if !ok {
+			continue
+		}
+
+		info, err := os.Stat(abs)
+		if err != nil || info.IsDir() {
+			// rename 保存の最中は一時的に消えることがある。通知はせず「無い」状態だけ覚え、
+			// 復帰を次のループで更新として扱う。
+			watched, exists = path, false
+			continue
+		}
+		if path != watched {
+			// 切り替え直後は基準を取り直すだけ(切り替え自体は handleOpen が通知済み)。
+			watched, modTime, size, exists = path, info.ModTime(), info.Size(), true
+			continue
+		}
+		if !exists || !info.ModTime().Equal(modTime) || info.Size() != size {
+			modTime, size, exists = info.ModTime(), info.Size(), true
+			broadcast(event{kind: "change", path: path})
+		}
+	}
+}
+
+// handleEvents は Server-Sent Events でイベントをブラウザへプッシュする。
+// これによりページをリロードしなくても `mdd` での新しい選択(select)と、
+// 表示中ファイルの編集(change)が即座に反映される。
 func handleEvents(w http.ResponseWriter, r *http.Request) {
 	flusher, ok := w.(http.Flusher)
 	if !ok {
@@ -323,7 +378,7 @@ func handleEvents(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 
-	ch := make(chan string, 4)
+	ch := make(chan event, 4)
 	subMu.Lock()
 	subscribers[ch] = true
 	subMu.Unlock()
@@ -335,8 +390,8 @@ func handleEvents(w http.ResponseWriter, r *http.Request) {
 
 	for {
 		select {
-		case path := <-ch:
-			fmt.Fprintf(w, "data: %s\n\n", path)
+		case ev := <-ch:
+			fmt.Fprintf(w, "event: %s\ndata: %s\n\n", ev.kind, ev.path)
 			flusher.Flush()
 		case <-r.Context().Done():
 			return
