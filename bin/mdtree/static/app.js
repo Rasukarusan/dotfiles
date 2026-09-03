@@ -291,7 +291,7 @@ showAllEl.addEventListener('change', applyFilters);
 
 // ---- 初期化 ---------------------------------------------------------------
 
-// サーバーが選択中のファイルを切り替えたら(mdd での新しい選択、または別タブでの操作)
+// サーバーが選択中のファイルを切り替えたら(md での新しい選択、または別タブでの操作)
 // リロードなしで追従して開く。
 async function openPushedFile(path) {
   if (!path) return;
@@ -304,7 +304,7 @@ async function openPushedFile(path) {
 
 function connectEvents() {
   const es = new EventSource('/api/events');
-  // select: mdd で別のファイルが選ばれた / change: 表示中ファイルが編集された
+  // select: md で別のファイルが選ばれた / change: 表示中ファイルが編集された
   es.addEventListener('select', (e) => { openPushedFile(e.data); });
   es.addEventListener('change', (e) => { reloadFile(e.data); });
   // 接続が切れてもブラウザ標準の EventSource が自動的に再接続を試みる。
