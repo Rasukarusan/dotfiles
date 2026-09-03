@@ -392,7 +392,7 @@ func watchCurrentFile(interval time.Duration) {
 }
 
 // handleEvents は Server-Sent Events でイベントをブラウザへプッシュする。
-// これによりページをリロードしなくても `mdd` での新しい選択(select)と、
+// これによりページをリロードしなくても `md` での新しい選択(select)と、
 // 表示中ファイルの編集(change)が即座に反映される。
 func handleEvents(w http.ResponseWriter, r *http.Request) {
 	flusher, ok := w.(http.Flusher)
