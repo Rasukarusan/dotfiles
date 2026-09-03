@@ -6,8 +6,11 @@ const breadcrumbEl = document.getElementById('breadcrumb');
 const repoNameEl = document.getElementById('repo-name');
 const filterEl = document.getElementById('filter');
 const showAllEl = document.getElementById('show-all-files');
+const sourceBtn = document.getElementById('view-source');
 
 let currentPath = null;
+// HTML をプレビュー(iframe 描画)ではなくソース表示するか。ファイルを開き直すとリセットする。
+let sourceMode = false;
 
 // ---- ツリー描画 -----------------------------------------------------------
 
@@ -20,9 +23,20 @@ function isMarkdown(name) {
   return ext === 'md' || ext === 'markdown';
 }
 
+function isHtml(name) {
+  const ext = fileExt(name);
+  return ext === 'html' || ext === 'htm';
+}
+
+// サイドバーの既定表示(「すべてのファイルを表示」オフ)に含める文書ファイル。
+function isDoc(name) {
+  return isMarkdown(name) || isHtml(name);
+}
+
 function fileIcon(name) {
   const ext = fileExt(name);
   if (ext === 'md' || ext === 'markdown') return '📝';
+  if (ext === 'html' || ext === 'htm') return '🌐';
   if (['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico'].includes(ext)) return '🖼️';
   if (['json', 'yml', 'yaml', 'toml'].includes(ext)) return '⚙️';
   return '📄';
@@ -51,7 +65,7 @@ function renderTree(node, container, depth) {
       a.className = 'file';
       a.dataset.path = child.path;
       a.dataset.name = child.name.toLowerCase();
-      a.dataset.md = isMarkdown(child.name) ? '1' : '0';
+      a.dataset.doc = isDoc(child.name) ? '1' : '0';
       a.style.paddingLeft = (depth * 14 + 22) + 'px';
       a.innerHTML = `<span class="icon">${fileIcon(child.name)}</span><span class="label">${escapeHtml(child.name)}</span>`;
       a.addEventListener('click', (e) => {
@@ -72,6 +86,7 @@ function escapeHtml(s) {
 async function openFile(path) {
   if (path === currentPath) return;
   currentPath = path;
+  setSourceMode(false, { rerender: false });
 
   // 選択状態のハイライト
   document.querySelectorAll('.file.active').forEach((el) => el.classList.remove('active'));
@@ -93,24 +108,68 @@ async function openFile(path) {
 // renderContent はファイルの内容を取得して本文領域に描画する。
 // keepScroll が真なら再描画前のスクロール位置を復元する(自動反映で読んでいた位置を保つ)。
 async function renderContent(path, { keepScroll }) {
-  const scrollTop = keepScroll ? contentEl.scrollTop : 0;
+  const scrollTop = keepScroll ? currentScrollTop() : 0;
   contentEl.classList.add('loading');
+  sourceBtn.hidden = !isHtml(path);
 
   try {
     // ブラウザキャッシュではなく必ずファイルの現在の内容を取りに行く。
-    const res = await fetch('/api/render?path=' + encodeURIComponent(path), { cache: 'no-store' });
+    const query = '/api/render?path=' + encodeURIComponent(path) + (sourceMode ? '&source=1' : '');
+    const res = await fetch(query, { cache: 'no-store' });
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
+    document.title = data.name + ' — mdtree';
+    if (data.type === 'html') {
+      renderHtmlFrame(data.raw, scrollTop);
+      return;
+    }
     contentEl.className = 'content ' + (data.type === 'markdown' ? 'markdown-body' : 'code-view');
     contentEl.innerHTML = data.html;
     contentEl.scrollTop = scrollTop;
-    document.title = data.name + ' — mdtree';
     await renderMermaid();
   } catch (err) {
     contentEl.className = 'content';
     contentEl.innerHTML = `<div class="error">読み込みに失敗しました: ${escapeHtml(String(err))}</div>`;
   }
 }
+
+// HTML は innerHTML では <script> が動かず mdtree 側の CSS とも混ざるため、
+// /raw から iframe で読ませてブラウザ自身に描画させる。
+function renderHtmlFrame(src, scrollTop) {
+  contentEl.className = 'content html-view';
+  contentEl.innerHTML = '';
+
+  const frame = document.createElement('iframe');
+  frame.className = 'html-frame';
+  frame.addEventListener('load', () => {
+    if (!scrollTop) return;
+    // 自動反映で読み込み直したときも読んでいた位置に戻す(同一オリジンなので操作できる)。
+    try { frame.contentWindow.scrollTo(0, scrollTop); } catch (err) { /* ignore */ }
+  });
+  // 同じ URL でもブラウザキャッシュを使わず必ず最新を読む。
+  frame.src = src + '?t=' + Date.now();
+  contentEl.appendChild(frame);
+}
+
+// currentScrollTop は再描画前のスクロール位置を返す。HTML プレビュー中は iframe 内の位置。
+function currentScrollTop() {
+  const frame = contentEl.querySelector('iframe.html-frame');
+  if (frame) {
+    try { return frame.contentWindow.scrollY; } catch (err) { return 0; }
+  }
+  return contentEl.scrollTop;
+}
+
+// ---- HTML のソース表示切替 ------------------------------------------------
+
+function setSourceMode(on, { rerender }) {
+  sourceMode = on;
+  sourceBtn.classList.toggle('active', on);
+  sourceBtn.title = on ? 'プレビューを表示' : 'ソースを表示';
+  if (rerender && currentPath) renderContent(currentPath, { keepScroll: false });
+}
+
+sourceBtn.addEventListener('click', () => setSourceMode(!sourceMode, { rerender: true }));
 
 // reloadFile は表示中ファイルが編集されたときに再描画する。
 // 別のファイルの更新通知(切り替え直後の行き違い等)は無視する。
@@ -178,7 +237,7 @@ function applyFilters() {
   const files = treeEl.querySelectorAll('.file');
   files.forEach((f) => {
     const matchesQuery = !q || f.dataset.name.includes(q);
-    const matchesType = showAll || f.dataset.md === '1';
+    const matchesType = showAll || f.dataset.doc === '1';
     f.style.display = matchesQuery && matchesType ? '' : 'none';
   });
 
@@ -236,8 +295,8 @@ showAllEl.addEventListener('change', applyFilters);
 // リロードなしで追従して開く。
 async function openPushedFile(path) {
   if (!path) return;
-  if (!isMarkdown(path)) {
-    showAllEl.checked = true; // md以外のファイルを開く場合はサイドバーでも見えるようにする
+  if (!isDoc(path)) {
+    showAllEl.checked = true; // md/html以外のファイルを開く場合はサイドバーでも見えるようにする
     applyFilters();
   }
   await openFile(path);
