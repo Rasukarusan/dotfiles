@@ -18,6 +18,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -129,6 +130,9 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(sub))))
+	// /raw/ 以下でファイルをそのまま配信する。HTML を iframe で描画するために使い、
+	// ページ内の相対パス(画像・CSS・JS)も同じ相対関係で解決できる。
+	mux.Handle("/raw/", http.StripPrefix("/raw/", http.FileServer(http.Dir(root))))
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.NotFound(w, r)
@@ -228,8 +232,9 @@ func resolve(rel string) (string, bool) {
 type renderResp struct {
 	Name string `json:"name"`
 	Path string `json:"path"`
-	Type string `json:"type"` // "markdown" | "code" | "binary"
-	HTML string `json:"html"`
+	Type string `json:"type"`          // "markdown" | "html" | "code" | "binary"
+	HTML string `json:"html"`          // type != "html" のときの本文
+	Raw  string `json:"raw,omitempty"` // type == "html" のとき iframe に読ませる URL
 }
 
 func handleRender(w http.ResponseWriter, r *http.Request) {
@@ -244,14 +249,26 @@ func handleRender(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "not found", http.StatusNotFound)
 		return
 	}
+
+	resp := renderResp{Name: filepath.Base(abs), Path: rel}
+	ext := strings.ToLower(filepath.Ext(abs))
+
+	// HTML はブラウザ自身に描画させたいので本文は返さず、iframe 用の URL だけを返す。
+	// `?source=1` が付いていればハイライトしたソースを返す(ビューアのソース表示切替)。
+	if (ext == ".html" || ext == ".htm") && r.URL.Query().Get("source") != "1" {
+		resp.Type = "html"
+		resp.Raw = rawURL(rel)
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
 	data, err := os.ReadFile(abs)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	resp := renderResp{Name: filepath.Base(abs), Path: rel}
-	ext := strings.ToLower(filepath.Ext(abs))
 	switch {
 	case ext == ".md" || ext == ".markdown":
 		var buf bytes.Buffer
@@ -271,6 +288,15 @@ func handleRender(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(w).Encode(resp)
+}
+
+// rawURL は root からの相対パスを /raw/ 配下の URL に変換する。
+func rawURL(rel string) string {
+	parts := strings.Split(filepath.ToSlash(rel), "/")
+	for i, p := range parts {
+		parts[i] = url.PathEscape(p)
+	}
+	return "/raw/" + strings.Join(parts, "/")
 }
 
 // handleCurrent は現在ブラウザに表示させたいファイルを返す。ページ読み込み直後に呼ばれ、
