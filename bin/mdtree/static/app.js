@@ -87,21 +87,46 @@ async function openFile(path) {
   }
 
   renderBreadcrumb(path);
+  await renderContent(path, { keepScroll: false });
+}
+
+// renderContent はファイルの内容を取得して本文領域に描画する。
+// keepScroll が真なら再描画前のスクロール位置を復元する(自動反映で読んでいた位置を保つ)。
+async function renderContent(path, { keepScroll }) {
+  const scrollTop = keepScroll ? contentEl.scrollTop : 0;
   contentEl.classList.add('loading');
 
   try {
-    const res = await fetch('/api/render?path=' + encodeURIComponent(path));
+    // ブラウザキャッシュではなく必ずファイルの現在の内容を取りに行く。
+    const res = await fetch('/api/render?path=' + encodeURIComponent(path), { cache: 'no-store' });
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
     contentEl.className = 'content ' + (data.type === 'markdown' ? 'markdown-body' : 'code-view');
     contentEl.innerHTML = data.html;
-    contentEl.scrollTop = 0;
+    contentEl.scrollTop = scrollTop;
     document.title = data.name + ' — mdtree';
     await renderMermaid();
   } catch (err) {
     contentEl.className = 'content';
     contentEl.innerHTML = `<div class="error">読み込みに失敗しました: ${escapeHtml(String(err))}</div>`;
   }
+}
+
+// reloadFile は表示中ファイルが編集されたときに再描画する。
+// 別のファイルの更新通知(切り替え直後の行き違い等)は無視する。
+async function reloadFile(path) {
+  if (!path || path !== currentPath) return;
+  await renderContent(path, { keepScroll: true });
+  flashUpdated();
+}
+
+// flashUpdated は自動反映されたことが分かるよう、パンくずを一瞬光らせる。
+let flashTimer = null;
+
+function flashUpdated() {
+  breadcrumbEl.classList.add('updated');
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout(() => breadcrumbEl.classList.remove('updated'), 600);
 }
 
 // ---- Mermaid 図の描画 -----------------------------------------------------
@@ -220,8 +245,16 @@ async function openPushedFile(path) {
 
 function connectEvents() {
   const es = new EventSource('/api/events');
-  es.onmessage = (e) => { openPushedFile(e.data); };
+  // select: mdd で別のファイルが選ばれた / change: 表示中ファイルが編集された
+  es.addEventListener('select', (e) => { openPushedFile(e.data); });
+  es.addEventListener('change', (e) => { reloadFile(e.data); });
   // 接続が切れてもブラウザ標準の EventSource が自動的に再接続を試みる。
+  // 切断中の編集は通知を取りこぼすため、再接続できたら表示中ファイルを読み直す。
+  let connected = false;
+  es.addEventListener('open', () => {
+    if (connected && currentPath) renderContent(currentPath, { keepScroll: true });
+    connected = true;
+  });
 }
 
 (async function init() {
