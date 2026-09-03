@@ -82,13 +82,13 @@ _mdtree_fzf() {
       echo "mdd: ディレクトリが見つかりません: $input" >&2
       return 1
     fi
-    # 最初はmdファイルのみを表示し、ctrl-aで全ファイル表示とトグルする。
+    # 最初はmd/htmlファイルのみを表示し、ctrl-aで全ファイル表示とトグルする。
     # reload用にコマンドを文字列で持ち、初期表示と切替後で同じ定義を使い回す。
     # Gitリポジトリ内ではgit管理下のファイルに限定する(未追跡でもgitignore対象外なら含む)。
     local list_md list_all
     if git -C "$abs_dir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
       local git_ls="git ls-files --cached --others --exclude-standard"
-      list_md="$git_ls -- '*.md'"
+      list_md="$git_ls -- '*.md' '*.html' '*.htm'"
       list_all="$git_ls"
     else
       local find_base="find . -type f \
@@ -98,16 +98,16 @@ _mdtree_fzf() {
         -not -path './.next/*' \
         -not -path './dist/*' \
         -not -name '.DS_Store'"
-      list_md="$find_base -name '*.md' | cut -c3-"
+      list_md="$find_base \\( -name '*.md' -o -name '*.html' -o -name '*.htm' \\) | cut -c3-"
       list_all="$find_base | cut -c3-"
     fi
     rel=$(
       cd "$abs_dir" || exit 1
       eval "$list_md" \
-      | fzf-tmux -p80% --prompt 'mdd [md] ' --no-multi \
-          --header 'ctrl-a: 全ファイル/mdのみ切替' \
+      | fzf-tmux -p80% --prompt 'mdd [doc] ' --no-multi \
+          --header 'ctrl-a: 全ファイル/md・htmlのみ切替' \
           --preview 'fzf-preview {}' --preview-window=right:70% \
-          --bind "ctrl-a:transform:if [[ \$FZF_PROMPT == 'mdd [md] ' ]]; then echo \"change-prompt(mdd [all] )+reload($list_all)\"; else echo \"change-prompt(mdd [md] )+reload($list_md)\"; fi"
+          --bind "ctrl-a:transform:if [[ \$FZF_PROMPT == 'mdd [doc] ' ]]; then echo \"change-prompt(mdd [all] )+reload($list_all)\"; else echo \"change-prompt(mdd [doc] )+reload($list_md)\"; fi"
     )
     [ -z "$rel" ] && return
   else
