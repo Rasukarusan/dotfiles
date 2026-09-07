@@ -1,0 +1,42 @@
+#!/usr/bin/env sh
+set -eu
+
+# ファイル検索のfzfで「テスト系ファイルを除外するクエリ」を付け外しするヘルパー。
+# fzfのtransform-query/transform-headerから呼ばれ、現在のクエリ($FZF_QUERY)を見て
+# 新しいクエリ、または今の状態を表すヘッダ文字列を出力する。
+#
+#   fzf --bind 'start:transform-header(fzf-exclude-toggle header ctrl-e)' \
+#       --bind 'ctrl-e:transform-query(fzf-exclude-toggle query)+transform-header(fzf-exclude-toggle header ctrl-e)'
+#
+# 除外する語とヘッダの文言はここだけで管理する。
+# vimのCtrl-P(vim/plugin_settings/fzf.vim)とシェルのvip/vima(zsh/function.zsh)が共用する。
+
+EXCLUDE='!test !spec !medium'
+LABEL='test/spec/medium'
+
+query="${FZF_QUERY-}"
+# 除外クエリが既に入っているかの判定。入っていなければ切り出し結果が元のクエリと同じになる。
+rest="${query#*$EXCLUDE}"
+
+case "${1-}" in
+  query)
+    if [ "$rest" = "$query" ]; then
+      printf '%s' "$EXCLUDE $query"
+    else
+      # 除外クエリだけを取り除き、自分で打った検索語は残す。
+      printf '%s' "$query" | sed -e "s/ *$EXCLUDE//" -e 's/^ *//'
+    fi
+    ;;
+  header)
+    key="${2-ctrl-e}"
+    if [ "$rest" = "$query" ]; then
+      printf '%s: %s を除外' "$key" "$LABEL"
+    else
+      printf '除外中: %s (%s で解除)' "$LABEL" "$key"
+    fi
+    ;;
+  *)
+    echo "Usage: $(basename "$0") query|header [キー表示]" >&2
+    exit 1
+    ;;
+esac

@@ -15,6 +15,16 @@ fancy-ctrl-z () {
 zle -N fancy-ctrl-z
 bindkey '^Z' fancy-ctrl-z
 
+# ファイル検索系fzf(vif/vip/vima/vimm/vims/vimg)の共通オプション。ctrl-eでテスト系
+# ファイルを除外するクエリを付け外しし、今の状態をヘッダに出す。
+# 除外する語と文言はbin/fzf-exclude-toggle。fzf系の関数はすべてこの配列を展開する。
+# キーはvimのCtrl-P(vim/plugin_settings/fzf.vim)と揃えてctrl-e。
+# fzfデフォルトのctrl-e(end-of-line)は上書きされる(行末移動はEndで可能)。
+_fzf_exclude_opts=(
+  --bind 'start:transform-header(fzf-exclude-toggle header ctrl-e)'
+  --bind 'ctrl-e:transform-query(fzf-exclude-toggle query)+transform-header(fzf-exclude-toggle header ctrl-e)'
+)
+
 # fzf版cdd
 alias cdd='_fzf-cdr'
 _fzf-cdr() {
@@ -1076,7 +1086,7 @@ _fzf_vim() {
   for excludeDir in ${excludeDirs[@]}; do
     excludeCmd="$excludeCmd -type d -name "$excludeDir" -prune -o "
   done
-  local files=($(eval find . $excludeCmd -type f -o -type l | fzf --preview "fzf-preview {}"))
+  local files=($(eval find . $excludeCmd -type f -o -type l | fzf "${_fzf_exclude_opts[@]}" --preview "fzf-preview {}"))
   [ -z "$files" ] && return
   vim -p "${files[@]}"
 }
@@ -1085,7 +1095,7 @@ _fzf_vim() {
 # vi"g"ではなく"p"にしているのは、vimのキーバインド(Ctrl-p)と合わせたかったため
 alias vip='_fzf_vim_git'
 _fzf_vim_git() {
-  local files=($(git ls-files | fzf --preview "fzf-preview {}"))
+  local files=($(git ls-files | fzf "${_fzf_exclude_opts[@]}" --preview "fzf-preview {}"))
   [ -z "$files" ] && return
   vim -p "${files[@]}"
 }
@@ -1340,7 +1350,7 @@ _fzf_vim_git_modified_untracked() {
   [ ${#files[@]} -eq 0 ] && return
 
   local selected=($(printf '%s\n' "${files[@]}" \
-    | fzf-tmux -p80% --preview='
+    | fzf-tmux -p80% "${_fzf_exclude_opts[@]}" --preview='
       git diff --exit-code {} >/dev/null && fzf-preview {} \
       || git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy
     '))
@@ -1365,7 +1375,7 @@ _fzf_vim_git_modified() {
 
   # fzf で選択
   local selected=($(printf '%s\n' "${files[@]}" | sort -u \
-    | fzf-tmux -p80% --preview='
+    | fzf-tmux -p80% "${_fzf_exclude_opts[@]}" --preview='
       git diff --exit-code {} >/dev/null && fzf-preview {} \
       || git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy
     '))
@@ -1387,7 +1397,7 @@ _fzf_vim_git_staged() {
   [ ${#files[@]} -eq 0 ] && return
 
   local selected=($(printf '%s\n' "${files[@]}" | sort -u \
-    | fzf-tmux -p80% --preview='
+    | fzf-tmux -p80% "${_fzf_exclude_opts[@]}" --preview='
       git diff --staged --color=always $(git rev-parse --show-cdup){} | diff-so-fancy
     '))
 
@@ -1402,7 +1412,7 @@ _fzf_vim_ag() {
   local query="$*"
   [ -z "$query" ] && echo "Usage: vimg <search string>" && return 1
 
-  local selected=($(ag -l -- "$query" | fzf-tmux -p80% --multi \
+  local selected=($(ag -l -- "$query" | fzf-tmux -p80% --multi "${_fzf_exclude_opts[@]}" \
     --preview="line=\$(ag -n -- $(printf '%q' "$query") {} | head -1 | cut -d: -f1); start=\$((line > 3 ? line - 3 : 1)); end=\$((line + 3)); bat --color=always --highlight-line \$line -r \$start:\$end {}"))
 
   [ -z "$selected" ] && return
