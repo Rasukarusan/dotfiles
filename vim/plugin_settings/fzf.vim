@@ -16,10 +16,21 @@ endif
 autocmd! FileType fzf set laststatus=0 noshowmode noruler
   \| autocmd BufLeave <buffer> set laststatus=2 showmode ruler
 
+" ファイル検索中にctrl-eで、テスト系ファイルを除外するクエリを付け外しする。
+" 既存のクエリの前に足すだけなので絞り込みの途中でも押せる。今の状態はヘッダに出す。
+" 除外する語と文言はbin/fzf-exclude-toggleが持つ(シェルのvif/vip/vima系と共用)。
+" fzfデフォルトのctrl-e(end-of-line)は上書きされる(行末移動はEndで可能)。
+let s:fzf_file_options = [
+    \ '--preview', 'bat --color always {}',
+    \ '--bind', 'start:transform-header(fzf-exclude-toggle header ctrl-e)',
+    \ '--bind', 'ctrl-e:transform-query(fzf-exclude-toggle query)'
+    \           . '+transform-header(fzf-exclude-toggle header ctrl-e)',
+    \ ]
+
 command! -bang -nargs=? -complete=dir Files
-    \ call fzf#vim#files(<q-args>, {'options': [ '--preview', 'bat --color always {}']}, <bang>0)
+    \ call fzf#vim#files(<q-args>, {'options': s:fzf_file_options}, <bang>0)
 command! -bang -nargs=? -complete=dir GFiles
-    \ call fzf#vim#gitfiles(<q-args>, {'options': [ '--preview', 'bat --color always {}']}, <bang>0)
+    \ call fzf#vim#gitfiles(<q-args>, {'options': s:fzf_file_options}, <bang>0)
 command! -bang Colors
   \ call fzf#vim#colors({'left': '15%', 'options': '--reverse --margin 30%,0'}, <bang>0)
 
@@ -45,11 +56,16 @@ function! s:ag_to_qf(lines)
   endfor
 endfunction
 
+" ctrl-eの除外トグルはFiles/GFilesと共用。ただしAgは1行が file:行:列:本文 で、
+" fzfのクエリは行全体に効くため、本文に test/spec/medium を含む行も一緒に隠れる。
 command! -bang -nargs=* Ag
   \ call fzf#vim#ag(<q-args>,
   \   fzf#vim#with_preview({
   \     'sink*': function('s:ag_to_qf'),
-  \     'options': ['--multi', '--bind', 'ctrl-a:select-all']
+  \     'options': ['--multi', '--bind', 'ctrl-a:select-all',
+  \                 '--bind', 'start:transform-header(fzf-exclude-toggle header ctrl-e)',
+  \                 '--bind', 'ctrl-e:transform-query(fzf-exclude-toggle query)'
+  \                           . '+transform-header(fzf-exclude-toggle header ctrl-e)']
   \   }), <bang>0)
 
 " Git管理下ファイル検索
