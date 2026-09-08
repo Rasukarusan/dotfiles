@@ -30,15 +30,22 @@ project_dir() {
   printf '%s/%s' "$PROJECTS_DIR" "$(printf '%s' "$1" | sed 's/[^a-zA-Z0-9]/-/g')"
 }
 
-# 1セッション(jsonl)の表示ラベル「[branch] タイトル」を取り出す。
+# ---- 一覧のメタ情報抽出 -------------------------------------------------------
+# 一覧のたびに全 jsonl を jq でフルパースすると数百MB を読むことになり数秒かかる。
+# そこで (1) 巨大ファイルはラベルに要る行だけ grep で抜いてから解析し、
+#        (2) 結果を mtime+size をキーにキャッシュして2回目以降は解析ごと省く。
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/claude-resume-picker"
+META_FULL_PARSE_BYTES=262144 # これ以下のファイルは絞り込まず全文パースする
+
+# 1セッション(jsonl)の表示ラベル「[branch] タイトル」を組み立てる jq プログラム。
 # タイトルは customTitle(ユーザー命名,📌付き) → ai-title → 最初の発言 → 最終プロンプト。
-session_meta() {
-  jq -rs '
+SESSION_META_JQ='
     def clean: gsub("[\n\t]+";" ");
     (map(select(.type=="custom-title").customTitle)|map(select(. != null and . != ""))|last) as $ct
     | (map(select(.type=="ai-title").aiTitle)|last) as $t
     | (map(select(.type=="last-prompt").lastPrompt)|last) as $lp
-    | (map(select(.gitBranch!=null).gitBranch)|last) as $br
+    | ((if $brOverride != "" then $brOverride
+        else (map(select(.gitBranch!=null).gitBranch)|last) end)) as $br
     | (map(select(.type=="user")
           | .message.content
           | if type=="string" then .
@@ -46,22 +53,83 @@ session_meta() {
        | map(select(. != null and . != "" and (startswith("<")|not)))
        | .[0]) as $u
     | (if $ct != null then "📌 " + $ct else ($t // $u // $lp // "(untitled)") end) as $title
-    | ("[" + ($br // "-") + "] " + $title | clean)
-  ' "$1" 2>/dev/null
+    | ("[" + ($br // "-") + "] " + ($title[0:300]) | clean)
+'
+
+# 巨大ファイル向けの絞り込み解析。ラベルに必要なのはタイトル系メタ行とユーザー発言だけ
+# なので、それ以外を grep で落としてから jq に渡す。jsonl の大半を占めるのは
+# tool_result(コマンド出力の貼り付け)で、これを捨てると入力が数分の一になる。
+# grep は jq のパースより桁違いに速いので、全体では10倍以上速くなる。
+session_meta_sampled() {
+  local f="$1" br
+  # gitBranch は assistant 行にも載るので、絞り込んだ行だけでは最後の値を取り違える。
+  # JSON 文字列の中に現れる場合は " がエスケープされるため、この grep は生の項目だけに当たる。
+  br=$(LC_ALL=C grep -o '"gitBranch":"[^"]*"' "$f" 2>/dev/null | tail -n 1) || br=''
+  br=${br#\"gitBranch\":\"}; br=${br%\"}
+  LC_ALL=C grep -E '"type":"(custom-title|ai-title|last-prompt|user)"' "$f" 2>/dev/null \
+    | LC_ALL=C grep -vF '"type":"tool_result"' \
+    | jq -rs --arg brOverride "$br" "$SESSION_META_JQ" 2>/dev/null || true
+}
+
+# 1セッション(jsonl)の表示ラベルを取り出す。$2 はバイトサイズ(省略時は全文パース)。
+session_meta() {
+  local f="$1" size="${2:-0}" label=''
+  if [ "$size" -gt "$META_FULL_PARSE_BYTES" ]; then
+    label=$(session_meta_sampled "$f")
+    # 抜き取りで拾えなかったときだけ全文パースにフォールバックする
+    case "$label" in '' | *'(untitled)') label='' ;; esac
+  fi
+  [ -n "$label" ] || label=$(jq -rs --arg brOverride '' "$SESSION_META_JQ" "$f" 2>/dev/null || true)
+  printf '%s' "$label"
+}
+
+# セッションディレクトリ -> ラベルキャッシュのパス。
+# ラベルの作り方を変えたら CACHE_VERSION を上げて過去のキャッシュを無効化する。
+CACHE_VERSION=1
+cache_file() {
+  printf '%s/%s.v%s.tsv' "$CACHE_DIR" "$(printf '%s' "$1" | sed 's|[^a-zA-Z0-9]|-|g')" "$CACHE_VERSION"
 }
 
 # 指定ディレクトリ直下(-maxdepth 1)の jsonl を一覧化する。各行: <jsonlパス>\t<日時>\t<ラベル>
+# キャッシュ行は <mtime>\t<size>\t<path>\t<日時>\t<ラベル>。mtime か size が変われば再解析。
 list_sessions_in_dir() {
-  local dir="$1" f epoch disp label
+  local dir="$1"
   [ -d "$dir" ] || return 0
-  find "$dir" -maxdepth 1 -name '*.jsonl' -type f 2>/dev/null | while IFS= read -r f; do
-    [ -s "$f" ] || continue
-    epoch=$(stat -f '%m' "$f")
-    disp=$(stat -f '%Sm' -t '%m/%d %H:%M' "$f")
-    label=$(session_meta "$f")
-    [ -z "$label" ] && label="(untitled)"
-    printf '%s\t%s\t%s\t%s\n' "$epoch" "$f" "$disp" "$label"
-  done | sort -t$'\t' -k1,1nr | cut -f2-
+  local cache cachesrc tmp cur joined built
+  cache="$(cache_file "$dir")"
+  cachesrc=/dev/null
+  if [ -f "$cache" ]; then cachesrc="$cache"; fi
+  mkdir -p "$CACHE_DIR"
+  tmp="$(mktemp -d "${TMPDIR:-/tmp}/claude-resume-picker.XXXXXX")"
+  cur="$tmp/cur"; joined="$tmp/joined"; built="$tmp/built"
+
+  # stat はまとめて1プロセスで呼ぶ(ファイルごとに起動すると件数分のオーバーヘッドになる)。
+  # BSD stat は書式中の \t を展開しないので、実タブを埋め込む。
+  local tab=$'\t'
+  find "$dir" -maxdepth 1 -name '*.jsonl' -type f -size +0c -print0 2>/dev/null \
+    | xargs -0 stat -f "%m${tab}%z${tab}%Sm${tab}%N" -t '%m/%d %H:%M' > "$cur" 2>/dev/null || true
+  [ -s "$cur" ] || { rm -rf "$tmp"; return 0; }
+
+  # キャッシュ(mtime,size,path をキー)と突合。H=ヒット(ラベル流用) / M=ミス(要解析)
+  awk -F'\t' -v OFS='\t' -v CACHE="$cachesrc" '
+    FILENAME == CACHE { if (NF >= 5) c[$1 FS $2 FS $3] = $5; next }
+    { k = $1 FS $2 FS $4
+      if (k in c) print "H", $1, $2, $4, $3, c[k]
+      else        print "M", $1, $2, $4, $3, "" }
+  ' "$cachesrc" "$cur" > "$joined"
+
+  local flag mtime size path disp label
+  while IFS=$'\t' read -r flag mtime size path disp label; do
+    if [ "$flag" = 'M' ]; then
+      label=$(session_meta "$path" "$size")
+      [ -n "$label" ] || label='(untitled)'
+    fi
+    printf '%s\t%s\t%s\t%s\t%s\n' "$mtime" "$size" "$path" "$disp" "$label"
+  done < "$joined" | sort -t$'\t' -k1,1nr > "$built"
+
+  cp "$built" "$cache.tmp.$$" && mv -f "$cache.tmp.$$" "$cache" || rm -f "$cache.tmp.$$"
+  cut -f3- "$built"
+  rm -rf "$tmp"
 }
 
 # fzf 用の一覧を出力する(アクティブなセッションのみ、.archived/ は含まない)。
