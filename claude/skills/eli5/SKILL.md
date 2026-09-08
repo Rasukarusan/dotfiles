@@ -9,6 +9,10 @@ description: トピックを5歳児に説明するように説明する。「/el
 
 トピック: $ARGUMENTS
 
+トピックが空の場合は「このブランチでやっていること」を説明する。
+その場合はまず `BASE=$(bash ~/.claude/docs/get-base-branch.sh)` でベースブランチを取得し、
+`git diff $BASE...HEAD` とコミットログから変更内容を把握してからHTMLを書く。
+
 ## 手順
 
 1. `artifact-design` スキルを読む（レイアウト・配色・デザインの投資量）。
