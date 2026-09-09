@@ -48,6 +48,7 @@ neovim 初回起動後に `:PlugInstall` と `:checkhealth` を実行する。co
 スクリプト（zsh/bash/perl）と、`setup.sh` がビルドする Swift 製常駐ツールが混在する。
 - `tmux-ime/`: Swift 製の入力ソース切替 CLI（`imselect`）。`build.sh` が `swiftc` でビルドして `~/.local/bin` に配置する。Swift を編集したら `build.sh` を再実行する。
 - `tmux-*`: tmux ペイン操作・ファイルピッカー連携スクリプト。
+- `pr-comments`: 今のブランチの PR のレビューコメント一覧を取得・整形する。Claude の `/pr-comments` `/fix-comment` と tmux の prefix+*（右上ペイン表示）が共通で使う唯一の実装で、コメント番号もここが振る。
 
 ### local-llm/
 Docker Compose によるローカル LLM 環境（`docker-compose.yml` + `.override.yml`）。詳細は `local-llm/README.md`。
