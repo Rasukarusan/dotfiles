@@ -35,7 +35,7 @@ FORMULAE=(
   node nodebrew pyenv pyenv-virtualenv python3 ripgrep ruby
   the_silver_searcher tmux tree vim w3m watch wget yarn zsh swiftformat
   cocoapods chromedriver tokei ffmpeg rga pastel git-ftp silicon git-delta
-  python-yq st jc gh gron lolcat azure-cli rust dasel kind libsixel
+  python-yq st jc gh gron lolcat azure-cli rust dasel kind libsixel pipx
 )
 for pkg in "${FORMULAE[@]}"; do
   brew install "$pkg" 2>/dev/null || true
@@ -44,9 +44,9 @@ done
 # Cask
 echo "==> Homebrew cask"
 CASKS=(
-  google-chrome firefox google-japanese-ime visual-studio-code iterm2
-  docker wireshark virtualbox sequel-ace ngrok java11 couleurs
-  keycastr another-redis-desktop-manager font-hackgen font-hackgen-nerd
+  google-chrome firefox visual-studio-code iterm2
+  docker sequel-ace ngrok java11 couleurs
+  another-redis-desktop-manager elasticvue postico
 )
 for pkg in "${CASKS[@]}"; do
   brew install --cask "$pkg" 2>/dev/null || true
@@ -77,14 +77,18 @@ for pkg in "${YARN_PACKAGES[@]}"; do
 done
 
 # ====================
-# pip packages
+# Python CLI packages
 # ====================
-echo "==> pip packages"
-PIP_PACKAGES=(
+echo "==> Python CLI packages"
+PYTHON_CLI_PACKAGES=(
   jedi-language-server flake8 black
 )
-for pkg in "${PIP_PACKAGES[@]}"; do
-  pip install -U "$pkg" 2>/dev/null || true
+for pkg in "${PYTHON_CLI_PACKAGES[@]}"; do
+  if pipx list --short | grep -q "^$pkg "; then
+    pipx upgrade "$pkg"
+  else
+    pipx install "$pkg"
+  fi
 done
 
 # ====================
