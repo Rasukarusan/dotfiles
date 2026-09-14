@@ -15,12 +15,14 @@ fancy-ctrl-z () {
 zle -N fancy-ctrl-z
 bindkey '^Z' fancy-ctrl-z
 
-# ファイル検索系fzf(vif/vip/vima/vimm/vims/vimg)の共通オプション。ctrl-eでテスト系
-# ファイルを除外するクエリを付け外しし、今の状態をヘッダに出す。
-# 除外する語と文言はbin/fzf-exclude-toggle。fzf系の関数はすべてこの配列を展開する。
+# ファイル検索系fzf(vif/vip/vima/vimm/vims/vimg/gdd)の共通オプション。テスト系ファイルは
+# 最初から除外した状態で起動し、ctrl-eで除外クエリを外したり付け直したりできる。
+# 今の状態はヘッダに出す。起動時のクエリはFZF_QUERY空でtoggleを呼んで作るので、
+# 除外する語と文言はbin/fzf-exclude-toggleの1箇所だけで決まる。
 # キーはvimのCtrl-P(vim/plugin_settings/fzf.vim)と揃えてctrl-e。
 # fzfデフォルトのctrl-e(end-of-line)は上書きされる(行末移動はEndで可能)。
 _fzf_exclude_opts=(
+  --query "$(FZF_QUERY= fzf-exclude-toggle query)"
   --bind 'start:transform-header(fzf-exclude-toggle header ctrl-e)'
   --bind 'ctrl-e:transform-query(fzf-exclude-toggle query)+transform-header(fzf-exclude-toggle header ctrl-e)'
 )
@@ -271,7 +273,7 @@ _git_diff(){
     { git -C $path_working_tree_root ls-files --modified; \
       git -C $path_working_tree_root ls-files --others --exclude-standard; } \
     | sort -u \
-    | fzf-tmux -p80% --select-1 --prompt "SELECT FILES>" --preview 'if git ls-files --error-unmatch $(git rev-parse --show-cdup){} &>/dev/null; then git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy; else fzf-preview $(git rev-parse --show-cdup){}; fi' --preview-window=right:50% ))
+    | fzf-tmux -p80% "${_fzf_exclude_opts[@]}" --select-1 --prompt "SELECT FILES>" --preview 'if git ls-files --error-unmatch $(git rev-parse --show-cdup){} &>/dev/null; then git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy; else fzf-preview $(git rev-parse --show-cdup){}; fi' --preview-window=right:50% ))
   [ -z "$files" ] && return
   for file in "${files[@]}";do
     if git ls-files --error-unmatch ${path_working_tree_root}${file} &>/dev/null; then

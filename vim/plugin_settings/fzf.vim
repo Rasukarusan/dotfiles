@@ -16,11 +16,21 @@ endif
 autocmd! FileType fzf set laststatus=0 noshowmode noruler
   \| autocmd BufLeave <buffer> set laststatus=2 showmode ruler
 
-" ファイル検索中にctrl-eで、テスト系ファイルを除外するクエリを付け外しする。
-" 既存のクエリの前に足すだけなので絞り込みの途中でも押せる。今の状態はヘッダに出す。
+" ファイル検索はテスト系ファイルを最初から除外した状態で開き、ctrl-eで除外クエリを
+" 外したり付け直したりする。既存のクエリの前に足すだけなので絞り込みの途中でも押せる。
+" 今の状態はヘッダに出す。
 " 除外する語と文言はbin/fzf-exclude-toggleが持つ(シェルのvif/vip/vima系と共用)。
 " fzfデフォルトのctrl-e(end-of-line)は上書きされる(行末移動はEndで可能)。
-let s:fzf_file_options = [
+
+" 起動時のクエリはFZF_QUERY空でtoggleを呼んで作る(zsh/function.zshと同じ作り)。
+" 末尾の空白は打ち始めの区切りなので消さない。取れなければ除外なしで開く。
+let s:fzf_exclude_query = trim(system('FZF_QUERY= fzf-exclude-toggle query'), "\n")
+if v:shell_error
+  let s:fzf_exclude_query = ''
+endif
+let s:fzf_exclude_options = empty(s:fzf_exclude_query) ? [] : ['--query', s:fzf_exclude_query]
+
+let s:fzf_file_options = s:fzf_exclude_options + [
     \ '--preview', 'bat --color always {}',
     \ '--bind', 'start:transform-header(fzf-exclude-toggle header ctrl-e)',
     \ '--bind', 'ctrl-e:transform-query(fzf-exclude-toggle query)'
