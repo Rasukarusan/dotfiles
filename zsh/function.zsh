@@ -1699,6 +1699,30 @@ _git_worktree_remove() {
   done
 }
 
+# worktreeをfzfで選択して移動
+alias cdw='_git_worktree_cd'
+_git_worktree_cd() {
+  if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+    printf "\e[31mgitリポジトリ内で実行してください\e[m\n"
+    return 1
+  fi
+
+  local worktrees=$(git worktree list)
+  if [ -z "$worktrees" ]; then
+    echo "worktreeがありません"
+    return
+  fi
+
+  local selected=$(echo "$worktrees" | fzf-tmux -p80% --prompt "WORKTREE CD>" \
+    --preview 'git -C $(echo {} | awk "{print \$1}") log --oneline --graph --color=always -20')
+  [ -z "$selected" ] && return
+
+  local worktree_path=$(echo "$selected" | awk '{print $1}')
+  [ -z "$worktree_path" ] && return
+
+  cd "$worktree_path"
+}
+
 # 自分が関連するPR一覧を取得(自分が最後にapproveしたPRは除外)
 # -a, --all を付けるとapprove済みも含めて全て表示する
 # 引数にリポジトリ(owner/repo)を渡すと、そのリポジトリを対象にする
