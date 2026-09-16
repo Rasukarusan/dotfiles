@@ -190,6 +190,22 @@ link "$DOTFILES_DIR/vim/UltiSnips"             "$HOME/.config/nvim/UltiSnips"
 link "$DOTFILES_DIR/vim/autoload"              "$HOME/.config/nvim/myautoload"
 link "$DOTFILES_DIR/vim/lua"                   "$HOME/.config/nvim/lua"
 
+# coc.nvim 拡張 (vim/coc/package.json の dependencies を実体としてインストールする)
+# coc 起動時の自動インストールは黙って失敗することがあるため、ここで確実に入れる。
+echo "==> coc.nvim extensions"
+COC_EXT_DIR="$HOME/.config/coc/extensions"
+if COC_EXT_DIR="$COC_EXT_DIR" node -e '
+  const fs = require("fs");
+  const dir = process.env.COC_EXT_DIR;
+  const deps = Object.keys(JSON.parse(fs.readFileSync(dir + "/package.json", "utf8")).dependencies || {});
+  process.exit(deps.every((d) => fs.existsSync(dir + "/node_modules/" + d)) ? 0 : 1);
+' 2>/dev/null; then
+  echo "  skip: all extensions already installed"
+else
+  # --no-save: package.json は dotfiles へのシンボリックリンクなので npm に書き換えさせない
+  npm install --prefix "$COC_EXT_DIR" --omit=dev --no-save --no-package-lock --no-fund --no-audit
+fi
+
 # Claude (~/.claude)
 echo "==> ~/.claude"
 mkdir -p "$HOME/.claude"

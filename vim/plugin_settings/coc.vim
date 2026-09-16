@@ -7,9 +7,22 @@ nmap rn <Plug>(coc-rename)
 function! s:show_documentation()
   if (index(['vim','help'], &filetype) >= 0)
     execute 'h '.expand('<cword>')
-  else
-    call CocAction('doHover')
+    return
   endif
+  if !coc#rpc#ready()
+    echo 'coc.nvim is not ready'
+    return
+  endif
+  " hasProviderはcoc起動直後に例外を投げることがあるためtryで囲む
+  try
+    if CocHasProvider('hover')
+      call CocActionAsync('doHover')
+    else
+      echo 'No hover provider for ' . &filetype
+    endif
+  catch
+    echo 'hover unavailable: ' . v:exception
+  endtry
 endfunction
 
 " SnippetsのジャンプをTabでする。デフォルトは<C-j>、<C-k>。
