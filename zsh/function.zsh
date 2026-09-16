@@ -144,9 +144,9 @@ _mdtree_fzf() {
 
   if [ -z "$port" ]; then
     : > "$log_file"
-    nohup mdtree -no-open "$abs_dir" >"$log_file" 2>&1 < /dev/null &
-    disown
-    pid=$!
+    # `&` をそのまま書くとzshが `[3] 12345` のジョブ通知を出す。コマンド置換の
+    # サブシェル内はジョブ制御が効かないので、そこで起動してPIDだけ受け取る。
+    pid=$( { nohup mdtree -no-open "$abs_dir" >"$log_file" 2>&1 < /dev/null & echo $!; } )
     local i=0
     while [ $i -lt 50 ]; do
       port=$(grep -o 'http://127\.0\.0\.1:[0-9]*' "$log_file" | head -1 | sed 's/.*://')
