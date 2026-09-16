@@ -507,19 +507,19 @@ _docker_commands() {
 		docker system df
 		docker stats
 		docker images -a
-		docker-compose ps
-		docker-compose build --progress=plain
-		docker-compose build --progress=plain --no-cache
-		docker-compose up
-		docker-compose up <service>
-		docker-compose up --build
-		docker-compose up -d
-		docker-compose up --build -d
-		docker-compose up --build -d <service>
-		docker-compose --compatibility up -d
-		docker-compose up --force-recreate
-		docker-compose stop
-		docker-compose logs -f
+		docker compose ps
+		docker compose build --progress=plain
+		docker compose build --progress=plain --no-cache
+		docker compose up
+		docker compose up <service>
+		docker compose up --build
+		docker compose up -d
+		docker compose up --build -d
+		docker compose up --build -d <service>
+		docker compose --compatibility up -d
+		docker compose up --force-recreate
+		docker compose stop
+		docker compose logs -f
 		docker rm
 		docker rmi
 		docker cp
@@ -621,15 +621,15 @@ _docker_commands() {
         printf "\e[33m${execCommand}\e[m\n\n" && eval $execCommand
       done
       ;;
-    'docker-compose up <service>' )
+    'docker compose up <service>' )
       local service=$(cat docker-compose.yml | yq ".services|keys" | grep "-" | sed 's/^- //g' | fzf)
       test -z "$service" && return
-      execCommand="docker-compose up $service"
+      execCommand="docker compose up $service"
       ;;
-    'docker-compose up --build -d <service>' )
+    'docker compose up --build -d <service>' )
       local service=$(cat docker-compose.yml | yq ".services|keys" | grep "-" | sed 's/^- //g' | fzf)
       test -z "$service" && return
-      execCommand="docker-compose up --build -d $service"
+      execCommand="docker compose up --build -d $service"
       ;;
     *)
       execCommand="${selectCommand}"
@@ -1221,32 +1221,32 @@ _fzf_pnpm() {
   # すべてのpackage.jsonとスクリプトを収集
   local -a rootScripts=()
   local -a workspaceScripts=()
-  
+
   # rootのpackage.json
   if [[ -f "./package.json" ]]; then
     while IFS= read -r script; do
       rootScripts+=( "root: $script" )
     done < <(jq -r '.scripts | keys[]' "./package.json" 2>/dev/null)
   fi
-  
+
   # ワークスペースのpackage.json
   while IFS= read -r pkg; do
     local name
     name=$(jq -r '.name // empty' "$pkg" 2>/dev/null)
     [[ -z $name ]] && name=$(basename "$(dirname "$pkg")")
-    
+
     while IFS= read -r script; do
       workspaceScripts+=( "$name: $script" )
     done < <(jq -r '.scripts | keys[]' "$pkg" 2>/dev/null)
   done < <(find . -maxdepth 4 -type f -name 'package.json' \
             -not -path './node_modules/*' -not -path './package.json')
-  
+
   # rootのスクリプトを先に、次にワークスペースのスクリプトを結合
   local -a allScripts=( "${rootScripts[@]}" "${workspaceScripts[@]}" )
-  
+
   # 選択肢がない場合は終了
   [[ ${#allScripts[@]} -eq 0 ]] && echo "スクリプトが見つかりません" && return
-  
+
   # スクリプトを選択
   local selected
   selected=$(
@@ -1282,27 +1282,27 @@ _fzf_pnpm() {
           --preview-window=up:7
   ) || return
   [[ -z $selected ]] && return
-  
+
   # コマンドを組み立て
   local cmd=""
   while IFS= read -r line; do
     local pkg="${line%%: *}"
     local script="${line#*: }"
     local runCmd
-    
+
     if [[ $pkg == "root" ]]; then
       runCmd="pnpm run $script"
     else
       runCmd="pnpm --filter $pkg run $script"
     fi
-    
+
     if [[ -z $cmd ]]; then
       cmd="$runCmd"
     else
       cmd="$cmd && $runCmd"
     fi
   done <<< "$selected"
-  
+
   # 実行
   printf "\e[32m> %s\e[m\n" "$cmd"
   print -s "$cmd"
