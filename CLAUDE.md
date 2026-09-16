@@ -14,7 +14,7 @@ bash setup.sh            # Homebrew・各種パッケージ・macOS defaults・�
 
 `setup.sh` は再実行可能。`link()` 関数が既存リンクをスキップ／再リンクし、通常ファイルは `.bak` にバックアップする。パッケージ追加時は `setup.sh` 内の `FORMULAE` / `CASKS` / `NPM_PACKAGES` 等の配列に追記する。
 
-neovim 初回起動後に `:PlugInstall` と `:checkhealth` を実行する。coc.nvim 拡張は `vim/coc/package.json` で管理され初回起動時に自動インストールされる。
+neovim 初回起動後に `:PlugInstall` と `:checkhealth` を実行する。coc.nvim 拡張は `vim/coc/package.json` の `dependencies` で管理し、`setup.sh` が `~/.config/coc/extensions` へインストールする（全て揃っていればスキップする）。
 
 ## 全体構成
 
