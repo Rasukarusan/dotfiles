@@ -1659,6 +1659,75 @@ _git_worktree_checkout() {
   fi
 }
 
+# worktreeのPRキャッシュ用ディレクトリを返す(リポジトリ単位)
+_git_worktree_pr_cache_dir() {
+  local common_dir=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
+  [ -z "$common_dir" ] && return 1
+  echo "${TMPDIR:-/tmp}/fzf-worktree-pr/$(printf '%s\n' "$common_dir" | tr '/' '-')"
+}
+
+# リポジトリの全PRを1回のgh呼び出しで取得してキャッシュに書き出す
+# previewは行ごとにしか走らないため、fzf起動時にバックグラウンドで先読みしておく
+_git_worktree_pr_prefetch() {
+  local cache_dir="$1"
+  mkdir -p "$cache_dir"
+
+  # 5分以内に取得済みならスキップ
+  if [ -f "${cache_dir}/prs.tsv" ] && [ -z "$(find "${cache_dir}/prs.tsv" -mmin +5 2>/dev/null)" ]; then
+    return
+  fi
+
+  # 取得中であることをpreviewに伝えるため、完了するまでprs.tsvは作らない
+  gh pr list --state all --limit 200 \
+    --json headRefName,number,title,state,author,url \
+    --template '{{range .}}{{.headRefName}}{{"\t"}}#{{.number}} {{.title}}{{"\t"}}{{.state}}{{"\t"}}{{.author.login}}{{"\t"}}{{.url}}{{"\n"}}{{end}}' \
+    > "${cache_dir}/prs.tsv.tmp" 2>/dev/null
+  mv -f "${cache_dir}/prs.tsv.tmp" "${cache_dir}/prs.tsv"
+}
+
+# worktree選択fzfのpreviewコマンドを組み立てる
+# 選択行(`git worktree list`の1行)からパスとブランチを取り出し、PR情報とgit logを表示する。
+# PR情報は先読みキャッシュから引くだけなので、行を移動してもgh待ちは発生しない。
+_git_worktree_preview_cmd() {
+  local cache_dir="$1"
+  cat <<'PREVIEW' | sed "s|@CACHE_DIR@|${cache_dir}|g"
+line={}
+wt_path=$(printf '%s\n' "$line" | awk '{print $1}')
+branch=$(printf '%s\n' "$line" | awk '{print $NF}' | tr -d '[]')
+
+[ -d "$wt_path" ] || exit 0
+
+printf '\033[1;34m%s\033[m  \033[1;33m%s\033[m\n\n' "$wt_path" "$branch"
+
+# 先読みの完了を待つ(最大10秒)。通常は起動直後の1回だけ待てば以降は即時。
+prs='@CACHE_DIR@/prs.tsv'
+waited=0
+while [ ! -f "$prs" ] && [ "$waited" -lt 100 ]; do
+  sleep 0.1
+  waited=$((waited + 1))
+done
+
+if [ -f "$prs" ]; then
+  awk -F'\t' -v b="$branch" '
+    $1 == b {
+      color = "\033[32m"
+      if ($3 == "MERGED") color = "\033[35m"
+      if ($3 == "CLOSED") color = "\033[31m"
+      printf "\033[1m%s\033[m\n%s%s\033[m  by %s\n%s\n", $2, color, $3, $4, $5
+      found = 1
+      exit
+    }
+    END { if (!found) printf "\033[33m(PRなし)\033[m\n" }
+  ' "$prs"
+else
+  printf '\033[33m(PR情報の取得に失敗しました)\033[m\n'
+fi
+
+printf '\n\033[1;32m--- git log ---\033[m\n'
+git -C "$wt_path" log --oneline --graph --color=always -20
+PREVIEW
+}
+
 # worktreeをfzfで選択して削除
 alias wrr='_git_worktree_remove'
 _git_worktree_remove() {
@@ -1672,8 +1741,12 @@ _git_worktree_remove() {
     return
   fi
 
+  # PR情報をバックグラウンドで先読みしてからfzfを起動する
+  local cache_dir=$(_git_worktree_pr_cache_dir)
+  { _git_worktree_pr_prefetch "$cache_dir" } &!
+
   # fzfで選択（複数選択可能）
-  local selected=$(echo "$worktrees" | fzf --multi --preview 'echo {} | awk "{print \$1}" | xargs ls -la')
+  local selected=$(echo "$worktrees" | fzf --multi --ansi --preview "$(_git_worktree_preview_cmd "$cache_dir")")
   [ -z "$selected" ] && return
 
   # 選択されたworktreeを削除
@@ -1713,8 +1786,12 @@ _git_worktree_cd() {
     return
   fi
 
-  local selected=$(echo "$worktrees" | fzf-tmux -p80% --prompt "WORKTREE CD>" \
-    --preview 'git -C $(echo {} | awk "{print \$1}") log --oneline --graph --color=always -20')
+  # PR情報をバックグラウンドで先読みしてからfzfを起動する
+  local cache_dir=$(_git_worktree_pr_cache_dir)
+  { _git_worktree_pr_prefetch "$cache_dir" } &!
+
+  local selected=$(echo "$worktrees" | fzf-tmux -p80% --ansi --prompt "WORKTREE CD>" \
+    --preview "$(_git_worktree_preview_cmd "$cache_dir")")
   [ -z "$selected" ] && return
 
   local worktree_path=$(echo "$selected" | awk '{print $1}')
