@@ -115,6 +115,5 @@ alias clds='claude_daily_report' # その日のClaudeセッションを日報風
 alias codc='codex resume --last' # 直近のCodexセッションを継続
 alias rg="rg --hidden" # --no-ignoreで全検索
 alias tc="pbpaste | table-to-clipboard"
-alias aso="aws sso login"
 alias imgcat='img2sixel' # tmux内でも消えないsixel方式で画像表示(iTerm2付属のimgcatを置き換え)
 
