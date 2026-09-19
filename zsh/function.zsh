@@ -1974,11 +1974,13 @@ function _aws_sso_login() {
       | awk '{print $1}')
   fi
   [ -z "$profile" ] && return 130
-  printf "\e[33maws sso login --profile $profile\e[m\n"
-  aws sso login --profile "$profile" || return
-  # 以降のawsコマンドが選んだプロファイルで動くようにする
-  export AWS_PROFILE="$profile"
-  printf "\e[33mexport AWS_PROFILE=$profile\e[m\n"
+  # 以降のawsコマンドが選んだプロファイルで動くようexportもまとめて実行する。
+  # fzfでの選択はヒストリーに残らないため、上矢印+Enterで同じプロファイルに
+  # 入り直せるよう、実行したコマンドそのものをヒストリーに追記する。
+  local cmd="export AWS_PROFILE=$profile && aws sso login"
+  printf "\e[33m$cmd\e[m\n"
+  print -s "$cmd"
+  eval "$cmd"
 }
 
 # AWS EC2にfzfでSSHする
