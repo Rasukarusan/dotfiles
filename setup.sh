@@ -36,6 +36,7 @@ FORMULAE=(
   the_silver_searcher tmux tree vim w3m watch wget yarn zsh swiftformat
   cocoapods chromedriver tokei ffmpeg rga pastel git-ftp silicon git-delta
   python-yq st jc gh gron lolcat azure-cli rust dasel kind libsixel pipx
+  awscli
 )
 for pkg in "${FORMULAE[@]}"; do
   brew install "$pkg" 2>/dev/null || true
@@ -51,6 +52,22 @@ CASKS=(
 for pkg in "${CASKS[@]}"; do
   brew install --cask "$pkg" 2>/dev/null || true
 done
+
+# ====================
+# nodebrew
+# ====================
+# formula を入れただけでは ~/.nodebrew が無く node も入らないため、ここで初期化する。
+echo "==> nodebrew"
+if [ ! -d "$HOME/.nodebrew/src" ]; then
+  nodebrew setup
+fi
+export PATH="$HOME/.nodebrew/current/bin:$PATH"
+if ! nodebrew ls | grep -q '^v'; then
+  nodebrew install-binary latest
+fi
+if nodebrew ls | grep -q '^current: none'; then
+  nodebrew use latest
+fi
 
 # ====================
 # npm packages
@@ -90,6 +107,18 @@ for pkg in "${PYTHON_CLI_PACKAGES[@]}"; do
     pipx install "$pkg"
   fi
 done
+
+# ====================
+# AWS Session Manager plugin
+# ====================
+echo "==> AWS Session Manager plugin"
+if ! command -v session-manager-plugin &>/dev/null; then
+  SSM_PKG="$(mktemp -d)/session-manager-plugin.pkg"
+  curl -fsSL "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/mac_arm64/session-manager-plugin.pkg" -o "$SSM_PKG"
+  sudo installer -pkg "$SSM_PKG" -target /
+  rm -f "$SSM_PKG"
+  sudo ln -sfn /usr/local/sessionmanagerplugin/bin/session-manager-plugin /usr/local/bin/session-manager-plugin
+fi
 
 # ====================
 # macOS defaults
@@ -255,5 +284,40 @@ link "$DOTFILES_DIR/codex/rules"      "$HOME/.codex/rules"
 # Claude Code のカスタムスキルを Codex でも共有する
 mkdir -p "$HOME/.agents"
 link "$DOTFILES_DIR/claude/skills" "$HOME/.agents/skills"
+
+# ====================
+# 前のPCから持ってくるもの
+# ====================
+# git 管理外でこのスクリプトでも生成できないため、旧マシンから手でコピーする必要があるもの。
+echo ""
+echo "==> 前のPCから持ってくるもの"
+MANUAL_ITEMS=(
+  "$HOME/.ssh|SSH 鍵・config"
+  "$HOME/.aws|AWS の認証情報・プロファイル設定"
+  "$DOTFILES_DIR/zsh/.zshrc.local|マシン固有の zsh 設定 (~/.zshrc.local の実体)"
+  "$DOTFILES_DIR/claude/local|Claude のマシン固有設定 (CLAUDE.md / commands)"
+  "$HOME/scripts/local|scripts リポジトリのマシン固有スクリプト"
+  "$HOME/Documents/プロフィール画像|プロフィール画像"
+  "$HOME/docs|調査書・仕様書の保存先"
+  "$HOME/account.json|各種サービスのAPIトークン (bin/github, bin/chatwork などが参照)"
+  "$HOME/danger_words.txt|check_danger_input が検査する流出禁止ワード一覧"
+)
+MISSING_COUNT=0
+for item in "${MANUAL_ITEMS[@]}"; do
+  path="${item%%|*}"
+  desc="${item#*|}"
+  display="${path/#$HOME/~}"
+  if [ -e "$path" ]; then
+    echo "  ok  : $display"
+  else
+    echo "  要コピー: $display  ($desc)"
+    MISSING_COUNT=$((MISSING_COUNT + 1))
+  fi
+done
+if [ "$MISSING_COUNT" -gt 0 ]; then
+  echo ""
+  echo "  上記 $MISSING_COUNT 件を旧マシンからコピーしてください。例:"
+  echo "    rsync -av --progress <旧マシン>:<コピー元> <コピー先>"
+fi
 
 echo "Done."
