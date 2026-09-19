@@ -1946,6 +1946,41 @@ function _ssh_fzf() {
   tmux set-window-option synchronize-panes
 }
 
+# fzfでSSOプロファイルを選んで aws sso login し、そのプロファイルをAWS_PROFILEに設定する
+# 引数でプロファイル名を渡した場合はfzfを飛ばしてそのままログインする
+alias aso='_aws_sso_login'
+function _aws_sso_login() {
+  local profile="$1"
+  if [ -z "$profile" ]; then
+    # ~/.aws/configのうちsso設定を持つセクションだけを、アカウントIDとロール付きで並べる
+    profile=$(awk '
+      function flush() {
+        if (name != "" && sso) printf "%-24s %-14s %s\n", name, account, role
+        name=""; account=""; role=""; sso=0
+      }
+      /^\[/ {
+        flush()
+        if ($0 ~ /^\[profile /) { name=$0; sub(/^\[profile /, "", name); sub(/\]$/, "", name) }
+        else if ($0 ~ /^\[default\]/) { name="default" }
+        next
+      }
+      /^[ \t]*sso_/ { sso=1 }
+      /^[ \t]*sso_account_id[ \t]*=/ { account=$NF }
+      /^[ \t]*sso_role_name[ \t]*=/ { role=$NF }
+      END { flush() }
+    ' ~/.aws/config \
+      | fzf-tmux -p60% --no-multi --prompt 'aws sso login ' \
+          --header 'PROFILE                  ACCOUNT        ROLE' \
+      | awk '{print $1}')
+  fi
+  [ -z "$profile" ] && return 130
+  printf "\e[33maws sso login --profile $profile\e[m\n"
+  aws sso login --profile "$profile" || return
+  # 以降のawsコマンドが選んだプロファイルで動くようにする
+  export AWS_PROFILE="$profile"
+  printf "\e[33mexport AWS_PROFILE=$profile\e[m\n"
+}
+
 # AWS EC2にfzfでSSHする
 alias aww='_aws_ssh_fzf'
 function _aws_ssh_fzf() {
