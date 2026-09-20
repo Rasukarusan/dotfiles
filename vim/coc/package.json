@@ -17,5 +17,6 @@
     "coc-eslint": ">=3.0.15",
     "coc-diagnostic": ">=0.24.1",
     "coc-prettier": ">=11.0.1"
-  }
+  },
+  "lastUpdate": 1789863882117
 }
