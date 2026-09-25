@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+#
+# tmux の popup を起動する唯一の入口。tmux.conf の popup 系 bind はすべてこれを使う。
+#
+# 使い方(tmux.conf):
+#   bind x run-shell -b 'tmux-popup "#{client_name}" "#{pane_id}" [display-popup のオプション...] "コマンド"'
+#
+# - display-popup は popup が閉じるまで呼び出し元 client のコマンドキューを止める。
+#   キー入力は popup のペインへ直接届くが、マウスイベントはキューを通るため処理されなくなる。
+#   そこで run-shell -b の別 client からこのスクリプト経由で起動し、呼び出し元のキューを止めない。
+# - run-shell のジョブからは呼び出し元の client / pane を特定できないため、
+#   bind 側で展開した #{client_name} と #{pane_id} を引数で受け取り、-c / -t に渡す。
+set -euo pipefail
+
+if [ "$#" -lt 2 ]; then
+  echo "usage: tmux-popup <client> <pane> [display-popup options...] [shell-command]" >&2
+  exit 1
+fi
+
+client="$1"
+pane="$2"
+shift 2
+
+exec tmux display-popup -c "$client" -t "$pane" "$@"
