@@ -10,7 +10,7 @@
 # - Tab で複数選択、Enter で確定、Esc で中止。
 #
 # 使い方(tmux.conf):
-#   bind f run-shell -b 'tmux display-popup -c "#{client_name}" -t "#{pane_id}" -E -d "#{pane_current_path}" -w 90% -h 90% "tmux-file-picker #{pane_id}"'
+#   bind f run-shell -b 'tmux-popup "#{client_name}" "#{pane_id}" -E -d "#{pane_current_path}" -w 90% -h 90% "tmux-file-picker #{pane_id}"'
 #
 # 参考: https://github.com/raine/tmux-file-picker
 set -euo pipefail
