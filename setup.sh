@@ -226,8 +226,14 @@ COC_EXT_DIR="$HOME/.config/coc/extensions"
 if COC_EXT_DIR="$COC_EXT_DIR" node -e '
   const fs = require("fs");
   const dir = process.env.COC_EXT_DIR;
-  const deps = Object.keys(JSON.parse(fs.readFileSync(dir + "/package.json", "utf8")).dependencies || {});
-  process.exit(deps.every((d) => fs.existsSync(dir + "/node_modules/" + d)) ? 0 : 1);
+  const depsOf = (p) => Object.keys(JSON.parse(fs.readFileSync(p + "/package.json", "utf8")).dependencies || {});
+  // :CocUpdate は拡張本体だけを差し替えて依存を入れないため、各拡張の dependencies まで確認する
+  const installed = (d, from) => fs.existsSync(from + "/node_modules/" + d) || fs.existsSync(dir + "/node_modules/" + d);
+  const ok = depsOf(dir).every((ext) => {
+    const extDir = dir + "/node_modules/" + ext;
+    return fs.existsSync(extDir) && depsOf(extDir).every((d) => installed(d, extDir));
+  });
+  process.exit(ok ? 0 : 1);
 ' 2>/dev/null; then
   echo "  skip: all extensions already installed"
 else
