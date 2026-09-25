@@ -6,8 +6,8 @@
 # ブラケットペーストで流し込む（Enter は送らないので、ユーザーが確認して送信できる）。
 #
 # 使い方(tmux.conf):
-#   bind e display-popup -E -d '#{pane_current_path}' -w 80% -h 80% \
-#     'tmux-claude-edit-last #{pane_id}'
+#   bind e run-shell -b 'tmux display-popup -c "#{client_name}" -t "#{pane_id}" -E \
+#     -d "#{pane_current_path}" -w 80% -h 80% "tmux-claude-edit-last #{pane_id}"'
 #
 # - popup は -d で呼び出し元の cwd を引き継ぐため、$PWD = 呼び出し元の cwd。
 #   これを元にセッションログのディレクトリを特定する(claude-resume-picker と同じ規則)。
