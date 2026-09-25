@@ -10,6 +10,13 @@ cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // ""')
 # カレントディレクトリをホーム短縮表示（~）
 dir="${cwd/#$HOME/~}"
 
+# git ブランチ名（detached HEAD なら短縮ハッシュ）
+branch=""
+if [ -n "$cwd" ] && git -C "$cwd" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  branch=$(git -C "$cwd" branch --show-current 2>/dev/null)
+  [ -z "$branch" ] && branch=$(git -C "$cwd" rev-parse --short HEAD 2>/dev/null)
+fi
+
 # 使用量（サブスク契約時のみ渡ってくる）を「53%(2h30m)」形式で整形する
 format_limit() {
   local key=$1
@@ -56,6 +63,7 @@ get_width() {
 yellow=$'\e[33m'
 red=$'\e[31m'
 cyan=$'\e[36m'
+green=$'\e[32m'
 reset=$'\e[0m'
 
 # Context 使用率に応じた色（40%超で黄、60%以上で赤）
@@ -69,10 +77,15 @@ fi
 
 head="${model} | Context: ${used_color}${used}%${reset} used${usage}"
 dir_colored="${cyan}${dir}${reset}"
+dir_plain="${dir}"
+if [ -n "$branch" ]; then
+  dir_colored="${dir_colored} ${green}${branch}${reset}"
+  dir_plain="${dir_plain} ${branch}"
+fi
 
 # ステータスライン表示（1行に収まらなければ dir を2行目に回す）
 # 幅判定はエスケープシーケンスを含まない文字列で行う
-plain="${model} | Context: ${used}% used${usage} | ${dir}"
+plain="${model} | Context: ${used}% used${usage} | ${dir_plain}"
 width=$(get_width)
 # Claude Code 側の左右余白ぶんを差し引く
 margin=4
