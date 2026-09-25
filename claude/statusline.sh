@@ -45,5 +45,41 @@ usage=""
 [ -n "$five_hour" ] && usage="${usage} | 5h: ${five_hour}"
 [ -n "$seven_day" ] && usage="${usage} | 7d: ${seven_day}"
 
-# ステータスライン表示
-echo "${model} | ${dir} | Context: ${used}% used${usage}"
+# 表示幅を取得する（statusline は tty を持たないため tmux から pane 幅を引く）
+get_width() {
+  if [ -n "$TMUX_PANE" ]; then
+    tmux display -p -t "$TMUX_PANE" '#{pane_width}' 2>/dev/null && return
+  fi
+  echo "${COLUMNS:-0}"
+}
+
+yellow=$'\e[33m'
+red=$'\e[31m'
+cyan=$'\e[36m'
+reset=$'\e[0m'
+
+# Context 使用率に応じた色（40%超で黄、60%以上で赤）
+used_int=$(printf '%.0f' "$used")
+used_color=""
+if [ "$used_int" -ge 60 ]; then
+  used_color=$red
+elif [ "$used_int" -gt 40 ]; then
+  used_color=$yellow
+fi
+
+head="${model} | Context: ${used_color}${used}%${reset} used${usage}"
+dir_colored="${cyan}${dir}${reset}"
+
+# ステータスライン表示（1行に収まらなければ dir を2行目に回す）
+# 幅判定はエスケープシーケンスを含まない文字列で行う
+plain="${model} | Context: ${used}% used${usage} | ${dir}"
+width=$(get_width)
+# Claude Code 側の左右余白ぶんを差し引く
+margin=4
+
+if [ "$width" -gt 0 ] && [ "${#plain}" -gt $((width - margin)) ]; then
+  echo "$head"
+  echo "$dir_colored"
+else
+  echo "${head} | ${dir_colored}"
+fi
