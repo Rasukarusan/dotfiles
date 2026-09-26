@@ -1766,6 +1766,7 @@ _git_worktree_remove() {
     git worktree remove "$worktree_path" --force
     if [ $? -eq 0 ]; then
       printf "\e[32m削除完了: ${worktree_path}\e[m\n"
+      ~/.claude/skills/move-worktree-sessions/move.sh "$worktree_path"
     else
       printf "\e[31m削除失敗: ${worktree_path}\e[m\n"
     fi
