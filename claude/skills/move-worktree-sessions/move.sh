@@ -7,17 +7,20 @@
 #   move.sh --orphans                                    削除済みの worktree すべて
 #
 # --session を付けると、そのセッションだけを移す。
+# --copy を付けると、元の worktree 側にも残す。
 set -euo pipefail
 
 projects="$HOME/.claude/projects"
 session=""
 orphans=0
+copy=0
 target=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --session) session="$2"; shift 2 ;;
     --orphans) orphans=1; shift ;;
+    --copy) copy=1; shift ;;
     *) target="$1"; shift ;;
   esac
 done
@@ -47,8 +50,14 @@ move_dir() {
     [ -e "$f" ] || continue
     id=$(basename "$f" .jsonl)
     [ -z "$session" ] || [ "$id" = "$session" ] || continue
-    mv -n "$f" "$dst/"
-    [ -e "$src/$id" ] && mv -n "$src/$id" "$dst/"
+    [ -e "$dst/$id.jsonl" ] && continue
+    if [ "$copy" -eq 1 ]; then
+      cp -n "$f" "$dst/"
+      [ -e "$src/$id" ] && cp -Rn "$src/$id" "$dst/"
+    else
+      mv -n "$f" "$dst/"
+      [ -e "$src/$id" ] && mv -n "$src/$id" "$dst/"
+    fi
     moved=$((moved + 1))
   done
   rmdir "$src" 2>/dev/null || true
@@ -87,4 +96,8 @@ else
   move_dir "$projects/$(encode "$wt")"
 fi
 
-echo "移動: ${moved} 件 → ${main}"
+if [ "$copy" -eq 1 ]; then
+  echo "コピー: ${moved} 件 → ${main}"
+else
+  echo "移動: ${moved} 件 → ${main}"
+fi
