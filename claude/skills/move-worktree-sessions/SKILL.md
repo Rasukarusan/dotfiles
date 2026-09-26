@@ -1,6 +1,6 @@
 ---
 name: move-worktree-sessions
-description: worktree で起動した Claude Code のセッションを、メインリポジトリのセッションとして付け替える。worktree を消した後もメインから /resume できるようにする。「このセッションをメインに移して」「worktree のセッションを移動して」「消した worktree のセッションを拾って」で使う。
+description: worktree で起動した Claude Code のセッションを、メインリポジトリのセッションとして付け替える。worktree を消した後もメインから /resume できるようにする。「このセッションをメインに移して」「メインにコピーして」「worktree のセッションを移動して」「消した worktree のセッションを拾って」で使う。
 allowed-tools: Bash(~/.claude/skills/move-worktree-sessions/move.sh:*)
 ---
 
@@ -8,13 +8,13 @@ allowed-tools: Bash(~/.claude/skills/move-worktree-sessions/move.sh:*)
 
 ## 実行
 
-既定は今のセッションだけを移す。
+既定は今のセッションだけをメインへコピーする。worktree 側にも残るので、どちらからでも再開できる。
 
 ```bash
-~/.claude/skills/move-worktree-sessions/move.sh --session ${CLAUDE_SESSION_ID}
+~/.claude/skills/move-worktree-sessions/move.sh --session ${CLAUDE_SESSION_ID} --copy
 ```
 
-依頼が次のときだけ、別の形で実行する。
+依頼が次のときだけ、別の形で実行する。これらは移動する。
 
 ```bash
 # 今いる worktree のセッションすべて
@@ -29,7 +29,7 @@ allowed-tools: Bash(~/.claude/skills/move-worktree-sessions/move.sh:*)
 
 ## 報告
 
-移した件数と移し先を伝える。今のセッションを移したときは、移した後のやり取りはメインに残らないので、このセッションを終えてから次のコマンドで再開するよう伝える。
+件数と移し先を伝える。今のセッションをコピーしたときは、コピーした後のやり取りはメインに入らないので、このセッションを終えてから次のコマンドで再開するよう伝える。
 
 ```bash
 cd <メインリポジトリ> && claude --resume ${CLAUDE_SESSION_ID}
