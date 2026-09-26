@@ -1,0 +1,4 @@
+interface:
+  display_name: "Notion領収書URL補完"
+  short_description: "Driveの領収書画像URLをNotionの空欄に補完"
+  default_prompt: "$notion-receipt-url-fill を使って、Google Driveの領収書画像を照合し、Notionの空の領収書URLを補完してください。"
