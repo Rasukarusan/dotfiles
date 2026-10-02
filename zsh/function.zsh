@@ -1558,6 +1558,44 @@ _git_checkout_from_pr() {
   gh pr checkout $pr
 }
 
+# worktreeの作成先パスを空ける
+# パスに別ブランチのworktreeが居座っている場合、そのブランチ名のディレクトリへ移すか確認する
+_git_worktree_free_path() {
+  local worktree_path="$1"
+  local parent_dir="$2"
+  [ ! -e "$worktree_path" ] && return 0
+
+  if ! git worktree list --porcelain | grep -qx "worktree ${worktree_path}"; then
+    printf "\e[31mworktreeではないディレクトリが既に存在します: ${worktree_path}\e[m\n"
+    return 1
+  fi
+
+  local current_branch=$(git -C "$worktree_path" branch --show-current)
+  if [ -z "$current_branch" ]; then
+    printf "\e[31m既存のworktreeがdetached HEADのため移動できません: ${worktree_path}\e[m\n"
+    return 1
+  fi
+
+  local new_path="${parent_dir}/$(echo "$current_branch" | tr '/' '-')"
+  printf "\e[33m作成先に別ブランチのworktreeが存在します: ${worktree_path}（チェックアウト中: ${current_branch}）\e[m\n"
+  if [ -e "$new_path" ]; then
+    printf "\e[31m移動先も既に存在します: ${new_path}\e[m\n"
+    return 1
+  fi
+  if [[ "$PWD/" == "${worktree_path}/"* ]]; then
+    printf "\e[31m移動対象のworktree内にいるため移動できません。別のディレクトリから実行してください\e[m\n"
+    return 1
+  fi
+
+  if ! read -q "?${new_path} へ移動しますか？ [y/N] "; then
+    echo
+    return 1
+  fi
+  echo
+  git worktree move "$worktree_path" "$new_path" || return 1
+  printf "\e[32m既存のworktreeを移動しました: ${new_path}\e[m\n"
+}
+
 # PRのブランチでworktreeを作成
 alias prw='_git_worktree_from_pr'
 _git_worktree_from_pr() {
@@ -1590,6 +1628,9 @@ _git_worktree_from_pr() {
     cd "$existing_worktree"
     return
   fi
+
+  # 作成先パスに別ブランチのworktreeが居座っていれば移す
+  _git_worktree_free_path "$worktree_path" "$parent_dir" || return
 
   # リモートブランチをfetch
   printf "\e[36mリモートブランチをfetch中...\e[m\n"
@@ -1637,6 +1678,9 @@ _git_worktree_checkout() {
     cd "$existing_worktree"
     return
   fi
+
+  # 作成先パスに別ブランチのworktreeが居座っていれば移す
+  _git_worktree_free_path "$worktree_path" "$parent_dir" || return
 
   # リモートブランチの場合はfetch
   if echo "$branch_line" | grep -q "remotes/origin/"; then
