@@ -246,7 +246,6 @@ echo "==> ~/.claude"
 mkdir -p "$HOME/.claude"
 link "$DOTFILES_DIR/claude/CLAUDE.md"     "$HOME/.claude/CLAUDE.md"
 link "$DOTFILES_DIR/claude/agents"        "$HOME/.claude/agents"
-link "$DOTFILES_DIR/claude/commands"      "$HOME/.claude/commands"
 link "$DOTFILES_DIR/claude/docs"         "$HOME/.claude/docs"
 link "$DOTFILES_DIR/claude/settings.json" "$HOME/.claude/settings.json"
 link "$DOTFILES_DIR/claude/skills"        "$HOME/.claude/skills"
@@ -262,6 +261,12 @@ if [ -d "$KAISETU_DIR" ]; then
 else
   echo "  skip: kaisetu ($KAISETU_DIR not found)"
 fi
+
+# マシン固有スキル (claude/local/skills/local-* を claude/skills に並べる。gitignore 済み)
+for skill in "$DOTFILES_DIR"/claude/local/skills/local-*; do
+  [ -d "$skill" ] || continue
+  link "$skill" "$DOTFILES_DIR/claude/skills/$(basename "$skill")"
+done
 
 # claude-notify (通知アプリのビルド)
 echo "==> claude-notify"
@@ -284,7 +289,6 @@ bash "$DOTFILES_DIR/bin/claude-caption/build.sh"
 echo "==> ~/.codex"
 mkdir -p "$HOME/.codex"
 link "$DOTFILES_DIR/claude/CLAUDE.md" "$HOME/.codex/AGENTS.md"
-link "$DOTFILES_DIR/claude/commands"  "$HOME/.codex/prompts"
 link "$DOTFILES_DIR/codex/rules"      "$HOME/.codex/rules"
 
 # Claude Code のカスタムスキルを Codex でも共有する
@@ -301,7 +305,7 @@ MANUAL_ITEMS=(
   "$HOME/.ssh|SSH 鍵・config"
   "$HOME/.aws|AWS の認証情報・プロファイル設定"
   "$DOTFILES_DIR/zsh/.zshrc.local|マシン固有の zsh 設定 (~/.zshrc.local の実体)"
-  "$DOTFILES_DIR/claude/local|Claude のマシン固有設定 (CLAUDE.md / commands)"
+  "$DOTFILES_DIR/claude/local|Claude のマシン固有設定 (CLAUDE.md / skills)"
   "$HOME/scripts/local|scripts リポジトリのマシン固有スクリプト"
   "$HOME/Documents/プロフィール画像|プロフィール画像"
   "$HOME/docs|調査書・仕様書の保存先"
