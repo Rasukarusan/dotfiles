@@ -27,7 +27,7 @@ neovim 初回起動後に `:PlugInstall` と `:checkhealth` を実行する。co
 | `terminal/git/gitconfig` | `~/.gitconfig` | git 設定 |
 | `vim/init.vim` | `~/.vimrc`, `~/.config/nvim/init.vim` | neovim 設定 |
 | `claude/*` | `~/.claude/*` | Claude Code 設定一式 |
-| `claude/CLAUDE.md`, `claude/commands`, `codex/rules` | `~/.codex/*` | Codex は Claude 設定を再利用 |
+| `claude/CLAUDE.md`, `codex/rules` | `~/.codex/*` | Codex は Claude 設定を再利用 |
 | `claude/skills` | `~/.agents/skills` | Claude Code と Codex でカスタムスキルを共有 |
 
 ### zsh/
@@ -38,8 +38,7 @@ neovim 初回起動後に `:PlugInstall` と `:checkhealth` を実行する。co
 ### claude/ — Claude Code 設定（リポジトリの主要構成要素）
 - `CLAUDE.md`: グローバル指示（日本語回答・一人称「私」・tmux pane 操作ルール）。`claude/local/CLAUDE.md`（gitignore 済み）を追加読み込みする。
 - `settings.json`: 権限（allow/deny）、hooks、statusLine、`effortLevel: high` などのハーネス設定。
-- `commands/`: スラッシュコマンド（`.md` ファイル）。`commands/local/` はマシン固有。
-- `skills/`: スキル（`crit`, `review-all`, `keihi`, `humanizer-ja` など）。
+- `skills/`: スキル（`crit`, `review-all`, `keihi`, `humanizer-ja` など）。スラッシュコマンドもすべてスキルとして置き、手動でだけ呼ぶものは frontmatter に `disable-model-invocation: true` を付ける。`local-*` は `claude/local/skills/` の実体へのリンクで、マシン固有（gitignore 済み）。
 - `agents/`: サブエージェント定義（`conflict-resolver`, `lint-runner` など）。
 - `hooks/`: シェルスクリプトの hook（`notify-*.sh` = 通知、`track-research*.sh` = リサーチ追跡）。
 - `bin/build-claude-notify.sh`: Swift 製の通知アプリをビルドして `~/.claude/bin` に配置（`setup.sh` から呼ばれる）。

@@ -1,1 +1,0 @@
-Sub Agentsのbuild-checkerを実行して
