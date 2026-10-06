@@ -131,6 +131,11 @@ defaults write com.apple.screencapture show-thumbnail -bool FALSE
 defaults write com.apple.screencapture name -string "screenshot_"
 killall SystemUIServer 2>/dev/null || true
 
+# 電源接続中は画面ロック中もスリープさせず、Claude Code 等の作業を継続させる（ディスプレイはスリープする）
+if [ "$(pmset -g custom | awk '/^AC Power:/{f=1} f && $1=="sleep"{print $2; exit}')" != "0" ]; then
+  sudo pmset -c sleep 0
+fi
+
 # ====================
 # chmod
 # ====================
