@@ -1593,6 +1593,24 @@ _git_worktree_free_path() {
   printf "\e[32m既存のworktreeを移動しました: ${new_path}\e[m\n"
 }
 
+# cldを起動し、入力欄に文字列を入れた状態にする（送信はしない）
+# claudeに初期入力を渡すオプションが無いため、起動後にtmuxで打ち込む
+_cld_with_input() {
+  local text="$1"
+  if [ -n "$TMUX" ]; then
+    local pane="$TMUX_PANE"
+    (
+      # 入力欄(❯)が描画されるまで最大10秒待つ
+      for _ in {1..50}; do
+        tmux capture-pane -p -t "$pane" | grep -q '❯' && break
+        sleep 0.2
+      done
+      tmux send-keys -t "$pane" -l "$text"
+    ) &!
+  fi
+  cld
+}
+
 # PRのブランチでworktreeを作成
 alias prw='_git_worktree_from_pr'
 _git_worktree_from_pr() {
@@ -1622,7 +1640,7 @@ _git_worktree_from_pr() {
   local existing_worktree=$(git worktree list | grep "\[${branch_name}\]" | awk '{print $1}')
   if [ -n "$existing_worktree" ]; then
     printf "\e[33mWorktreeが既に存在するため移動します: ${existing_worktree}\e[m\n"
-    cd "$existing_worktree"
+    cd "$existing_worktree" && _cld_with_input "/is-best"
     return
   fi
 
@@ -1642,7 +1660,7 @@ _git_worktree_from_pr() {
 
   if [ $? -eq 0 ]; then
     printf "\e[32mWorktreeを作成しました: ${worktree_path}\e[m\n"
-    cd "$worktree_path"
+    cd "$worktree_path" && _cld_with_input "/is-best"
   else
     printf "\e[31mWorktreeの作成に失敗しました\e[m\n"
   fi
