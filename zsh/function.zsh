@@ -1619,11 +1619,14 @@ _git_worktree_from_pr() {
   # 引数があればそれを付け足す
   local query="$default_query ${1:+$1}"
 
-  # PR選択
-  local pr_line=$(gh pr list --search "$query" --limit 100 | fzf)
-  [ -z "$pr_line" ] && return
-
-  local pr_number=$(echo "$pr_line" | awk '{print $1}')
+  # 引数がPRのブランチ名と一致すればそのPRを使う。無ければ検索結果から選ぶ（1件なら自動選択）
+  local pr_number=""
+  [ -n "$1" ] && pr_number=$(gh pr list --head "$1" --json number -q '.[0].number')
+  if [ -z "$pr_number" ]; then
+    local pr_line=$(gh pr list --search "$query" --limit 100 | fzf --select-1)
+    [ -z "$pr_line" ] && return
+    pr_number=$(echo "$pr_line" | awk '{print $1}')
+  fi
   local branch_name=$(gh pr view "$pr_number" --json headRefName -q '.headRefName')
   [ -z "$branch_name" ] && echo "ブランチ名を取得できませんでした" && return
 
