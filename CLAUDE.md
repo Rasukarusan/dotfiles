@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## このリポジトリについて
 
-macOS 向けの個人 dotfiles。`zsh` + `tmux` + `neovim` のシェル環境に加えて、Claude Code / Codex の設定を一元管理する。すべての設定は `setup.sh` がシンボリックリンクとして配置するため、**このリポジトリ内のファイルを編集すれば即座に実環境に反映される**（リンク先を直接編集してはいけない）。
+macOS 向けの個人 dotfiles。すべての設定は `setup.sh` がシンボリックリンクとして配置するため、**このリポジトリ内のファイルを編集すれば即座に実環境に反映される**（リンク先を直接編集してはいけない）。リンクの対応は `setup.sh` の「Symlinks」セクションが唯一の正。
 
 ## セットアップ
 
@@ -16,44 +16,14 @@ bash setup.sh            # Homebrew・各種パッケージ・macOS defaults・�
 
 neovim 初回起動後に `:PlugInstall` と `:checkhealth` を実行する。coc.nvim 拡張は `vim/coc/package.json` の `dependencies` で管理し、`setup.sh` が `~/.config/coc/extensions` へインストールする（全て揃っていればスキップする）。
 
-## 全体構成
+## 規約
 
-シンボリックリンクのマッピングは `setup.sh` の「Symlinks」セクションが唯一の正。主要な対応は以下。
-
-| リポジトリ内 | リンク先 | 役割 |
-|---|---|---|
-| `zsh/zshrc` | `~/.zshrc` | zsh エントリポイント |
-| `terminal/tmux.conf` | `~/.tmux.conf` | tmux 設定（prefix は `C-s`） |
-| `terminal/git/gitconfig` | `~/.gitconfig` | git 設定 |
-| `vim/init.vim` | `~/.vimrc`, `~/.config/nvim/init.vim` | neovim 設定 |
-| `claude/*` | `~/.claude/*` | Claude Code 設定一式 |
-| `claude/CLAUDE.md`, `codex/rules` | `~/.codex/*` | Codex は Claude 設定を再利用 |
-| `claude/skills` | `~/.agents/skills` | Claude Code と Codex でカスタムスキルを共有 |
-
-### zsh/
-- `zshrc` が各ファイルを source する。実体は `alias.zsh`（エイリアス）、`function.zsh`（90以上の関数、多くが fzf 連携で `_` 始まり）、`exports.zsh`（環境変数）、`settings.zsh`、`zsh-my-theme.zsh`。
-- `.zshrc.local` / `zsh/local/` は gitignore 済み（マシン固有設定）。
-- fzf を多用したインタラクティブな git / docker / tmux 操作が `function.zsh` の中心。
-
-### claude/ — Claude Code 設定（リポジトリの主要構成要素）
-- `CLAUDE.md`: グローバル指示（日本語回答・一人称「私」・tmux pane 操作ルール）。`claude/local/CLAUDE.md`（gitignore 済み）を追加読み込みする。
-- `settings.json`: 権限（allow/deny）、hooks、statusLine、`effortLevel: high` などのハーネス設定。
-- `skills/`: スキル（`crit`, `review-all`, `keihi`, `humanizer-ja` など）。スラッシュコマンドもすべてスキルとして置き、手動でだけ呼ぶものは frontmatter に `disable-model-invocation: true` を付ける。`local-*` は `claude/local/skills/` の実体へのリンクで、マシン固有（gitignore 済み）。
-- `agents/`: サブエージェント定義（`conflict-resolver`, `lint-runner` など）。
-- `hooks/`: シェルスクリプトの hook（`notify-*.sh` = 通知、`track-research*.sh` = リサーチ追跡）。
-- `bin/build-claude-notify.sh`: Swift 製の通知アプリをビルドして `~/.claude/bin` に配置（`setup.sh` から呼ばれる）。
-
-### bin/ — 自作 CLI / 常駐ツール
-スクリプト（zsh/bash/perl）と、`setup.sh` がビルドする Swift 製常駐ツールが混在する。
-- `tmux-ime/`: Swift 製の入力ソース切替 CLI（`imselect`）。`build.sh` が `swiftc` でビルドして `~/.local/bin` に配置する。Swift を編集したら `build.sh` を再実行する。
-- `tmux-*`: tmux ペイン操作・ファイルピッカー連携スクリプト。
-
-### local-llm/
-Docker Compose によるローカル LLM 環境（`docker-compose.yml` + `.override.yml`）。詳細は `local-llm/README.md`。
+- スラッシュコマンドもすべて `claude/skills/` にスキルとして置き、手動でだけ呼ぶものは frontmatter に `disable-model-invocation: true` を付ける。`local-*` は `claude/local/skills/` の実体へのリンクで、マシン固有（gitignore 済み）。
+- `bin/tmux-ime/` の Swift を編集したら `build.sh` を再実行する（`swiftc` でビルドして `~/.local/bin` に配置する）。
 
 ## 開発時の注意
 
 - テスト・ビルドのフレームワークは無い（個人 dotfiles のため）。動作確認は実際にシェル/tmux/nvim を起動して行う。
 - シェルスクリプトは `set -euo pipefail` を基本とする（`setup.sh`, `build.sh` 群に倣う）。
-- Claude 設定（`claude/`）を変更した場合、Codex 側（`~/.codex/`）にもリンク経由で反映される点に注意する。
+- Claude 設定（`claude/`）を変更した場合、Codex 側（`~/.codex/`）にもリンク経由で反映される点に注意する。`claude/skills` は `~/.agents/skills` として Codex と共有している。
 - gitignore 対象（`zsh/.zshrc.local`, `zsh/local`, `vim/autoload/local.vim`, `claude/local/*`）はコミットしない。
