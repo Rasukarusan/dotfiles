@@ -1,6 +1,12 @@
 bindkey -e # ctrl-aやctrl-eでカーソル移動
 # zshのTab補完
-autoload -U compinit && compinit
+autoload -U compinit
+# compdumpが24時間以内に更新されていればcompauditを省略して高速に読み込む
+if [[ -n ~/.zcompdump(#qN.mh-24) ]]; then
+  compinit -C
+else
+  compinit
+fi
 # テーマ読み込み
 source ~/dotfiles/zsh/zsh-my-theme.zsh
 # Tabで選択できるように
