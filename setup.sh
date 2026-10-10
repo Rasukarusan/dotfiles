@@ -172,6 +172,7 @@ mkdir -p "$HOME/.config/nvim/plugin"
 mkdir -p "$HOME/.config/coc/extensions"
 mkdir -p "$HOME/.cache/cdr"
 mkdir -p "$HOME/.vim"
+mkdir -p "$HOME/Library/Application Support/com.mitchellh.ghostty"
 
 # シンボリックリンクを作成する関数
 # 既にリンクが存在する場合はスキップ、通常ファイルが存在する場合はバックアップ
@@ -208,6 +209,7 @@ link "$DOTFILES_DIR/terminal/tmux.conf"             "$HOME/.tmux.conf"
 link "$DOTFILES_DIR/terminal/agignore"               "$HOME/.agignore"
 link "$DOTFILES_DIR/terminal/git/gitconfig"          "$HOME/.gitconfig"
 link "$DOTFILES_DIR/terminal/git/gitignore_global"   "$HOME/.gitignore_global"
+link "$DOTFILES_DIR/terminal/ghostty/config.ghostty"  "$HOME/Library/Application Support/com.mitchellh.ghostty/config.ghostty"
 
 # Vim
 echo "==> Vim"
