@@ -45,11 +45,10 @@ function export_chrome_history() {
     LIMIT
         10000 ;
     "
-    # 各プロファイルのHistoryをコピー
-    test -e  ~/Library/Application\ Support/Google/Chrome/Default && cp ~/Library/Application\ Support/Google/Chrome/Default/History ~/
-    # Chromeを開いているとdbがロック状態で参照できないので、コピーしたものを参照する
-    for profile in ~/Library/Application\ Support/Google/Chrome/Profile\ */History; do
-        profile_number=$(basename $(dirname "$profile") | grep -oE '[0-9]+$')
+    # Chromeを開いているとdbがロック状態で参照できないので、各プロファイルのHistoryをコピーしたものを参照する
+    for profile in ~/Library/Application\ Support/Google/Chrome/Default/History ~/Library/Application\ Support/Google/Chrome/Profile\ */History; do
+        test -e "$profile" || continue
+        profile_number=$(basename "$(dirname "$profile")" | grep -oE '[0-9]+$')
         cp "$profile" ~/History"$profile_number"
         sqlite3 ~/History"$profile_number" -cmd '.mode tabs' "$SQL"
     done
