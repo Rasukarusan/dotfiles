@@ -1,380 +1,270 @@
 <!doctype html>
 <html lang="ja">
-
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>【チケット】C4: 【一行タイトル】</title>
-  <!--
-  この CSS はそのまま流用してよい。ライト固定 (ダークモード対応は書かない)。
-  body 以下は各パーツの見本。使うものだけ残して中身を差し替える。
-  SVG の要素はクラス (.c4-new / .c4-mod / .c4-old / .c4-del) で状態を切り替える。
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PR #【番号】 C4 モデル</title>
+<!--
+  この CSS はそのまま流用してよい。ライト固定。
+  body 以下は各パーツの見本。使うものだけ残して中身と座標を差し替える。
+  塗り = 種類 (person / system / container / component / ext)、枠と文字色 = 状態 (new / chg)。
 -->
-  <style>
-    :root {
-      color-scheme: light;
-      --bg: #f8f9fb;
-      --card: #ffffff;
-      --ink: #1f2430;
-      --sub: #5b6472;
-      --line: #dde2ea;
-      --accent: #2563eb;
-      --accent-soft: #eaf1fe;
-      --code-bg: #f1f3f7;
-      /* C4 の状態色 */
-      --new: #15803d;
-      --new-soft: #dcfce7;
-      --mod: #1d4ed8;
-      --mod-soft: #dbeafe;
-      --old: #6b7280;
-      --old-soft: #f3f4f6;
-      --del: #b91c1c;
-      --del-soft: #fef2f2;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--ink);
-      font-family: "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
-      line-height: 1.75;
-      font-size: 15px;
-    }
-
-    main { max-width: 980px; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
-    header.hero { margin-bottom: 2.5rem; }
-    .kicker { color: var(--accent); font-weight: 700; letter-spacing: .08em; font-size: .8rem; }
-    h1 { font-size: 1.7rem; line-height: 1.4; margin: .3rem 0 .8rem; }
-    h2 { font-size: 1.25rem; margin: 0 0 .3rem; padding-left: .7rem; border-left: 4px solid var(--accent); }
-    h2 .level { color: var(--sub); font-size: .85rem; font-weight: 600; margin-right: .5rem; }
-    h3 { font-size: 1rem; margin: 1.4rem 0 .4rem; }
-    p { margin: .5rem 0; }
-    .zoom { color: var(--sub); font-size: .9rem; margin: 0 0 1rem; }
-
-    section {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 1.6rem 1.8rem;
-      margin-bottom: 1.6rem;
-    }
-
-    .summary { background: var(--accent-soft); border-radius: 10px; padding: 1rem 1.3rem; margin-top: 1rem; }
-    .summary ul { margin: 0; padding-left: 1.2rem; }
-    .summary li { color: var(--sub); margin: .7rem 0; }
-    .summary .mean { display: block; color: var(--ink); font-weight: 600; margin-top: .15rem; }
-    .summary .mean::before { content: "＝"; color: var(--accent); font-weight: 700; }
-
-    code {
-      background: var(--code-bg);
-      border-radius: 4px;
-      padding: .1em .4em;
-      font-family: ui-monospace, "SF Mono", Menlo, monospace;
-      font-size: .85em;
-    }
-
-    table { border-collapse: collapse; width: 100%; margin: .6rem 0; }
-    th, td { border: 1px solid var(--line); padding: .45rem .7rem; text-align: left; vertical-align: top; }
-    th { background: var(--code-bg); font-size: .85rem; }
-
-    .scroll { overflow-x: auto; }
-    figure { margin: 1rem 0; }
-    figure svg { display: block; width: 100%; height: auto; min-width: 640px; }
-
-    /* 凡例 */
-    .legend { display: flex; flex-wrap: wrap; gap: .4rem 1.2rem; font-size: .8rem; color: var(--sub); margin-top: .5rem; }
-    .legend span::before {
-      content: ""; display: inline-block; width: 14px; height: 10px; border-radius: 3px;
-      margin-right: .35rem; vertical-align: -1px; border: 2px solid;
-    }
-    .legend .new::before { background: var(--new-soft); border-color: var(--new); }
-    .legend .mod::before { background: var(--mod-soft); border-color: var(--mod); }
-    .legend .old::before { background: var(--old-soft); border-color: var(--old); border-width: 1px; }
-    .legend .del::before { background: var(--del-soft); border-color: var(--del); border-style: dashed; }
-
-    /* 状態バッジ (一覧表用) */
-    .badge { display: inline-block; font-size: .75rem; font-weight: 700; padding: 0 .5rem; border-radius: 999px; }
-    .badge.new { color: var(--new); background: var(--new-soft); }
-    .badge.mod { color: var(--mod); background: var(--mod-soft); }
-    .badge.del { color: var(--del); background: var(--del-soft); }
-
-    /* ===== SVG の C4 部品 ===== */
-    .c4-box { stroke-width: 1.2; }
-    .c4-new .c4-box { fill: var(--new-soft); stroke: var(--new); stroke-width: 2.5; }
-    .c4-mod .c4-box { fill: var(--mod-soft); stroke: var(--mod); stroke-width: 2.5; }
-    .c4-old .c4-box { fill: var(--old-soft); stroke: var(--old); }
-    .c4-del .c4-box { fill: var(--del-soft); stroke: var(--del); stroke-width: 2; stroke-dasharray: 6 4; }
-    .c4-del .c4-name { text-decoration: line-through; }
-
-    .c4-name { font-size: 14px; font-weight: 700; fill: var(--ink); text-anchor: middle; }
-    .c4-type { font-size: 11px; fill: var(--sub); text-anchor: middle; }
-    .c4-desc { font-size: 12px; fill: var(--ink); text-anchor: middle; }
-
-    .c4-boundary { fill: none; stroke: var(--old); stroke-width: 1.2; stroke-dasharray: 8 5; }
-    .c4-boundary-label { font-size: 12px; font-weight: 700; fill: var(--sub); }
-
-    .c4-rel { fill: none; stroke: var(--old); stroke-width: 1.4; }
-    .c4-rel.new { stroke: var(--new); stroke-width: 2; }
-    .c4-rel.del { stroke: var(--del); stroke-width: 1.6; stroke-dasharray: 6 4; }
-    .c4-rel-label { font-size: 11px; fill: var(--ink); text-anchor: middle; }
-    .c4-rel-proto { font-size: 10px; fill: var(--sub); text-anchor: middle; }
-    .c4-step { font-size: 11px; font-weight: 700; fill: #fff; text-anchor: middle; }
-    .c4-step-dot { fill: var(--accent); }
-  </style>
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --paper: #ffffff;
+    --ink: #1d1d1f;
+    --muted: #5f6368;
+    --line: #d0d4d9;
+    --person: #08427b;
+    --system: #1168bd;
+    --container: #438dd5;
+    --component: #85bbf0;
+    --ext: #8a8f98;
+    --new: #1a7f37;
+    --new-bg: #e8f5ec;
+    --chg: #b35900;
+    --chg-bg: #fff3e0;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif; line-height: 1.7; }
+  main { max-width: 1080px; margin: 0 auto; padding: 32px 16px 80px; }
+  h1 { font-size: 26px; margin: 0 0 4px; }
+  h2 { font-size: 20px; margin: 48px 0 8px; padding-bottom: 6px; border-bottom: 2px solid var(--ink); }
+  h2 small { font-weight: normal; color: var(--muted); font-size: 14px; margin-left: 8px; }
+  h3 { font-size: 16px; margin: 24px 0 8px; }
+  p, li { font-size: 15px; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  .card { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin: 16px 0; }
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: var(--muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .sw { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { font-family: "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif; }
+  .scroll { overflow-x: auto; }
+  .scroll svg { min-width: 760px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; background: var(--paper); }
+  th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #eef1f4; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.9em; background: #eef1f4; padding: 1px 5px; border-radius: 4px; }
+  pre { background: #1d1d1f; color: #f0f0f0; padding: 14px 16px; border-radius: 8px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  pre .n { color: #7ee2a8; }
+  pre .c { color: #9aa0a6; }
+  .tag { display: inline-block; font-size: 12px; padding: 0 6px; border-radius: 4px; font-weight: bold; margin-right: 4px; }
+  .tag.new { color: var(--new); background: var(--new-bg); }
+  .tag.chg { color: var(--chg); background: var(--chg-bg); }
+  .warn { border-left: 4px solid var(--chg); background: var(--chg-bg); padding: 10px 14px; border-radius: 4px; }
+</style>
 </head>
-
 <body>
-  <main>
-    <header class="hero">
-      <div class="kicker">【チケット番号】 / C4 MODEL</div>
-      <h1>【一行タイトル】</h1>
-      <div class="summary">
-        <ul>
-          <li>【技術記述: 1 文】<span class="mean">【利用者・運用者から見て何が変わったか】</span></li>
-          <li>【技術記述: 1 文】<span class="mean">【意味】</span></li>
-          <li>【技術記述: 1 文】<span class="mean">【意味】</span></li>
-        </ul>
-      </div>
-    </header>
+<main>
+  <h1>PR #【番号】 【PR の内容を一文で】</h1>
+  <p class="sub">C4 モデル (Context → Container → Component → Code) で、この PR が何を変えたかを上から順に見る。</p>
 
-    <!-- ===== Level 1: System Context ===== -->
-    <section>
-      <h2><span class="level">LEVEL 1</span>System Context</h2>
-      <p class="zoom">【この変更がどのシステムの話かを 1 文で】</p>
-      <figure class="scroll">
-        <svg viewBox="0 0 820 340" role="img" aria-label="System Context 図">
-          <defs>
-            <marker id="ctx-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-              <path d="M0,0 L10,5 L0,10 z" fill="#6b7280" />
-            </marker>
-            <marker id="ctx-arrow-new" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-              <path d="M0,0 L10,5 L0,10 z" fill="#15803d" />
-            </marker>
-          </defs>
+  <div class="card">
+    <strong>ひとことで</strong>
+    <p style="margin:6px 0 0">【2〜3 文で PR の要点。必須になったもの・壊れる条件があればここで言う】</p>
+  </div>
 
-          <!-- Person: 頭の円 + 胴体の角丸 -->
-          <g class="c4-old">
-            <circle class="c4-box" cx="140" cy="38" r="20" />
-            <rect class="c4-box" x="60" y="56" width="160" height="80" rx="24" />
-            <text class="c4-name" x="140" y="86">利用者</text>
-            <text class="c4-type" x="140" y="104">[Person]</text>
-            <text class="c4-desc" x="140" y="122">【役割を 1 行】</text>
-          </g>
+  <div class="legend">
+    <span><i class="sw" style="background:var(--new)"></i>この PR で新しく足したもの</span>
+    <span><i class="sw" style="background:var(--chg)"></i>この PR で変えたもの</span>
+    <span><i class="sw" style="background:var(--ext)"></i>外部のシステム</span>
+  </div>
 
-          <!-- 対象システム (変更) -->
-          <g class="c4-mod">
-            <rect class="c4-box" x="300" y="200" width="220" height="100" rx="8" />
-            <text class="c4-name" x="410" y="235">【対象システム】</text>
-            <text class="c4-type" x="410" y="254">[Software System]</text>
-            <text class="c4-desc" x="410" y="276">【責務を 1 行】</text>
-          </g>
+  <!-- ===================== L1 ===================== -->
+  <h2>Level 1: System Context<small>誰が何とやりとりするか</small></h2>
+  <div class="card scroll">
+    <svg viewBox="0 0 1000 400" role="img" aria-label="システムコンテキスト図">
+      <defs>
+        <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5f6368"/></marker>
+        <marker id="aN" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a7f37"/></marker>
+      </defs>
+      <!-- Person (既存): 頭の円 + 胴体 -->
+      <circle cx="140" cy="60" r="24" fill="var(--person)"/>
+      <rect x="40" y="88" width="200" height="90" rx="14" fill="var(--person)"/>
+      <text x="140" y="120" fill="#fff" font-size="16" font-weight="bold" text-anchor="middle">【利用者】</text>
+      <text x="140" y="144" fill="#dce8f5" font-size="12" text-anchor="middle">【何をする人か】</text>
 
-          <!-- 外部システム (新規) -->
-          <g class="c4-new">
-            <rect class="c4-box" x="620" y="200" width="180" height="100" rx="8" />
-            <text class="c4-name" x="710" y="235">【外部システム】</text>
-            <text class="c4-type" x="710" y="254">[External System]</text>
-            <text class="c4-desc" x="710" y="276">【責務を 1 行】</text>
-          </g>
+      <!-- Person (新規): 緑で塗る -->
+      <circle cx="140" cy="250" r="24" fill="var(--new)"/>
+      <rect x="40" y="278" width="200" height="90" rx="14" fill="var(--new)"/>
+      <text x="140" y="310" fill="#fff" font-size="16" font-weight="bold" text-anchor="middle">【新しく出てくる人】</text>
+      <text x="140" y="334" fill="#e8f5ec" font-size="12" text-anchor="middle">【何をする人か】</text>
 
-          <!-- 関係 -->
-          <path class="c4-rel" d="M140,136 L140,250 L298,250" marker-end="url(#ctx-arrow)" />
-          <text class="c4-rel-label" x="215" y="232">【何をする】</text>
-          <text class="c4-rel-proto" x="215" y="246">[HTTPS]</text>
+      <!-- 対象システム (変更): 種類の塗り + オレンジ枠 + 最下行に変えたこと -->
+      <rect x="400" y="130" width="250" height="140" rx="10" fill="var(--system)" stroke="var(--chg)" stroke-width="4"/>
+      <text x="525" y="180" fill="#fff" font-size="18" font-weight="bold" text-anchor="middle">【対象システム】</text>
+      <text x="525" y="206" fill="#dce8f5" font-size="12" text-anchor="middle">【責務を 1 行】</text>
+      <text x="525" y="252" fill="#ffe0b2" font-size="12" font-weight="bold" text-anchor="middle">【何を変えたか】</text>
 
-          <path class="c4-rel new" d="M520,250 L618,250" marker-end="url(#ctx-arrow-new)" />
-          <text class="c4-rel-label" x="569" y="232">【何をする】</text>
-          <text class="c4-rel-proto" x="569" y="270">[HTTPS]</text>
-        </svg>
-      </figure>
-      <div class="legend"><span class="new">新規</span><span class="mod">変更</span><span class="old">既存</span><span class="del">削除</span></div>
-      <p>【このレベルで何が変わったかを 2〜4 行】</p>
-    </section>
+      <!-- 外部システム -->
+      <rect x="790" y="150" width="180" height="100" rx="10" fill="var(--ext)"/>
+      <text x="880" y="192" fill="#fff" font-size="16" font-weight="bold" text-anchor="middle">【外部システム】</text>
+      <text x="880" y="216" fill="#f0f0f0" font-size="12" text-anchor="middle">【どう使うか】</text>
 
-    <!-- ===== Level 2: Container ===== -->
-    <section>
-      <h2><span class="level">LEVEL 2</span>Container</h2>
-      <p class="zoom">【対象システム】の中を拡大する。</p>
-      <figure class="scroll">
-        <svg viewBox="0 0 820 380" role="img" aria-label="Container 図">
-          <defs>
-            <marker id="cnt-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-              <path d="M0,0 L10,5 L0,10 z" fill="#6b7280" />
-            </marker>
-            <marker id="cnt-arrow-new" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-              <path d="M0,0 L10,5 L0,10 z" fill="#15803d" />
-            </marker>
-            <marker id="cnt-arrow-del" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-              <path d="M0,0 L10,5 L0,10 z" fill="#b91c1c" />
-            </marker>
-          </defs>
+      <!-- 既存の経路: グレー / 新しい経路: 緑の破線 + 緑の太字ラベル -->
+      <path d="M240 133 L398 180" stroke="#5f6368" stroke-width="2" fill="none" marker-end="url(#a)"/>
+      <text x="300" y="140" font-size="12" fill="var(--muted)">【何をする】</text>
+      <path d="M240 323 L398 238" stroke="var(--new)" stroke-width="2.5" stroke-dasharray="6 4" fill="none" marker-end="url(#aN)"/>
+      <text x="330" y="318" font-size="12" fill="var(--new)" font-weight="bold">【新しい経路】</text>
+      <path d="M652 200 L788 200" stroke="#5f6368" stroke-width="2" fill="none" marker-end="url(#a)"/>
+      <text x="720" y="190" font-size="12" fill="var(--muted)" text-anchor="middle">【何を渡す】</text>
+    </svg>
+  </div>
+  <p>【外から見て何が増えたか・変わったかを 1 段落】</p>
 
-          <!-- 境界: 左下に境界名 -->
-          <rect class="c4-boundary" x="20" y="20" width="780" height="340" rx="14" />
-          <text class="c4-boundary-label" x="36" y="348">【対象システム】 [Software System]</text>
+  <!-- ===================== L2 ===================== -->
+  <h2>Level 2: Container<small>どの箱が何を持つか</small></h2>
+  <div class="card scroll">
+    <svg viewBox="0 0 1000 520" role="img" aria-label="コンテナ図">
+      <defs>
+        <marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5f6368"/></marker>
+        <marker id="bN" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a7f37"/></marker>
+        <marker id="bC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#b35900"/></marker>
+      </defs>
+      <!-- 境界 -->
+      <rect x="170" y="20" width="620" height="480" rx="12" fill="none" stroke="#9aa0a6" stroke-width="1.5" stroke-dasharray="8 5"/>
+      <text x="186" y="44" font-size="13" fill="var(--muted)" font-weight="bold">【対象システム】</text>
 
-          <g class="c4-old">
-            <rect class="c4-box" x="60" y="50" width="200" height="90" rx="8" />
-            <text class="c4-name" x="160" y="82">Web アプリ</text>
-            <text class="c4-type" x="160" y="100">[Container: Next.js]</text>
-            <text class="c4-desc" x="160" y="122">【責務】</text>
-          </g>
+      <!-- Container (既存) -->
+      <rect x="200" y="64" width="200" height="80" rx="8" fill="var(--container)"/>
+      <text x="300" y="98" fill="#fff" font-size="15" font-weight="bold" text-anchor="middle">【web】</text>
+      <text x="300" y="120" fill="#eaf2fb" font-size="12" text-anchor="middle">【技術】</text>
 
-          <g class="c4-mod">
-            <rect class="c4-box" x="310" y="50" width="200" height="90" rx="8" />
-            <text class="c4-name" x="410" y="82">API</text>
-            <text class="c4-type" x="410" y="100">[Container: Go]</text>
-            <text class="c4-desc" x="410" y="122">【責務】</text>
-          </g>
+      <!-- Container (変更) -->
+      <rect x="200" y="200" width="260" height="110" rx="8" fill="var(--container)" stroke="var(--chg)" stroke-width="4"/>
+      <text x="330" y="236" fill="#fff" font-size="15" font-weight="bold" text-anchor="middle">【api】</text>
+      <text x="330" y="258" fill="#eaf2fb" font-size="12" text-anchor="middle">【技術】</text>
+      <text x="330" y="282" fill="#ffe0b2" font-size="12" font-weight="bold" text-anchor="middle">【何を変えたか】</text>
 
-          <g class="c4-new">
-            <rect class="c4-box" x="560" y="50" width="200" height="90" rx="8" />
-            <text class="c4-name" x="660" y="82">ワーカー</text>
-            <text class="c4-type" x="660" y="100">[Container: Go]</text>
-            <text class="c4-desc" x="660" y="122">【責務】</text>
-          </g>
+      <!-- データストア (既存): 円筒 -->
+      <path d="M220 380 a80 14 0 0 0 160 0 v70 a80 14 0 0 1 -160 0 z" fill="var(--container)"/>
+      <ellipse cx="300" cy="380" rx="80" ry="14" fill="#5a9de0"/>
+      <text x="300" y="420" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">【DB】</text>
+      <text x="300" y="440" fill="#eaf2fb" font-size="12" text-anchor="middle">【何を持つ】</text>
 
-          <!-- データストアは円筒で描く -->
-          <g class="c4-old">
-            <path class="c4-box" d="M310,232 a100,14 0 0,0 200,0 v70 a100,14 0 0,1 -200,0 z" />
-            <ellipse class="c4-box" cx="410" cy="232" rx="100" ry="14" />
-            <text class="c4-name" x="410" y="270">データベース</text>
-            <text class="c4-type" x="410" y="288">[Container: PostgreSQL]</text>
-          </g>
+      <!-- データストア (変更): 円筒 + オレンジ枠、増えたものを + で -->
+      <path d="M560 200 a90 14 0 0 0 180 0 v110 a90 14 0 0 1 -180 0 z" fill="var(--container)" stroke="var(--chg)" stroke-width="3"/>
+      <ellipse cx="650" cy="200" rx="90" ry="14" fill="#5a9de0" stroke="var(--chg)" stroke-width="3"/>
+      <text x="650" y="240" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">【ストレージ】</text>
+      <text x="650" y="262" fill="#eaf2fb" font-size="12" text-anchor="middle">【何を持つ】</text>
+      <text x="650" y="286" fill="#ffe0b2" font-size="12" font-weight="bold" text-anchor="middle">+ 【増えたもの】</text>
 
-          <g class="c4-del">
-            <rect class="c4-box" x="560" y="220" width="200" height="90" rx="8" />
-            <text class="c4-name" x="660" y="252">【消えたもの】</text>
-            <text class="c4-type" x="660" y="270">[Container: Cron]</text>
-            <text class="c4-desc" x="660" y="292">【責務】</text>
-          </g>
+      <!-- 外部 -->
+      <rect x="830" y="215" width="150" height="80" rx="8" fill="var(--ext)"/>
+      <text x="905" y="252" fill="#fff" font-size="15" font-weight="bold" text-anchor="middle">【外部】</text>
+      <text x="905" y="274" fill="#f0f0f0" font-size="12" text-anchor="middle">外部</text>
 
-          <path class="c4-rel" d="M260,95 L308,95" marker-end="url(#cnt-arrow)" />
-          <text class="c4-rel-label" x="284" y="84">呼ぶ</text>
+      <!-- 関係: 既存 = グレー / 変更 = オレンジ / 新規 = 緑の破線 -->
+      <path d="M300 144 L300 198" stroke="#5f6368" stroke-width="2" marker-end="url(#b)"/>
+      <text x="308" y="176" font-size="12" fill="var(--muted)">HTTP</text>
+      <path d="M300 310 L300 364" stroke="#5f6368" stroke-width="2" marker-end="url(#b)"/>
+      <text x="308" y="342" font-size="12" fill="var(--muted)">SQL</text>
+      <path d="M462 240 L558 240" stroke="var(--chg)" stroke-width="2.5" marker-end="url(#bC)"/>
+      <text x="510" y="226" font-size="11" fill="var(--chg)" font-weight="bold" text-anchor="middle">【変わった呼び方】</text>
+      <path d="M430 200 Q650 60 870 213" stroke="#5f6368" stroke-width="2" fill="none" marker-end="url(#b)"/>
+      <text x="650" y="120" font-size="12" fill="var(--muted)" text-anchor="middle">【何を渡す】</text>
+    </svg>
+  </div>
 
-          <path class="c4-rel new" d="M510,95 L558,95" marker-end="url(#cnt-arrow-new)" />
-          <text class="c4-rel-label" x="534" y="84">積む</text>
+  <table>
+    <tr><th style="width:24%">コンテナ</th><th>この PR で変えたこと</th></tr>
+    <tr><td><span class="tag chg">変更</span>【api】</td><td>【何をどう変えたか 2〜3 文】</td></tr>
+    <tr><td><span class="tag new">新規</span>【新しいコンテナ】</td><td>【何をするか】</td></tr>
+    <tr><td><span class="tag chg">変更</span>IAM (<code>【tf のパス】</code>)</td><td>【足した権限と絞り方】</td></tr>
+    <tr><td>【web】・【DB】</td><td>変更なし。</td></tr>
+  </table>
 
-          <path class="c4-rel" d="M410,140 L410,216" marker-end="url(#cnt-arrow)" />
-          <text class="c4-rel-label" x="440" y="176">読み書き</text>
-          <text class="c4-rel-proto" x="440" y="190">[SQL]</text>
+  <!-- ===================== L3 ===================== -->
+  <h2>Level 3: Component<small>【api】 の中</small></h2>
+  <div class="card scroll">
+    <svg viewBox="0 0 1000 480" role="img" aria-label="コンポーネント図">
+      <defs>
+        <marker id="c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#5f6368"/></marker>
+        <marker id="cN" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a7f37"/></marker>
+      </defs>
+      <rect x="10" y="10" width="980" height="460" rx="12" fill="none" stroke="#9aa0a6" stroke-width="1.5" stroke-dasharray="8 5"/>
+      <text x="26" y="34" font-size="13" fill="var(--muted)" font-weight="bold">【api】</text>
 
-          <path class="c4-rel del" d="M560,265 L512,265" marker-end="url(#cnt-arrow-del)" />
-        </svg>
-      </figure>
-      <div class="legend"><span class="new">新規</span><span class="mod">変更</span><span class="old">既存</span><span class="del">削除</span></div>
-      <p>【このレベルで何が変わったかを 2〜4 行】</p>
-    </section>
+      <!-- レイヤー名: 段の左上に小さく -->
+      <text x="26" y="66" font-size="12" fill="var(--muted)">【usecase】</text>
+      <text x="26" y="200" font-size="12" fill="var(--muted)">【domain】</text>
+      <text x="26" y="342" font-size="12" fill="var(--muted)">【infrastructure】</text>
 
-    <!-- ===== Level 3: Component (変更コンテナごとに h3 で分ける) ===== -->
-    <section>
-      <h2><span class="level">LEVEL 3</span>Component</h2>
-      <h3>API</h3>
-      <p class="zoom">Container 図で青くした API の中を拡大する。</p>
-      <figure class="scroll">
-        <svg viewBox="0 0 820 260" role="img" aria-label="Component 図: API">
-          <defs>
-            <marker id="cmp-api-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-              <path d="M0,0 L10,5 L0,10 z" fill="#6b7280" />
-            </marker>
-            <marker id="cmp-api-arrow-new" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-              <path d="M0,0 L10,5 L0,10 z" fill="#15803d" />
-            </marker>
-          </defs>
-          <rect class="c4-boundary" x="20" y="20" width="780" height="220" rx="14" />
-          <text class="c4-boundary-label" x="36" y="228">API [Container]</text>
+      <!-- Component (変更): 薄青 + オレンジ枠 -->
+      <g font-size="12" text-anchor="middle">
+        <rect x="40" y="76" width="200" height="74" rx="8" fill="var(--component)" stroke="var(--chg)" stroke-width="3"/>
+        <text x="140" y="104" font-weight="bold" fill="#0b2a4a">【UseCaseA】</text>
+        <text x="140" y="124" fill="#0b2a4a">【役割】</text>
+        <text x="140" y="140" fill="#0b2a4a" font-size="11">【何を変えたか】</text>
 
-          <g class="c4-mod">
-            <rect class="c4-box" x="60" y="60" width="200" height="90" rx="8" />
-            <text class="c4-name" x="160" y="92">【ハンドラ】</text>
-            <text class="c4-type" x="160" y="110">[Component]</text>
-            <text class="c4-desc" x="160" y="132">【責務】</text>
-          </g>
-          <g class="c4-new">
-            <rect class="c4-box" x="310" y="60" width="200" height="90" rx="8" />
-            <text class="c4-name" x="410" y="92">【ユースケース】</text>
-            <text class="c4-type" x="410" y="110">[Component]</text>
-            <text class="c4-desc" x="410" y="132">【責務】</text>
-          </g>
-          <g class="c4-old">
-            <rect class="c4-box" x="560" y="60" width="200" height="90" rx="8" />
-            <text class="c4-name" x="660" y="92">【リポジトリ】</text>
-            <text class="c4-type" x="660" y="110">[Component]</text>
-            <text class="c4-desc" x="660" y="132">【責務】</text>
-          </g>
+        <!-- Component (既存) -->
+        <rect x="260" y="76" width="200" height="74" rx="8" fill="var(--component)"/>
+        <text x="360" y="104" font-weight="bold" fill="#0b2a4a">【UseCaseB】</text>
+        <text x="360" y="124" fill="#0b2a4a">【役割】</text>
+      </g>
 
-          <path class="c4-rel new" d="M260,105 L308,105" marker-end="url(#cmp-api-arrow-new)" />
-          <text class="c4-rel-label" x="284" y="94">呼ぶ</text>
-          <path class="c4-rel new" d="M510,105 L558,105" marker-end="url(#cmp-api-arrow-new)" />
-          <text class="c4-rel-label" x="534" y="94">使う</text>
-        </svg>
-      </figure>
-      <div class="legend"><span class="new">新規</span><span class="mod">変更</span><span class="old">既存</span><span class="del">削除</span></div>
-      <p>【このコンテナの中で何が変わったかを 2〜4 行】</p>
-    </section>
+      <!-- Component (新規): 緑の淡い塗り + 緑枠 + (新規) -->
+      <rect x="300" y="210" width="340" height="100" rx="10" fill="var(--new-bg)" stroke="var(--new)" stroke-width="3"/>
+      <text x="470" y="240" font-size="15" font-weight="bold" fill="var(--new)" text-anchor="middle">【NewService】 (新規)</text>
+      <text x="470" y="264" font-size="12" fill="#14532d" text-anchor="middle">【メソッド → 返すもの】</text>
+      <text x="470" y="284" font-size="12" fill="#14532d" text-anchor="middle">【失敗時の扱い】</text>
 
-    <!-- ===== Dynamic (新しい処理経路があるときだけ) ===== -->
-    <section>
-      <h2><span class="level">DYNAMIC</span>【処理名】の流れ</h2>
-      <p class="zoom">Component 図の要素の間を、番号順にメッセージが流れる。</p>
-      <figure class="scroll">
-        <svg viewBox="0 0 820 160" role="img" aria-label="Dynamic 図">
-          <defs>
-            <marker id="dyn-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-              <path d="M0,0 L10,5 L0,10 z" fill="#2563eb" />
-            </marker>
-          </defs>
-          <g class="c4-mod">
-            <rect class="c4-box" x="40" y="40" width="180" height="70" rx="8" />
-            <text class="c4-name" x="130" y="72">【ハンドラ】</text>
-            <text class="c4-type" x="130" y="92">[Component]</text>
-          </g>
-          <g class="c4-new">
-            <rect class="c4-box" x="320" y="40" width="180" height="70" rx="8" />
-            <text class="c4-name" x="410" y="72">【ユースケース】</text>
-            <text class="c4-type" x="410" y="92">[Component]</text>
-          </g>
-          <g class="c4-old">
-            <rect class="c4-box" x="600" y="40" width="180" height="70" rx="8" />
-            <text class="c4-name" x="690" y="72">【リポジトリ】</text>
-            <text class="c4-type" x="690" y="92">[Component]</text>
-          </g>
-          <path class="c4-rel" style="stroke:#2563eb" d="M220,75 L318,75" marker-end="url(#dyn-arrow)" />
-          <circle class="c4-step-dot" cx="269" cy="58" r="9" /><text class="c4-step" x="269" y="62">1</text>
-          <text class="c4-rel-label" x="269" y="100">【何をする】</text>
-          <path class="c4-rel" style="stroke:#2563eb" d="M500,75 L598,75" marker-end="url(#dyn-arrow)" />
-          <circle class="c4-step-dot" cx="549" cy="58" r="9" /><text class="c4-step" x="549" y="62">2</text>
-          <text class="c4-rel-label" x="549" y="100">【何をする】</text>
-        </svg>
-      </figure>
-      <p>【流れの要点を 2〜4 行】</p>
-    </section>
+      <!-- infrastructure (変更): 増えたメソッドを緑の太字で -->
+      <rect x="380" y="370" width="270" height="80" rx="10" fill="var(--component)" stroke="var(--chg)" stroke-width="3"/>
+      <text x="515" y="400" font-size="13" font-weight="bold" fill="#0b2a4a" text-anchor="middle">【Store】</text>
+      <text x="515" y="422" font-size="12" fill="#1a7f37" font-weight="bold" text-anchor="middle">+ 【増えたメソッド】</text>
 
-    <!-- ===== Level 4: Code (構造の変更があるときだけ) ===== -->
-    <section>
-      <h2><span class="level">LEVEL 4</span>Code</h2>
-      <p class="zoom">【ユースケース】が扱う型とテーブルの関係を示す。</p>
-      <!-- クラス図 / ER 図を Component と同じ部品 (c4-box + 状態クラス) で描く -->
-      <p>【何が変わったかを 2〜4 行】</p>
-    </section>
+      <!-- 新しい依存: 緑 / 既存の依存: グレー + ラベル -->
+      <g stroke="var(--new)" stroke-width="2" fill="none">
+        <path d="M140 150 L360 208" marker-end="url(#cN)"/>
+        <path d="M360 150 L420 208" marker-end="url(#cN)"/>
+      </g>
+      <path d="M470 310 L505 368" stroke="#5f6368" stroke-width="2" marker-end="url(#c)"/>
+      <text x="500" y="344" font-size="11" fill="var(--muted)">【呼ぶメソッド】</text>
+    </svg>
+  </div>
 
-    <!-- ===== 変更要素の一覧 ===== -->
-    <section>
-      <h2>変更要素の一覧</h2>
-      <table>
-        <thead>
-          <tr><th>要素</th><th>レベル</th><th>状態</th><th>主なファイル</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>ワーカー</td><td>Container</td><td><span class="badge new">新規</span></td><td><code>cmd/worker/</code></td></tr>
-          <tr><td>API</td><td>Container</td><td><span class="badge mod">変更</span></td><td><code>internal/api/</code></td></tr>
-          <tr><td>【消えたもの】</td><td>Container</td><td><span class="badge del">削除</span></td><td><code>cron/</code></td></tr>
-        </tbody>
-      </table>
-    </section>
-  </main>
+  <h3>ポイント</h3>
+  <ul>
+    <li><strong>【結論を 1 文】</strong>【理由・以前との違いを 1〜2 文】</li>
+    <li><strong>【結論を 1 文】</strong>【理由を 1〜2 文】</li>
+  </ul>
+
+  <!-- ===================== L4 ===================== -->
+  <h2>Level 4: Code<small>【何の形か】</small></h2>
+
+  <!-- 置き場が変わったとき: ツリー -->
+  <h3>【置き場】</h3>
+<pre>【ルート】/
+├── <span class="n">【新しいファイル】</span>        <span class="c"># 【補足】</span>
+└── 【ディレクトリ】/
+    ├── 【既存のファイル】      <span class="c"># 【補足】</span>
+    └── <span class="n">【新しいディレクトリ】/*</span> <span class="c"># 【補足】</span></pre>
+
+  <!-- 順序・並びが変わったとき: 番号付きの表 -->
+  <h3>【並び】</h3>
+  <table>
+    <tr><th>順</th><th>渡すもの</th><th>渡し方</th></tr>
+    <tr><td>1</td><td>【既存】</td><td>【方法】</td></tr>
+    <tr><td>2</td><td><span class="tag new">新規</span>【新しいもの】</td><td>【方法】</td></tr>
+  </table>
+
+  <!-- 条件ごとの振る舞いが変わったとき: マトリクス -->
+  <h3>【条件】のときの振る舞い</h3>
+  <table>
+    <tr><th>用途</th><th>【条件 A】</th><th>【条件 B】</th></tr>
+    <tr><td>【用途 1】</td><td><span class="tag new">新規</span>【挙動】</td><td><span class="tag chg">変更</span>【挙動】 (以前は【前の挙動】)</td></tr>
+    <tr><td>【用途 2】</td><td><span class="tag new">新規</span>【挙動】</td><td>【挙動】 (従来どおり)</td></tr>
+  </table>
+
+  <!-- ===================== リリース (人の作業があるときだけ) ===================== -->
+  <h2>リリース時に人がやること</h2>
+  <div class="warn">
+    <p style="margin:0 0 6px"><strong>1. 【作業】</strong>【やらないと何が壊れるか】【いつやるか】</p>
+    <p style="margin:0"><strong>2. 【作業】</strong>【やらないと何が壊れるか】【確認方法】</p>
+  </div>
+</main>
 </body>
-
 </html>
