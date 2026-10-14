@@ -2,7 +2,7 @@
   "cleanupPeriodDays": 365,
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CLAUDE_CODE_PLUGIN_DIRS": "~/.claude/mods/whiteboard:~/.claude/mods/sushida"
+    "CLAUDE_CODE_PLUGIN_DIRS": "~/.claude/mods/whiteboard"
   },
   "includeCoAuthoredBy": false,
   "permissions": {
@@ -37,6 +37,21 @@
       "Bash(terraform destroy)"
     ],
     "defaultMode": "auto"
+  },
+  "model": "opus",
+  "skillOverrides": {
+    "article-check": "user-invocable-only",
+    "crit-cli": "user-invocable-only",
+    "crit-stop-all": "user-invocable-only",
+    "frontend-design": "user-invocable-only",
+    "humanizer-ja": "user-invocable-only",
+    "japanese-writing": "user-invocable-only",
+    "keihi": "user-invocable-only",
+    "notion-receipt-url-fill": "user-invocable-only",
+    "review-all": "user-invocable-only",
+    "rewrite-as-final": "user-invocable-only",
+    "title-cybozu": "user-invocable-only",
+    "video": "user-invocable-only"
   },
   "hooks": {
     "PermissionRequest": [
@@ -129,23 +144,9 @@
   "feedbackSurveyRate": 0,
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",
-  "tui": "default",
+  "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true,
-  "skillOverrides": {
-    "article-check": "user-invocable-only",
-    "crit-cli": "user-invocable-only",
-    "crit-stop-all": "user-invocable-only",
-    "frontend-design": "user-invocable-only",
-    "humanizer-ja": "user-invocable-only",
-    "japanese-writing": "user-invocable-only",
-    "keihi": "user-invocable-only",
-    "notion-receipt-url-fill": "user-invocable-only",
-    "review-all": "user-invocable-only",
-    "rewrite-as-final": "user-invocable-only",
-    "title-cybozu": "user-invocable-only",
-    "video": "user-invocable-only"
-  }
+  "skipAutoPermissionPrompt": true
 }
