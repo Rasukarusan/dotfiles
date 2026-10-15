@@ -62,13 +62,13 @@ export PATH="$HOME/.cargo/bin:$PATH"
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
 # pyenv init は重いので、初めて pyenv/python 系コマンドを叩いた時に読み込む
-_pyenv_lazy_init() {
+pyenv_lazy_init() {
   unfunction pyenv python python3 pip pip3 2>/dev/null
   eval "$(command pyenv init -)"
   eval "$(command pyenv virtualenv-init -)"
 }
 for _cmd in pyenv python python3 pip pip3; do
-  eval "${_cmd}() { _pyenv_lazy_init; ${_cmd} \"\$@\"; }"
+  eval "${_cmd}() { pyenv_lazy_init; ${_cmd} \"\$@\"; }"
 done
 unset _cmd
 export PATH="$HOME/Library/Android/sdk/platform-tools:$PATH"
