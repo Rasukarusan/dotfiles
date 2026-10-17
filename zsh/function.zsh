@@ -1623,7 +1623,8 @@ _git_worktree_from_pr() {
   local pr_number=""
   [ -n "$1" ] && pr_number=$(gh pr list --head "$1" --json number -q '.[0].number')
   if [ -z "$pr_number" ]; then
-    local pr_line=$(gh pr list --search "$query" --limit 100 | fzf --select-1)
+    local pr_line=$(gh pr list --search "$query" --limit 100 --json number,title,author,headRefName \
+      -q '.[] | [.number, .title, .author.login, .headRefName] | @tsv' | column -t -s $'\t' | fzf --select-1)
     [ -z "$pr_line" ] && return
     pr_number=$(echo "$pr_line" | awk '{print $1}')
   fi
