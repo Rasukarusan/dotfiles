@@ -43,6 +43,8 @@ alias transj='trans -b ja:en'
 alias pcopy='pbpaste | pbcopy'
 # スプレッドシートから表をコピーしてRedmineのテーブル形式に整形したい時に使用(先頭と末尾に|を挿入,タブを|に置換)
 alias rtable='pbpaste | tr "\t" "|" | sed -e "s/^/|/g" -e "s/$/|/g" -e "/|\"/s/|$//g" -e "/\"|/s/^|//g" | tr -d \" | pbcopy'
+# クリップボードの各行の先頭に"> "を付けて引用形式にする
+alias qt='pbpaste | sed "s/^/> /" | pbcopy && pbpaste'
 # 最終更新日が一番新しいもののファイル名を取得
 alias fin='echo `ls -t | head -n 1`'
 # less `fin`と打つのが面倒だったため関数化。finはコマンドとして残しておきたいので残す
