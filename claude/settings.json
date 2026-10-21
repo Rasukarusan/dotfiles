@@ -28,7 +28,8 @@
       "Read(~/.zshrc)",
       "Read(~/.claude)",
       "Read(~/.config)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "mcp__next-devtools"
     ],
     "deny": [
       "Bash(pnpm supabase db reset)",
