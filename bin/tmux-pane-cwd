@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+#
+# pane の「今の作業ディレクトリ」を出力する。ペイン分割時の -c に使う。
+#
+#   tmux-pane-cwd <pane_id>              作業ディレクトリを出力
+#   tmux-pane-cwd --set <pane_id> <dir>  claude の作業ディレクトリを pane に記録
+#
+# claude はセッション内で作業ディレクトリを移しても、プロセスの cwd は起動時のまま。
+# そのため /cd スキルが移動先を pane オプション @claude_cwd に "pid:dir" で記録し、
+# ここではそれを最優先で使う。pid が今の claude と違えば (再起動後など) 古い値として無視する。
+#
+# 記録が無ければ claude 本体の cwd を lsof で読み、claude がいなければ pane_current_path を使う。
+# (#{pane_current_path} は tty のフォアグラウンドプロセスの cwd を見るため、
+#  claude がサブプロセスを走らせている最中は別ディレクトリを指すことがある)
+
+# pane の tty から claude 本体の pid を探す。
+# claude は argv[0] をバージョン文字列に書き換えるため pgrep -x では拾えない。
+claude_pid() {
+  local tty
+  tty=$(tmux display -p -t "$1" '#{pane_tty}')
+  ps -t "$tty" -o pid=,comm= 2>/dev/null | sed -n 's|^ *\([0-9]*\) *\(.*/\)\{0,1\}claude$|\1|p' | head -1
+}
+
+if [ "$1" = "--set" ]; then
+  pane=$2
+  dir=$3
+  pid=$(claude_pid "$pane")
+  [ -n "$pid" ] && [ -d "$dir" ] || exit 1
+  tmux set-option -p -t "$pane" @claude_cwd "$pid:$dir"
+  exit
+fi
+
+pane=$1
+pid=$(claude_pid "$pane")
+if [ -n "$pid" ]; then
+  recorded=$(tmux show-options -pqv -t "$pane" @claude_cwd)
+  dir=${recorded#*:}
+  if [ "${recorded%%:*}" = "$pid" ] && [ -d "$dir" ]; then
+    printf %s "$dir"
+    exit
+  fi
+  dir=$(lsof -a -d cwd -p "$pid" -Fn 2>/dev/null | sed -n 's/^n//p' | tail -1)
+  if [ -d "$dir" ]; then
+    printf %s "$dir"
+    exit
+  fi
+fi
+tmux display -p -t "$pane" '#{pane_current_path}'
