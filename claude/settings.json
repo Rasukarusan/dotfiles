@@ -90,6 +90,10 @@
           {
             "type": "command",
             "command": "bash ~/.claude/hooks/notify-stop.sh"
+          },
+          {
+            "type": "command",
+            "command": "f=$HOME/.claude/hooks/local/ask-guard.sh; [ -f \"$f\" ] && bash \"$f\" || true"
           }
         ]
       }
@@ -123,6 +127,19 @@
           {
             "type": "command",
             "command": "bash ~/.claude/hooks/notify-approval.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$HOME/.claude/hooks/local/commit-guard.sh; [ -f \"$f\" ] && bash \"$f\" || true"
+          },
+          {
+            "type": "command",
+            "command": "f=$HOME/.claude/hooks/local/push-guard.sh; [ -f \"$f\" ] && bash \"$f\" || true"
           }
         ]
       }
