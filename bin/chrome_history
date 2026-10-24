@@ -62,7 +62,9 @@ function show() {
         | grep -P "(\texport|$filter)" \
         | awk '!title[$2]++' \
         | awk -F '\t' '{print $3"\t"$2"\t"$1}' \
-        | fzf-tmux -p80% --delimiter $'\t' --with-nth=1,2 --preview 'echo {1}' --preview-window up:1\
+        | fzf --popup 80% --delimiter $'\t' --with-nth=1,2 --preview 'echo {1}' --preview-window up:1 \
+            --header 'Ctrl-O: 表示列を切り替え(タイトル → タイトル+URL → 日付+タイトル)' \
+            --bind 'ctrl-o:change-with-nth(2|2,3|1,2)' \
         | tr -d '\n'
     )
     echo "$selected"
@@ -88,7 +90,7 @@ function show_by_date() {
         | grep -P '^[0-9]{4}-.*' \
         | sort -ur \
         | xargs -I {} gdate '+%Y-%m-%d (%a)' -d {} \
-        | fzf-tmux -p80%
+        | fzf --popup 80%
     )
     [ -z "$select_date" ] && return
     show $select_date
@@ -104,7 +106,7 @@ function summarize_by_date() {
         | grep -P '^[0-9]{4}-.*' \
         | sort -ur \
         | xargs -I {} gdate '+%Y-%m-%d (%a)' -d {} \
-        | fzf-tmux -p80%
+        | fzf --popup 80%
     )
     [ -z "$select_date" ] && return
     # 選択した文字列(例: 2026-06-25 (Wed))から日付部分だけ取り出す

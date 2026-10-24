@@ -221,14 +221,17 @@ cmd_interactive() {
     --no-multi
     --prompt='resume> '
     --header='Enter: resume / Ctrl-P: 📌のみ / Ctrl-A: 全件 / Ctrl-X: アーカイブ / Ctrl-R: アーカイブ一覧(復元)'
+    --ghost='タイトル・ディレクトリで絞り込み'
+    --track
+    --id-nth=1
     --preview="$self preview {1}"
     --preview-window='right,50%,border-left,wrap,follow'
     --bind="ctrl-p:reload($self list-pinned '$PWD')+change-prompt(📌resume> )"
     --bind="ctrl-a:reload($self list '$PWD')+change-prompt(resume> )"
-    --bind="ctrl-x:execute-silent($self archive-file {1})+reload($self list '$PWD')"
+    --bind="ctrl-x:execute-silent($self archive-file {1})+exclude"
     --bind="ctrl-r:reload($self list-archived '$PWD')+change-prompt(📦archived(復元)> )"
   )
-  [ -n "${TMUX:-}" ] && fzf_opts+=(--tmux 'center,90%,90%')
+  [ -n "${TMUX:-}" ] && fzf_opts+=(--popup 'center,90%,90%' --border-label ' claude ')
 
   local sel file
   sel=$(cmd_list "$PWD" | fzf "${fzf_opts[@]}") || return 0
@@ -252,12 +255,15 @@ cmd_interactive_archive() {
     --multi
     --prompt='archive> '
     --header='Tab: 複数選択 / Enter: 選択したセッションをアーカイブ / Ctrl-P: 📌のみ / Ctrl-A: 全件'
+    --ghost='アーカイブするセッションを絞り込み'
+    --track
+    --id-nth=1
     --preview="$self preview {1}"
     --preview-window='right,50%,border-left,wrap,follow'
     --bind="ctrl-p:reload($self list-pinned '$PWD')+change-prompt(📌archive> )"
     --bind="ctrl-a:reload($self list '$PWD')+change-prompt(archive> )"
   )
-  [ -n "${TMUX:-}" ] && fzf_opts+=(--tmux 'center,90%,90%')
+  [ -n "${TMUX:-}" ] && fzf_opts+=(--popup 'center,90%,90%' --border-label ' claude ')
 
   local sel line file
   sel=$(cmd_list "$PWD" | fzf "${fzf_opts[@]}") || return 0

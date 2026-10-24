@@ -69,6 +69,7 @@ selected="$(
     --delimiter=: \
     --prompt='Files[~]> ' \
     --header='Ctrl+~: ホーム/現在地  /  Ctrl+-: 1つ上へ  /  Ctrl+o: git管理外も表示' \
+    --ghost='ファイル名で絞り込み' \
     --preview="$PREVIEW_FILE" \
     --preview-window='right,60%,border-left' \
     --bind="start:unbind(change)" \
@@ -115,11 +116,11 @@ selected="$(
     --bind="ctrl-s:transform:
       case \$FZF_PROMPT in
         Files*)
-          echo \"change-prompt(Grep> )+change-preview($PREVIEW_GREP)+change-preview-window(right,60%,border-left,+{2}/3)+disable-search+rebind(change)+transform-query(echo {q} > $qf; cat $qg)+reload($RG_GREP {q} || true)\" ;;
+          echo \"change-prompt(Grep> )+change-ghost(rgで全文検索)+change-preview($PREVIEW_GREP)+change-preview-window(right,60%,border-left,+{2}/3)+disable-search+rebind(change)+transform-query(echo {q} > $qf; cat $qg)+reload($RG_GREP {q} || true)\" ;;
         *)
           cur=\$(cat '$QROOT' 2>/dev/null || echo .)
           if [ \"\$cur\" = '.' ]; then label='Files> '; else label=\"Files[\${cur/#$HOME/~}]> \"; fi
-          echo \"change-prompt(\$label)+change-preview($PREVIEW_FILE)+change-preview-window(right,60%,border-left)+enable-search+unbind(change)+transform-query(echo {q} > $qg; cat $qf)+reload($LIST)\" ;;
+          echo \"change-prompt(\$label)+change-ghost(ファイル名で絞り込み)+change-preview($PREVIEW_FILE)+change-preview-window(right,60%,border-left)+enable-search+unbind(change)+transform-query(echo {q} > $qg; cat $qf)+reload($LIST)\" ;;
       esac
     "
 )" || exit 0
