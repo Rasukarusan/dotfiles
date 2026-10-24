@@ -95,10 +95,11 @@ cmd_interactive() {
     --no-multi
     --prompt='resume> '
     --header='Enter: resume'
+    --ghost='タイトル・ディレクトリで絞り込み'
     --preview="$self preview {2}"
     --preview-window='right,50%,border-left,wrap'
   )
-  [ -n "${TMUX:-}" ] && fzf_opts+=(--tmux 'center,90%,90%')
+  [ -n "${TMUX:-}" ] && fzf_opts+=(--popup 'center,90%,90%' --border-label ' codex ')
 
   local sel
   sel=$(cmd_list "$PWD" | fzf "${fzf_opts[@]}") || return 0

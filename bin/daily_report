@@ -290,7 +290,7 @@ TARGET_DATES=$(echo "$TARGET_DATES" | sort -u)
 EXTRA_INSTRUCTION="$*"
 
 if [ -z "$TARGET_DATES" ]; then
-    selected=$(collect dates | fzf-tmux -p80% --multi --prompt='日報を出す日付(Tabで複数選択)> ')
+    selected=$(collect dates | fzf --popup 80% --multi --prompt='日報を出す日付(Tabで複数選択)> ')
     [ -z "$selected" ] && exit 0
     TARGET_DATES=$(echo "$selected" | grep -oE '^[0-9]{4}-[0-9]{2}-[0-9]{2}' | sort)
 fi

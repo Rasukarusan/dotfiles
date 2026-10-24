@@ -30,9 +30,10 @@ _fzf_exclude_opts=(
 # fzf版cdd
 alias cdd='_fzf-cdr'
 _fzf-cdr() {
+  # --popupはフローティングペインで開くため、分割先は呼び出し元ペインを明示する
   local target_dir=$(cdr -l  \
     | sed 's/^[^ ][^ ]*  *//' \
-    | fzf-tmux -p80% --bind 'ctrl-t:execute-silent(echo {} | sed "s/~/\/Users\/$(whoami)/g" | xargs -I{} tmux split-window -h -c {})+abort' \
+    | fzf --popup 80% --bind 'ctrl-t:execute-silent(echo {} | sed "s/~/\/Users\/$(whoami)/g" | xargs -I{} tmux split-window -t '"$TMUX_PANE"' -h -c {})+abort' \
         --preview "echo {} | sed 's/~/\/Users\/$(whoami)/g' | xargs -I{} ls -l {} | head -n100" \
     )
   # ~だと移動できないため、/Users/hogeの形にする
@@ -54,7 +55,7 @@ _look() {
     | sed 's/\.\///g' \
     | grep -v -e '.jpg' -e '.gif' -e '.png' -e '.jpeg' \
     | sort -r \
-    | fzf-tmux -p80% --select-1 --prompt 'vim ' --preview 'fzf-preview {}' --preview-window=right:70%
+    | fzf --popup 80% --select-1 --prompt 'vim ' --preview 'fzf-preview {}' --preview-window=right:70%
   ))
   [ "$target_files" = "" ] && return
   vim -p ${target_files[@]}
@@ -116,7 +117,7 @@ _mdtree_fzf() {
     rel=$(
       cd "$abs_dir" || exit 1
       eval "$list_md" \
-      | fzf-tmux -p80% --prompt 'md [doc] ' --no-multi \
+      | fzf --popup 80% --prompt 'md [doc] ' --no-multi \
           --header 'ctrl-a: 全ファイル/md・htmlのみ切替' \
           --preview 'fzf-preview {}' --preview-window=right:70% \
           --bind "ctrl-a:transform:if [[ \$FZF_PROMPT == 'md [doc] ' ]]; then echo \"change-prompt(md [all] )+reload($list_all)\"; else echo \"change-prompt(md [doc] )+reload($list_md)\"; fi"
@@ -202,7 +203,7 @@ alias pof="_git_push_fzf -f"
 alias tigg='_git_log_preview_open'
 _git_log_preview_open() {
   local hashCommits=($(git log --oneline "$@" \
-    | fzf-tmux -p80% \
+    | fzf --popup 80% \
       --prompt 'SELECT COMMIT>' \
       --multi \
       --delimiter=' ' --with-nth 1.. \
@@ -224,7 +225,10 @@ _git_log_preview_open() {
 # fzfを使ってプロセスKILL
 alias pspk='_process_kill'
 _process_kill(){
-  local process=(`ps aux | awk '{print $2,$9,$11,$12}' | fzf-tmux -p80% | awk '{print $1}'`)
+  # 2秒ごとに一覧を取り直し、カーソルはPIDで追従させる
+  local ps_cmd="ps aux | awk '{print \$2,\$9,\$11,\$12}'"
+  local process=($(eval "$ps_cmd" | fzf --popup 80% --header-lines 1 --track --id-nth 1 \
+    --bind "every(2):reload-sync($ps_cmd)" | awk '{print $1}'))
   echo $process | pbcopy
   for item in ${process[@]}
   do
@@ -238,7 +242,7 @@ _git_add(){
   local path_working_tree_root=$(git rev-parse --show-cdup)
   [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
   local files=($(eval git -C $path_working_tree_root ls-files --modified --others --exclude-standard\
-    | fzf-tmux -p80% --prompt 'modified' \
+    | fzf --popup 80% --prompt 'modified' \
       --bind "U:reload(git ls-files --others --exclude-standard)+change-prompt(untracked)" \
       --bind "M:reload(git ls-files --modified)+change-prompt(modified)" \
       --bind "A:reload(git ls-files --modified --others --exclude-standard)+change-prompt(all)" \
@@ -257,7 +261,7 @@ _git_add-p(){
   local path_working_tree_root=$(git rev-parse --show-cdup)
   [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
   local files=($(git -C $path_working_tree_root ls-files --modified \
-    | fzf-tmux -p80% --prompt "ADD FILES>" --preview "git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy" --preview-window=right:50% ))
+    | fzf --popup 80% --prompt "ADD FILES>" --preview "git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy" --preview-window=right:50% ))
   [ -z "$files" ] && return
   for file in "${files[@]}";do
     git add -p ${path_working_tree_root}${file}
@@ -273,7 +277,7 @@ _git_diff(){
     { git -C $path_working_tree_root ls-files --modified; \
       git -C $path_working_tree_root ls-files --others --exclude-standard; } \
     | sort -u \
-    | fzf-tmux -p80% "${_fzf_exclude_opts[@]}" --select-1 --prompt "SELECT FILES>" --preview 'if git ls-files --error-unmatch $(git rev-parse --show-cdup){} &>/dev/null; then git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy; else fzf-preview $(git rev-parse --show-cdup){}; fi' --preview-window=right:50% ))
+    | fzf --popup 80% "${_fzf_exclude_opts[@]}" --select-1 --prompt "SELECT FILES>" --preview 'if git ls-files --error-unmatch $(git rev-parse --show-cdup){} &>/dev/null; then git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy; else fzf-preview $(git rev-parse --show-cdup){}; fi' --preview-window=right:50% ))
   [ -z "$files" ] && return
   for file in "${files[@]}";do
     if git ls-files --error-unmatch ${path_working_tree_root}${file} &>/dev/null; then
@@ -295,7 +299,7 @@ _git_checkout(){
   local path_working_tree_root=$(git rev-parse --show-cdup)
   [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
   local files=($(git -C $path_working_tree_root ls-files --modified \
-    | fzf-tmux -p80% --prompt "CHECKOUT FILES>" --preview "git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy" --preview-window=right:50%))
+    | fzf --popup 80% --prompt "CHECKOUT FILES>" --preview "git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy" --preview-window=right:50%))
   [ -z "$files" ] && return
   for file in "${files[@]}";do
     git checkout ${path_working_tree_root}${file}
@@ -308,7 +312,7 @@ _git_reset() {
   local path_working_tree_root=$(git rev-parse --show-cdup)
   [ "$path_working_tree_root" = '' ] && path_working_tree_root=./
   local files=($(git -C $path_working_tree_root diff --name-only --cached \
-    | fzf-tmux -p80% --prompt "RESET FILES>" --preview "git diff --cached --color=always $(git rev-parse --show-cdup){} | diff-so-fancy" --preview-window=right:50% ))
+    | fzf --popup 80% --prompt "RESET FILES>" --preview "git diff --cached --color=always $(git rev-parse --show-cdup){} | diff-so-fancy" --preview-window=right:50% ))
   [ -z "$files" ] && return
   for file in "${files[@]}";do
     git reset ${path_working_tree_root}${file}
@@ -343,12 +347,12 @@ _article_commands() {
 _write_article() {
   local ARTICLE_DIR=/Users/`whoami`/Documents/github/articles
   if [ "$1" = '-a' ];then
-    local targetFile=$(find $ARTICLE_DIR -name "*.md" | fzf-tmux -p80% --delimiter 'articles' --with-nth  -1 --preview "fzf-preview {}")
+    local targetFile=$(find $ARTICLE_DIR -name "*.md" | fzf --popup 80% --delimiter 'articles' --with-nth  -1 --preview "fzf-preview {}")
     [ -z "$targetFile" ] && return
     vim $targetFile
     return
   fi
-  local article=`ls ${ARTICLE_DIR}/*.md | xargs -I {} basename {} | fzf-tmux -p80% --preview "fzf-preview ${ARTICLE_DIR}/{}"`
+  local article=`ls ${ARTICLE_DIR}/*.md | xargs -I {} basename {} | fzf --popup 80% --preview "fzf-preview ${ARTICLE_DIR}/{}"`
 
   # 何も選択しなかった場合は終了
   if [ -z "$article" ]; then
@@ -424,7 +428,7 @@ _pull_article() {
 alias map='_write_mindmap'
 _write_mindmap() {
   local dir=/Users/`whoami`/Documents/github/mindmap-view/data
-  local mindmap=`(echo 00000000.md && ls ${dir}/*.md | xargs -I {} basename {}) | fzf-tmux -p80% --preview "fzf-preview ${dir}/{}"`
+  local mindmap=`(echo 00000000.md && ls ${dir}/*.md | xargs -I {} basename {}) | fzf --popup 80% --preview "fzf-preview ${dir}/{}"`
   test -z "$mindmap" && return
 
   if [ "$mindmap" = "00000000.md" ]; then
@@ -446,7 +450,7 @@ _write_mindmap() {
 # 定義済みのaliasを表示
 alias com='_show_alias'
 _show_alias() {
-  local cmd=$(alias | sort | fzf-tmux -p80% )
+  local cmd=$(alias | sort | fzf --popup 80% )
   [ -z "$cmd" ] && return
 
   if $(echo $cmd | grep "'" > /dev/null) ; then # コマンドaliasの場合
@@ -497,7 +501,7 @@ _set_badge() {
 # Dockerコマンドをfzfで選択
 alias dcc='_docker_commands'
 _docker_commands() {
-  local selectCommand=`cat <<- EOF | fzf-tmux -p80%
+  local selectCommand=`cat <<- EOF | fzf --popup 80%
 		docker exec -it
 		docker exec -it --user root
 		docker logs
@@ -530,7 +534,7 @@ _docker_commands() {
   local execCommand
   case "${arg}" in
     'exec -it' | 'exec -it --user root' )
-      container=$(docker ps --format "{{.Names}}" | sort | fzf-tmux -p80%)
+      container=$(docker ps --format "{{.Names}}" | sort | fzf --popup 80%)
       test -z "$container" && return
       availableShells=$(docker exec -it $container cat /etc/shells)
       # bashが使えるならbashでログインする
@@ -541,12 +545,12 @@ _docker_commands() {
       fi
       ;;
     'logs' )
-      container=$(docker ps --format "{{.Names}}" | sort | fzf-tmux -p80%)
+      container=$(docker ps --format "{{.Names}}" | sort | fzf --popup 80%)
       test -z "$container" && return
       execCommand="docker logs -f --tail=100 $container"
       ;;
     'stop' )
-      containers=($(docker ps --format "{{.Names}}" | sort | fzf-tmux -p80% ))
+      containers=($(docker ps --format "{{.Names}}" | sort | fzf --popup 80% ))
       [ "${#containers[@]}" -eq 0 ] && return
       for container in ${containers[@]}; do
         execCommand="docker stop $container"
@@ -557,7 +561,7 @@ _docker_commands() {
     'rm' )
       containers=($(docker ps -a --format "{{.Names}}\t{{.ID}}\t{{.RunningFor}}\t{{.Status}}\t{{.Networks}}" \
         | column -t -s "`printf '\t'`" \
-        | fzf-tmux -p80% --header "$(echo 'NAME\tCONTAINER_ID\tCREATED\tSTATUS\tNETWORK' | column -t)" \
+        | fzf --popup 80% --header "$(echo 'NAME\tCONTAINER_ID\tCREATED\tSTATUS\tNETWORK' | column -t)" \
         | awk '{print $2}' \
       ))
       for container in ${containers[@]}; do
@@ -568,7 +572,7 @@ _docker_commands() {
       ;;
     'rmi' )
       images=($(docker images | tail -n +2 \
-        | fzf-tmux -p80% --header "$(echo 'REPOSITORY\tTAG\tIMAGE_ID\tCREATED\tSIZE' | column -t)"\
+        | fzf --popup 80% --header "$(echo 'REPOSITORY\tTAG\tIMAGE_ID\tCREATED\tSIZE' | column -t)"\
         | awk '{print $3}' \
       ))
       for image in ${images[@]}; do
@@ -580,12 +584,12 @@ _docker_commands() {
     'cp' )
       local targetFiles=($(find . -maxdepth 1 \
         | sed '/^\.$/d' \
-        | fzf-tmux -p80% \
+        | fzf --popup 80% \
           --prompt='送信したいファイルを選択してください' \
           --preview='file {} | awk -F ":" "{print \$2}" | grep directory >/dev/null && tree --charset=C -NC {} || fzf-preview {}'
       ))
       [ "${#targetFiles[@]}" -eq 0 ] && return
-      docker ps --format "{{.Names}}" | fzf-tmux -p80% | while read container;do
+      docker ps --format "{{.Names}}" | fzf --popup 80% | while read container;do
         containerId=$(docker ps -aq --filter "name=$container")
         test -z "$containerId" && echo "Not found $container's Container ID." && continue
 
@@ -671,9 +675,9 @@ _tmux_commands() {
       local actions=('Left' 'Right' 'Up' 'Down')
       echo "${actions[@]}" \
         | tr ' ' '\n' \
-        | fzf-tmux -p \
+        | fzf --popup \
           --prompt 'Press Ctrl-p > ' \
-          --bind 'ctrl-p:execute-silent(tmux resize-pane -$(echo {} | cut -c 1-1))'
+          --bind 'ctrl-p:execute-silent(tmux resize-pane -t '"$TMUX_PANE"' -$(echo {} | cut -c 1-1))'
       ;;
     'rename-window')
       /bin/echo  -n 'INPUT NAME>'
@@ -690,7 +694,7 @@ _tmux_commands() {
       tmux $command | less -S
       ;;
     'kill-session')
-      local sessionIds=($(tmux ls | fzf-tmux -p | awk -F ':' '{print $1}'))
+      local sessionIds=($(tmux ls | fzf --popup | awk -F ':' '{print $1}'))
       test -z "$sessionIds" && return
       for sessionId in ${sessionIds[@]}; do
         tmux kill-session -t $sessionId
@@ -881,7 +885,7 @@ _edit_vim_files() {
   local xvimrc=~/dotfiles/vim/xvimrc
   local vimrcLocal=~/.vimrc.local
   # 文字数でソートする
-  local editFile=$(echo "${nvimFiles}\n${xvimrc}\n${vimrcLocal}" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf-tmux -p80% --preview "fzf-preview {}")
+  local editFile=$(echo "${nvimFiles}\n${xvimrc}\n${vimrcLocal}" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf --popup 80% --preview "fzf-preview {}")
   test -z "$editFile" && return
   vim $editFile
 }
@@ -891,7 +895,7 @@ alias zshrc='_edit_zsh_files'
 _edit_zsh_files() {
   local zshFiles=$(find ~/dotfiles/zsh -type f && echo ~/.zshrc.local)
   # 文字数でソートする
-  local editFiles=($(echo "$zshFiles" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf-tmux -p80% --preview "fzf-preview {}"))
+  local editFiles=($(echo "$zshFiles" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2- | fzf --popup 80% --preview "fzf-preview {}"))
   test -z "$editFiles" && return
   vim -p "${editFiles[@]}"
 }
@@ -903,7 +907,7 @@ _edit_claude_files() {
   local createNewOption="新しいskillを作成"
   local claudeFiles=$(find ~/dotfiles/claude ~/dotfiles/codex -type f)
   # 文字数でソートする
-  local selection=$(echo -e "$createNewOption\n$(echo "$claudeFiles" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2-)" | fzf-tmux -p80% --preview "test '{}' = '$createNewOption' && echo '新しいスキルを作成します' || fzf-preview {}")
+  local selection=$(echo -e "$createNewOption\n$(echo "$claudeFiles" | awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2-)" | fzf --popup 80% --preview "test '{}' = '$createNewOption' && echo '新しいスキルを作成します' || fzf-preview {}")
   test -z "$selection" && return
   if [[ "$selection" == "$createNewOption" ]]; then
     # 新しいスキルを作成
@@ -1038,7 +1042,7 @@ _show_functions() {
      | grep ".*() {$" \
      | grep "^[a-z_]" \
      | tr -d "() {"   \
-     | fzf-tmux -p80% --preview "source ~/.zshrc; typeset -f {}"
+     | fzf --popup 80% --preview "source ~/.zshrc; typeset -f {}"
    )
   if [ -z "$func" ]; then
     return
@@ -1121,7 +1125,7 @@ alias pii='_fzf_pipenv'
 _fzf_pipenv() {
   if [ -f Pipfile ]; then
     local action=$(cat Pipfile | dasel -r toml -w json | jq -r '.scripts | keys | .[]' \
-      | fzf-tmux -p80% --preview "cat Pipfile | dasel -r toml -w json | jq -r '.scripts[\"{}\"]'" --preview-window=up:1)
+      | fzf --popup 80% --preview "cat Pipfile | dasel -r toml -w json | jq -r '.scripts[\"{}\"]'" --preview-window=up:1)
     [ -z "$action" ] && return
     pipenv run $action
     print -s "pipenv run $action"
@@ -1150,7 +1154,7 @@ _rmm() {
     return 1
   fi
   for removeFile in $(git status --short | awk '{print $NF}' \
-    | fzf-tmux -p80% --multi \
+    | fzf --popup 80% --multi \
     --header='git status files' \
     --bind "ctrl-r:reload(git status --short | awk '{print \$NF}')" \
     --preview='fzf-preview {} 2>/dev/null || echo "(file not found or binary)"'
@@ -1171,7 +1175,7 @@ _fzf_npm() {
   fi
   [ -z "$packageJson" ] && return
   local actions=($(cat ${packageJson} | jq -r '.scripts | keys | .[]' \
-    | fzf-tmux -p --preview "cat ${packageJson} | jq -r '.scripts[\"{}\"]'" --preview-window=up:1))
+    | fzf --popup --preview "cat ${packageJson} | jq -r '.scripts[\"{}\"]'" --preview-window=up:1))
   [ -z "$actions" ] && return
   local cmd=''
   for action in "${actions[@]}"; do
@@ -1197,7 +1201,7 @@ _fzf_yarn() {
   fi
   [ -z "$packageJson" ] && return
   local actions=($(cat ${packageJson} | jq -r '.scripts | keys | .[]' \
-    | fzf-tmux -p --preview "cat ${packageJson} | jq -r '.scripts[\"{}\"]'" --preview-window=up:1))
+    | fzf --popup --preview "cat ${packageJson} | jq -r '.scripts[\"{}\"]'" --preview-window=up:1))
   [ -z "$actions" ] && return
   local cmd=''
   for action in "${actions[@]}"; do
@@ -1316,7 +1320,7 @@ _fzf_composer() {
   fi
   [ -z "$composerJson" ] && return
   local action=$(cat ${composerJson} | jq -r '.scripts | keys | .[]' \
-    | fzf-tmux -p --preview "cat ${composerJson} | jq -r '.scripts[\"{}\"]'" --preview-window=up:3)
+    | fzf --popup --preview "cat ${composerJson} | jq -r '.scripts[\"{}\"]'" --preview-window=up:3)
   [ -z "$action" ] && return
   composer $action
   print -s "composer $action"
@@ -1329,7 +1333,7 @@ _fzf_carthage() {
   local cartfile=$(find ${gitRoot}. -maxdepth 1  -name 'Cartfile')
   [ -z "$cartfile" ] && echo 'Carfile is not found' && return
   local packages=$(cat ${cartfile} | grep -oP '(?<=/).*(?=")')
-  local target=$(echo "全てupdate\n${packages}" | fzf-tmux -p --preview "grep {} $cartfile" --preview-window=up:1)
+  local target=$(echo "全てupdate\n${packages}" | fzf --popup --preview "grep {} $cartfile" --preview-window=up:1)
   [ -z "$target" ] && return
   if ! grep $target $cartfile >/dev/null ; then
     carthage update --platform ios
@@ -1349,7 +1353,7 @@ _fzf_vim_git_modified_untracked() {
   [ ${#files[@]} -eq 0 ] && return
 
   local selected=($(printf '%s\n' "${files[@]}" \
-    | fzf-tmux -p80% "${_fzf_exclude_opts[@]}" --preview='
+    | fzf --popup 80% "${_fzf_exclude_opts[@]}" --preview='
       git diff --exit-code {} >/dev/null && fzf-preview {} \
       || git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy
     '))
@@ -1374,7 +1378,7 @@ _fzf_vim_git_modified() {
 
   # fzf で選択
   local selected=($(printf '%s\n' "${files[@]}" | sort -u \
-    | fzf-tmux -p80% "${_fzf_exclude_opts[@]}" --preview='
+    | fzf --popup 80% "${_fzf_exclude_opts[@]}" --preview='
       git diff --exit-code {} >/dev/null && fzf-preview {} \
       || git diff --color=always $(git rev-parse --show-cdup){} | diff-so-fancy
     '))
@@ -1396,7 +1400,7 @@ _fzf_vim_git_staged() {
   [ ${#files[@]} -eq 0 ] && return
 
   local selected=($(printf '%s\n' "${files[@]}" | sort -u \
-    | fzf-tmux -p80% "${_fzf_exclude_opts[@]}" --preview='
+    | fzf --popup 80% "${_fzf_exclude_opts[@]}" --preview='
       git diff --staged --color=always $(git rev-parse --show-cdup){} | diff-so-fancy
     '))
 
@@ -1411,7 +1415,7 @@ _fzf_vim_ag() {
   local query="$*"
   [ -z "$query" ] && echo "Usage: vimg <search string>" && return 1
 
-  local selected=($(ag -l -- "$query" | fzf-tmux -p80% --multi "${_fzf_exclude_opts[@]}" \
+  local selected=($(ag -l -- "$query" | fzf --popup 80% --multi "${_fzf_exclude_opts[@]}" \
     --preview="line=\$(ag -n -- $(printf '%q' "$query") {} | head -1 | cut -d: -f1); start=\$((line > 3 ? line - 3 : 1)); end=\$((line + 3)); bat --color=always --highlight-line \$line -r \$start:\$end {}"))
 
   [ -z "$selected" ] && return
@@ -1674,7 +1678,7 @@ _git_worktree_from_pr() {
 alias cow='_git_worktree_checkout'
 _git_worktree_checkout() {
   # ブランチ選択（ローカル＋リモート）
-  local branch_line=$(git branch -a | tr -d " " | fzf-tmux -p80% --prompt "WORKTREE BRANCH>" --preview "git log --color=always {}" | head -n 1 | sed -e "s/^\*\s*//g")
+  local branch_line=$(git branch -a | tr -d " " | fzf --popup 80% --prompt "WORKTREE BRANCH>" --preview "git log --color=always {}" | head -n 1 | sed -e "s/^\*\s*//g")
   [ -z "$branch_line" ] && return
 
   # remotes/origin/ を除去してブランチ名を取得
@@ -1854,7 +1858,7 @@ _git_worktree_cd() {
   local cache_dir=$(_git_worktree_pr_cache_dir)
   { _git_worktree_pr_prefetch "$cache_dir" } &!
 
-  local selected=$(echo "$worktrees" | fzf-tmux -p80% --ansi --prompt "WORKTREE CD>" \
+  local selected=$(echo "$worktrees" | fzf --popup 80% --ansi --prompt "WORKTREE CD>" \
     --preview "$(_git_worktree_preview_cmd "$cache_dir")")
   [ -z "$selected" ] && return
 
@@ -2033,7 +2037,7 @@ function _aws_sso_login() {
       /^[ \t]*sso_role_name[ \t]*=/ { role=$NF }
       END { flush() }
     ' ~/.aws/config \
-      | fzf-tmux -p60% --no-multi --prompt 'aws sso login ' \
+      | fzf --popup 60% --no-multi --prompt 'aws sso login ' \
           --header 'PROFILE                  ACCOUNT        ROLE' \
       | awk '{print $1}')
   fi
@@ -2143,7 +2147,7 @@ _open_env() {
   local find_result=$(find . -name ".env" -type f)
   local target_files=($(echo "$find_result" \
     | sed 's/\.\///g' \
-    | fzf-tmux -p80% --select-1 --prompt 'vim ' --preview 'fzf-preview {}' --preview-window=right:70%
+    | fzf --popup 80% --select-1 --prompt 'vim ' --preview 'fzf-preview {}' --preview-window=right:70%
   ))
   [ "$target_files" = "" ] && return
   vim -p ${target_files[@]}
@@ -2230,14 +2234,14 @@ alias cherr='_git_cherry_pick_fzf'
 _git_cherry_pick_fzf() {
   # ブランチ選択
   local branch=$(git branch -a | tr -d " " \
-    | fzf-tmux -p80% --prompt "CHERRY-PICK FROM>" \
+    | fzf --popup 80% --prompt "CHERRY-PICK FROM>" \
       --preview "git log --oneline --color=always {}" \
     | head -n 1 | sed -e "s/^\*\s*//g" | perl -pe "s/remotes\/origin\///g")
   [ -z "$branch" ] && return
 
   # 選択したブランチのコミットを複数選択
   local commits=($(git log --oneline --color=always "$branch" \
-    | fzf-tmux -p80% --ansi --multi \
+    | fzf --popup 80% --ansi --multi \
       --prompt "SELECT COMMITS (TAB: multi-select)>" \
       --preview "git show --color=always {1}" \
       --preview-window=right:50% \

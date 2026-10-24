@@ -72,7 +72,7 @@ command! -bang -nargs=* Ag
   \ call fzf#vim#ag(<q-args>,
   \   fzf#vim#with_preview({
   \     'sink*': function('s:ag_to_qf'),
-  \     'options': ['--multi', '--bind', 'ctrl-a:select-all',
+  \     'options': ['--multi', '--bind', 'ctrl-a:select-all', '--freeze-left', '1',
   \                 '--bind', 'start:transform-header(fzf-exclude-toggle header ctrl-e)',
   \                 '--bind', 'ctrl-e:transform-query(fzf-exclude-toggle query)'
   \                           . '+transform-header(fzf-exclude-toggle header ctrl-e)']
