@@ -29,7 +29,7 @@ fi
 
 NOTIFIER="$HOME/.claude/bin/claude-notify.app"
 if [ -x "$NOTIFIER/Contents/MacOS/claude-notify" ]; then
-  open "$NOTIFIER" --args -title "$TITLE" -message "$LAST_TEXT"
+  open -n "$NOTIFIER" --args -title "$TITLE" -message "$LAST_TEXT" -pane "${TMUX_PANE:-}"
 else
   BODY_ESCAPED=$(printf '%s' "$LAST_TEXT" | sed 's/\\/\\\\/g; s/"/\\"/g' | awk 'BEGIN{ORS=""} {if (NR>1) printf "\\n"; print}')
   TITLE_ESCAPED=$(printf '%s' "$TITLE" | sed 's/\\/\\\\/g; s/"/\\"/g')

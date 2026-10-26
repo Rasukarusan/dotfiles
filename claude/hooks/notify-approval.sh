@@ -31,7 +31,7 @@ fi
 
 NOTIFIER="$HOME/.claude/bin/claude-notify.app"
 if [ -x "$NOTIFIER/Contents/MacOS/claude-notify" ]; then
-  open "$NOTIFIER" --args -title "Claude Code" -subtitle "$SUBTITLE" -message "$DETAIL"
+  open -n "$NOTIFIER" --args -title "Claude Code" -subtitle "$SUBTITLE" -message "$DETAIL" -pane "${TMUX_PANE:-}"
 else
   DETAIL_ESCAPED=$(printf '%s' "$DETAIL" | sed 's/\\/\\\\/g; s/"/\\"/g')
   SUBTITLE_ESCAPED=$(printf '%s' "$SUBTITLE" | sed 's/\\/\\\\/g; s/"/\\"/g')

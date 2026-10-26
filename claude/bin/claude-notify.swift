@@ -5,23 +5,25 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     var notifTitle = ""
     var notifSubtitle = ""
     var notifMessage = ""
+    var notifPane = ""
     var hasNotification = false
+
+    // 通知クリックで起動されたとき、didReceive より前に delegate を設定しておく必要がある
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        UNUserNotificationCenter.current().delegate = self
+    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         if !hasNotification {
-            NSWorkspace.shared.launchApplication(
-                withBundleIdentifier: "com.googlecode.iterm2",
-                options: [],
-                additionalEventParamDescriptor: nil,
-                launchIdentifier: nil
-            )
-            DispatchQueue.main.async { NSApp.terminate(nil) }
+            // 通知クリックなら didReceive が来る。来なければ iTerm を前面に出すだけ
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                self.activateTerminal()
+                NSApp.terminate(nil)
+            }
             return
         }
 
         let center = UNUserNotificationCenter.current()
-        center.delegate = self
-
         center.requestAuthorization(options: [.alert, .sound]) { granted, error in
             if granted {
                 self.sendNotification()
@@ -36,6 +38,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
         content.title = notifTitle
         if !notifSubtitle.isEmpty { content.subtitle = notifSubtitle }
         content.body = notifMessage
+        if !notifPane.isEmpty { content.userInfo = ["pane": notifPane] }
 
         let request = UNNotificationRequest(
             identifier: UUID().uuidString,
@@ -55,12 +58,45 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         completionHandler([.banner, .sound])
     }
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
+        if let pane = response.notification.request.content.userInfo["pane"] as? String {
+            focusTmuxPane(pane)
+        }
+        activateTerminal()
+        completionHandler()
+        DispatchQueue.main.async { NSApp.terminate(nil) }
+    }
+
+    func activateTerminal() {
+        NSWorkspace.shared.launchApplication(
+            withBundleIdentifier: "com.googlecode.iterm2",
+            options: [],
+            additionalEventParamDescriptor: nil,
+            launchIdentifier: nil
+        )
+    }
+
+    func focusTmuxPane(_ pane: String) {
+        let home = NSHomeDirectory()
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "\(home)/dotfiles/bin/tmux-focus-pane")
+        process.arguments = [pane]
+        var env = ProcessInfo.processInfo.environment
+        env["PATH"] = "\(home)/dotfiles/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin"
+        process.environment = env
+        try? process.run()
+        process.waitUntilExit()
+    }
 }
 
 let args = CommandLine.arguments
 var title = "Claude Code"
 var subtitle = ""
 var message = ""
+var pane = ""
 var hasArgs = false
 
 var i = 1
@@ -72,6 +108,7 @@ while i < args.count {
     case "-title":    title = args[i]; hasArgs = true
     case "-subtitle": subtitle = args[i]; hasArgs = true
     case "-message":  message = args[i]; hasArgs = true
+    case "-pane":     pane = args[i]
     default: continue
     }
     i += 1
@@ -81,6 +118,7 @@ let appDelegate = AppDelegate()
 appDelegate.notifTitle = title
 appDelegate.notifSubtitle = subtitle
 appDelegate.notifMessage = message
+appDelegate.notifPane = pane
 appDelegate.hasNotification = hasArgs
 
 let app = NSApplication.shared

@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+#
+# 指定した pane を画面に出してフォーカスする。claude-notify の通知クリックから呼ばれる。
+#
+# - 対象 client は popup セッションに attach した入れ子 client を除き、直近に操作されたもの。
+# - 対象が popup セッションの pane なら popup を開いて表示する(開いていればそのまま)。
+# - それ以外なら、開いている popup を閉じてから client をその pane へ切り替える。
+#
+# 使い方: tmux-focus-pane <pane_id>
+set -euo pipefail
+
+pane="$1"
+
+session=$(tmux display-message -p -t "$pane" '#{session_name}' 2>/dev/null) || exit 0
+client=$(tmux list-clients -F '#{client_activity} #{session_name} #{client_name}' \
+  | awk '$2 != "popup"' | sort -rn | head -1 | cut -d' ' -f3)
+[ -n "$client" ] || exit 0
+
+popup_open=$(tmux list-clients -t popup 2>/dev/null || true)
+
+tmux select-window -t "$pane" \; select-pane -t "$pane"
+
+if [ "$session" = "popup" ]; then
+  if [ -z "$popup_open" ]; then
+    current=$(tmux display-message -p -c "$client" '#{pane_id}')
+    # display-popup は popup が閉じるまで戻らないので、サーバー側でバックグラウンド実行する
+    tmux run-shell -b "tmux-popup-session '$client' '$current'"
+  fi
+else
+  [ -n "$popup_open" ] && tmux display-popup -C -c "$client"
+  tmux switch-client -c "$client" -t "$pane"
+fi
