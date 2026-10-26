@@ -113,6 +113,7 @@ alias cod='codex --sandbox workspace-write --ask-for-approval on-request --confi
 alias cld='claude --permission-mode auto'
 alias cldd='claude --dangerously-skip-permissions'
 alias cldc='cld --continue'
+alias cldi='_cld_with_input "/is-best" submit'
 alias day='daily_report' # その日のChrome履歴・Claude/Codexセッションから日報を作る
 alias codc='codex resume --last' # 直近のCodexセッションを継続
 alias rg="rg --hidden" # --no-ignoreで全検索
