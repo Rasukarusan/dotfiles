@@ -1618,9 +1618,9 @@ _cld_with_input() {
 }
 
 # PRのブランチでworktreeを作成
-# prw は移動後に cld を起動する。prwi はさらに /is-best を送信する
+# prw は移動後に cld を起動する。prww はさらに /is-best を送信する
 alias prw='_git_worktree_from_pr'
-alias prwi='_git_worktree_from_pr --is-best'
+alias prww='_git_worktree_from_pr --is-best'
 _git_worktree_from_pr() {
   # cld はエイリアスなので eval で起動する
   local launch='cld'
