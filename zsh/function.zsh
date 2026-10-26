@@ -1617,89 +1617,9 @@ _cld_with_input() {
   cld
 }
 
-# PRのブランチでworktreeを作成
-# prw は移動後に cld を起動する。prww はさらに /is-best を送信する
-alias prw='_git_worktree_from_pr'
-alias prww='_git_worktree_from_pr --is-best'
-_git_worktree_from_pr() {
-  # cld はエイリアスなので eval で起動する
-  local launch='cld'
-  [ "$1" = --is-best ] && launch='_cld_with_input "/is-best" submit' && shift
-  # デフォルトのクエリ
-  local default_query="NOT bump in:title is:open is:pr"
-  # 引数があればそれを付け足す
-  local query="$default_query ${1:+$1}"
-
-  # 引数がPRのブランチ名と一致すればそのPRを使う。無ければ検索結果から選ぶ（1件なら自動選択）
-  local pr_number=""
-  [ -n "$1" ] && pr_number=$(gh pr list --head "$1" --json number -q '.[0].number')
-  if [ -z "$pr_number" ]; then
-    local pr_line=$(gh pr list --search "$query" --limit 100 --json number,title,author,headRefName \
-      -q '.[] | [.number, .title, .author.login, .headRefName] | @tsv' | column -t -s $'\t' | fzf --select-1)
-    [ -z "$pr_line" ] && return
-    pr_number=$(echo "$pr_line" | awk '{print $1}')
-  fi
-  local branch_name=$(gh pr view "$pr_number" --json headRefName -q '.headRefName')
-  [ -z "$branch_name" ] && echo "ブランチ名を取得できませんでした" && return
-
-  # リポジトリ名とworktree集約ディレクトリを取得
-  local repo_root=$(git rev-parse --show-toplevel)
-  local repo_name=$(basename "$repo_root")
-  local parent_dir="${HOME}/work/worktree/${repo_name}"
-
-  # ブランチ名の/を-に置換（ディレクトリ名として使用するため）
-  local safe_branch_name=$(echo "$branch_name" | tr '/' '-')
-  local worktree_path="${parent_dir}/${safe_branch_name}"
-
-  # すでにworktreeが存在するか確認（別パスも含む）
-  local existing_worktree=$(git worktree list | grep "\[${branch_name}\]" | awk '{print $1}')
-  if [ -n "$existing_worktree" ]; then
-    printf "\e[33mWorktreeが既に存在するため移動します: ${existing_worktree}\e[m\n"
-    cd "$existing_worktree" && eval "$launch"
-    return
-  fi
-
-  # 作成先パスに別ブランチのworktreeが居座っていれば移す
-  _git_worktree_free_path "$worktree_path" "$parent_dir" || return
-
-  # リモートブランチをfetch
-  printf "\e[36mリモートブランチをfetch中...\e[m\n"
-  git fetch origin "$branch_name"
-
-  # 集約ディレクトリを作成
-  mkdir -p "$parent_dir"
-
-  # worktree作成
-  printf "\e[36mWorktreeを作成中: ${worktree_path}\e[m\n"
-  git worktree add "$worktree_path" "$branch_name"
-
-  if [ $? -eq 0 ]; then
-    printf "\e[32mWorktreeを作成しました: ${worktree_path}\e[m\n"
-    cd "$worktree_path" && eval "$launch"
-  else
-    printf "\e[31mWorktreeの作成に失敗しました\e[m\n"
-  fi
-}
-
-# 指定のブランチでworktreeを作成
-alias cow='_git_worktree_checkout'
-_git_worktree_checkout() {
-  # ブランチ選択（ローカル＋リモート）
-  local branch_line=$(git branch -a | tr -d " " | fzf --popup 80% --prompt "WORKTREE BRANCH>" --preview "git log --color=always {}" | head -n 1 | sed -e "s/^\*\s*//g")
-  [ -z "$branch_line" ] && return
-
-  # remotes/origin/ を除去してブランチ名を取得
-  local branch_name=$(echo "$branch_line" | perl -pe "s/remotes\/origin\///g")
-  [ -z "$branch_name" ] && echo "ブランチ名を取得できませんでした" && return
-
-  # リポジトリ名とworktree集約ディレクトリを取得
-  local repo_root=$(git rev-parse --show-toplevel)
-  local repo_name=$(basename "$repo_root")
-  local parent_dir="${HOME}/work/worktree/${repo_name}"
-
-  # ブランチ名の/を-に置換（ディレクトリ名として使用するため）
-  local safe_branch_name=$(echo "$branch_name" | tr '/' '-')
-  local worktree_path="${parent_dir}/${safe_branch_name}"
+# ブランチのworktreeへ移動する。無ければ ~/work/worktree/<repo>/ に作成してから移動する
+_git_worktree_enter() {
+  local branch_name="$1"
 
   # すでにworktreeが存在するか確認（別パスも含む）
   local existing_worktree=$(git worktree list | grep "\[${branch_name}\]" | awk '{print $1}')
@@ -1709,13 +1629,22 @@ _git_worktree_checkout() {
     return
   fi
 
+  # リポジトリ名とworktree集約ディレクトリを取得
+  local repo_root=$(git rev-parse --show-toplevel)
+  local repo_name=$(basename "$repo_root")
+  local parent_dir="${HOME}/work/worktree/${repo_name}"
+
+  # ブランチ名の/を-に置換（ディレクトリ名として使用するため）
+  local safe_branch_name=$(echo "$branch_name" | tr '/' '-')
+  local worktree_path="${parent_dir}/${safe_branch_name}"
+
   # 作成先パスに別ブランチのworktreeが居座っていれば移す
   _git_worktree_free_path "$worktree_path" "$parent_dir" || return
 
-  # リモートブランチの場合はfetch
-  if echo "$branch_line" | grep -q "remotes/origin/"; then
+  # ローカルに無いブランチはfetch
+  if ! git show-ref --verify --quiet "refs/heads/${branch_name}"; then
     printf "\e[36mリモートブランチをfetch中...\e[m\n"
-    git fetch origin "$branch_name"
+    git fetch origin "$branch_name" || return
   fi
 
   # 集約ディレクトリを作成
@@ -1723,14 +1652,52 @@ _git_worktree_checkout() {
 
   # worktree作成
   printf "\e[36mWorktreeを作成中: ${worktree_path}\e[m\n"
-  git worktree add "$worktree_path" "$branch_name"
-
-  if [ $? -eq 0 ]; then
-    printf "\e[32mWorktreeを作成しました: ${worktree_path}\e[m\n"
-    cd "$worktree_path"
-  else
+  if ! git worktree add "$worktree_path" "$branch_name"; then
     printf "\e[31mWorktreeの作成に失敗しました\e[m\n"
+    return 1
   fi
+  printf "\e[32mWorktreeを作成しました: ${worktree_path}\e[m\n"
+  cd "$worktree_path"
+}
+
+# PRのブランチでworktreeを作成
+# prw は移動後に cld を起動する。prww はさらに /is-best を送信する
+alias prw='_git_worktree_from_pr'
+alias prww='_git_worktree_from_pr --is-best'
+_git_worktree_from_pr() {
+  # cld はエイリアスなので eval で起動する
+  local launch='cld'
+  [ "$1" = --is-best ] && launch='_cld_with_input "/is-best" submit' && shift
+  local branch_name=$(_git_pr_select_branch "$1")
+  [ -z "$branch_name" ] && return
+  _git_worktree_enter "$branch_name" && eval "$launch"
+}
+
+# PRを選んでそのブランチ名を返す
+# 引数がPRのブランチ名と一致すればそのPRを使う。無ければ引数を検索語に足してfzfで選ぶ（1件なら自動選択）
+_git_pr_select_branch() {
+  local query="NOT bump in:title is:open is:pr ${1:+$1}"
+  local pr_number=""
+  [ -n "$1" ] && pr_number=$(gh pr list --head "$1" --json number -q '.[0].number')
+  if [ -z "$pr_number" ]; then
+    local pr_line=$(gh pr list --search "$query" --limit 100 --json number,title,author,headRefName \
+      -q '.[] | [.number, .title, .author.login, .headRefName] | @tsv' | column -t -s $'\t' | fzf --select-1)
+    [ -z "$pr_line" ] && return
+    pr_number=$(echo "$pr_line" | awk '{print $1}')
+  fi
+  local branch_name=$(gh pr view "$pr_number" --json headRefName -q '.headRefName')
+  [ -z "$branch_name" ] && echo "ブランチ名を取得できませんでした" >&2 && return
+  echo "$branch_name"
+}
+
+# 指定のブランチでworktreeを作成
+alias cow='_git_worktree_checkout'
+_git_worktree_checkout() {
+  # ブランチ選択（ローカル＋リモート）。worktreeで使用中の+や現在の*を外し、remotes/origin/ を除く
+  local branch_name=$(git branch -a | tr -d " " | sed -e "s/^[*+]//" | fzf --popup 80% --prompt "WORKTREE BRANCH>" --preview "git log --color=always {}" \
+    | head -n 1 | perl -pe "s/remotes\/origin\///g")
+  [ -z "$branch_name" ] && return
+  _git_worktree_enter "$branch_name"
 }
 
 # worktreeのPRキャッシュ用ディレクトリを返す(リポジトリ単位)
