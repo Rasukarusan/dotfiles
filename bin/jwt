@@ -6,9 +6,9 @@
 #   jwt <token>
 #   ... | jwt
 #
-# 入力が JSON なら、JWT の値だけをデコード結果に置き換えて JSON 全体を出力する。
-# それ以外のテキストなら、含まれる JWT を順にデコードして出力する。
-# exp / iat / nbf はローカル時刻に変換して併記し、exp 切れなら expired を付ける。
+# 入力が JSON なら JWT が入っているキーを、それ以外のテキストなら出現順を見出しにして、
+# JWT ごとに分けて表示する。JWT が 1 つだけなら見出しは付けない。
+# exp / iat / nbf / auth_time はローカル時刻に変換して併記し、exp 切れなら expired を付ける。
 
 set -euo pipefail
 
@@ -25,7 +25,8 @@ if ! grep -qE 'eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+\.' <<<"$input"; then
   exit 1
 fi
 
-printf %s "$input" | jq -R -s '
+# 1 行に 1 つ {label, decoded} を出す
+entries=$(printf %s "$input" | jq -R -s -c '
   def jwt_pattern: "eyJ[A-Za-z0-9_-]*\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]*";
   def is_jwt: type == "string" and test("^" + jwt_pattern + "$");
 
@@ -46,11 +47,31 @@ printf %s "$input" | jq -R -s '
   def decode_jwt:
     split(".") | {header: (.[0] | b64url_decode), payload: (.[1] | b64url_decode | annotate_times)};
 
+  # ["a", 0, "b"] -> "a[0].b"
+  def path_label:
+    map(if type == "number" then "[\(.)]" else ".\(.)" end) | join("") | ltrimstr(".");
+
   . as $text
   | (try fromjson catch null) as $json
   | if ($json | type) == "object" or ($json | type) == "array" then
-      $json | walk(if is_jwt then decode_jwt else . end)
+      $json | paths(is_jwt) as $p | {label: ($p | path_label), decoded: (getpath($p) | decode_jwt)}
     else
-      $text | scan(jwt_pattern) | decode_jwt
+      [$text | scan(jwt_pattern)] | to_entries[] | {label: "#\(.key + 1)", decoded: (.value | decode_jwt)}
     end
-'
+')
+
+count=$(wc -l <<<"$entries")
+first=1
+while IFS= read -r entry; do
+  if [ "$count" -gt 1 ]; then
+    [ $first -eq 1 ] || echo
+    label=$(jq -r .label <<<"$entry")
+    if [ -t 1 ]; then
+      printf '\033[1;36m== %s ==\033[0m\n' "$label"
+    else
+      printf '== %s ==\n' "$label"
+    fi
+  fi
+  jq .decoded <<<"$entry"
+  first=0
+done <<<"$entries"
