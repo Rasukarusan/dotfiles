@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+#
+# 入力に含まれる JWT を header と payload にデコードして表示する。署名は検証しない。
+#
+#   jwt               クリップボードから読む
+#   jwt <token>
+#   ... | jwt
+#
+# 入力が JSON なら、JWT の値だけをデコード結果に置き換えて JSON 全体を出力する。
+# それ以外のテキストなら、含まれる JWT を順にデコードして出力する。
+# exp / iat / nbf はローカル時刻に変換して併記し、exp 切れなら expired を付ける。
+
+set -euo pipefail
+
+if [ $# -gt 0 ]; then
+  input=$1
+elif [ -t 0 ]; then
+  input=$(pbpaste)
+else
+  input=$(cat)
+fi
+
+if ! grep -qE 'eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+\.' <<<"$input"; then
+  echo "jwt: JWT が見つかりません" >&2
+  exit 1
+fi
+
+printf %s "$input" | jq -R -s '
+  def jwt_pattern: "eyJ[A-Za-z0-9_-]*\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]*";
+  def is_jwt: type == "string" and test("^" + jwt_pattern + "$");
+
+  # base64url をパディング付きの base64 に戻してデコードする
+  def b64url_decode:
+    gsub("-"; "+") | gsub("_"; "/")
+    | . + ("=" * ((4 - length % 4) % 4))
+    | @base64d | fromjson;
+
+  def annotate_times:
+    now as $now
+    | with_entries(
+        if (.key | IN("exp", "iat", "nbf", "auth_time")) and (.value | type) == "number" then
+          .value = "\(.value) (\(.value | strflocaltime("%Y-%m-%d %H:%M:%S %Z"))\(if .key == "exp" and .value < $now then ", expired" else "" end))"
+        else . end
+      );
+
+  def decode_jwt:
+    split(".") | {header: (.[0] | b64url_decode), payload: (.[1] | b64url_decode | annotate_times)};
+
+  . as $text
+  | (try fromjson catch null) as $json
+  | if ($json | type) == "object" or ($json | type) == "array" then
+      $json | walk(if is_jwt then decode_jwt else . end)
+    else
+      $text | scan(jwt_pattern) | decode_jwt
+    end
+'
