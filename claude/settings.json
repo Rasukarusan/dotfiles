@@ -5,6 +5,19 @@
     "CLAUDE_CODE_PLUGIN_DIRS": "~/.claude/mods/whiteboard"
   },
   "includeCoAuthoredBy": false,
+  "autoMode": {
+    "environment": [
+      "$defaults",
+      "Source control: github.com/example-org (the user's company org) and github.com/Rasukarusan (the user's personal account)",
+      "Jira: example.atlassian.net project PROJ is the user's team project"
+    ],
+    "allow": [
+      "$defaults",
+      "Editing Claude Code harness files (.claude/skills in the user's repositories, ~/.claude/skills, ~/.claude/hooks, ~/dotfiles/claude, and Claude memory files under ~/.claude/projects/*/memory) is allowed when the user asked for that change in the current session, including deleting or merging memory files",
+      "Committing and pushing those harness changes on a feature/* branch and opening a draft PR is allowed",
+      "Git history operations (rebase, merge, reset of unpushed commits, restore, rm, push --force-with-lease) on the user's own feature/* branches in worktrees under ~/work/worktree or ~/work/app/.claude/worktrees are allowed before review has started"
+    ]
+  },
   "permissions": {
     "allow": [
       "Bash(npm:*)",
