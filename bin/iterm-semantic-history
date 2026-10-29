@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# iTerm2 のデフォルトプロファイルの Semantic History (cmd+クリック) を
+# bin/iterm-open-file を実行する設定にする。
+#
+# iTerm2 は終了時に設定を上書きするため、起動中なら一度終了させてから書き込み、再度起動する。
+# iTerm2 の終了で自分も殺されないよう、その場合は切り離したプロセスで実行し直す。
+#
+#   iterm-semantic-history            起動中なら再起動して反映する
+#   iterm-semantic-history --no-restart   起動中なら何もしない(setup.sh 用)
+set -euo pipefail
+
+DOMAIN=com.googlecode.iterm2
+COMMAND="$HOME/dotfiles/bin/iterm-open-file \\1 \\5"
+
+iterm_running() { pgrep -xq iTerm2; }
+
+apply() {
+  local tmp guid n i
+  tmp=$(mktemp -t iterm2)
+  defaults export "$DOMAIN" "$tmp"
+  guid=$(/usr/libexec/PlistBuddy -c "Print :'Default Bookmark Guid'" "$tmp")
+  n=$(/usr/libexec/PlistBuddy -c "Print :'New Bookmarks'" "$tmp" | grep -c '^        Guid = ')
+  for ((i = 0; i < n; i++)); do
+    [ "$(/usr/libexec/PlistBuddy -c "Print :'New Bookmarks':$i:Guid" "$tmp")" = "$guid" ] || continue
+    plutil -replace "New Bookmarks.$i.Semantic History" \
+      -json "$(jq -n --arg text "$COMMAND" '{action: "command", text: $text}')" "$tmp"
+    defaults import "$DOMAIN" "$tmp"
+    rm -f "$tmp"
+    return 0
+  done
+  rm -f "$tmp"
+  echo "iterm-semantic-history: デフォルトプロファイルが見つかりません" >&2
+  return 1
+}
+
+case "${1:-}" in
+  --no-restart)
+    if iterm_running; then
+      echo "  skip: iTerm2 の起動中は書き込めません。tmux 内で iterm-semantic-history を実行してください"
+    else
+      apply
+    fi
+    ;;
+  --detached)
+    osascript -e 'quit app "iTerm"'
+    while iterm_running; do sleep 0.2; done
+    apply
+    open -a iTerm
+    ;;
+  *)
+    if iterm_running; then
+      nohup "$0" --detached >/dev/null 2>&1 < /dev/null &
+      echo "iTerm2 を再起動して反映します"
+    else
+      apply
+    fi
+    ;;
+esac

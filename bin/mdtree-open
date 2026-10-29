@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# mdtreeサーバー(ルートディレクトリごとに常駐)にファイルを開かせ、ブラウザで表示する。
+# サーバーは既に起動していれば使い回し、なければバックグラウンドで起動する。
+#
+#   mdtree-open <file> [root]
+#
+# file が root(省略時はカレントディレクトリ)配下ならそこをルートにし、
+# 外ならファイルの親ディレクトリをルートにする。
+set -euo pipefail
+
+# iTerm2 から呼ばれたときはログインシェルのPATHを持たないため補う。
+export PATH="$HOME/.local/bin:/usr/local/bin:/opt/homebrew/bin:$PATH"
+
+input="${1:?usage: mdtree-open <file> [root]}"
+root="${2:-$PWD}"
+
+if [ ! -f "$input" ]; then
+  echo "mdtree-open: ファイルが見つかりません: $input" >&2
+  exit 1
+fi
+abs_file="$(cd "$(dirname "$input")" && pwd)/$(basename "$input")"
+root="$(cd "$root" 2>/dev/null && pwd || true)"
+
+case "$abs_file" in
+  "$root"/*)
+    abs_dir="$root"
+    rel="${abs_file#"$root"/}"
+    ;;
+  *)
+    abs_dir="$(dirname "$abs_file")"
+    rel="$(basename "$abs_file")"
+    ;;
+esac
+
+state_dir="$HOME/.cache/mdtree"
+mkdir -p "$state_dir"
+key=$(echo -n "$abs_dir" | shasum | cut -d' ' -f1)
+state_file="$state_dir/$key.state"
+log_file="$state_dir/$key.log"
+
+pid="" port=""
+if [ -f "$state_file" ]; then
+  pid=$(sed -n '1p' "$state_file")
+  port=$(sed -n '2p' "$state_file")
+  if [ -z "$pid" ] || ! kill -0 "$pid" 2>/dev/null; then
+    pid=""; port=""
+  fi
+fi
+
+if [ -z "$port" ]; then
+  : > "$log_file"
+  nohup mdtree -no-open "$abs_dir" >"$log_file" 2>&1 < /dev/null &
+  pid=$!
+  for _ in $(seq 50); do
+    port=$(grep -o 'http://127\.0\.0\.1:[0-9]*' "$log_file" | head -1 | sed 's/.*://' || true)
+    [ -n "$port" ] && break
+    sleep 0.1
+  done
+  if [ -z "$port" ]; then
+    echo "mdtree-open: サーバーの起動に失敗しました($log_file を確認してください)" >&2
+    exit 1
+  fi
+  printf '%s\n%s\n' "$pid" "$port" > "$state_file"
+fi
+
+curl -s -o /dev/null -X POST \
+  -H 'Content-Type: application/json' \
+  -d "$(jq -n --arg path "$rel" '{path: $path}')" \
+  "http://127.0.0.1:$port/api/open"
+
+# 既存タブが閉じられていても表示できるよう、daemonを使い回す場合も毎回開く。
+open "http://127.0.0.1:$port/"

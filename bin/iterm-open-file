@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# iTerm2 の Semantic History (cmd+クリック) から呼ばれ、クリックしたファイルを開く。
+# .md は mdtree でプレビューし、それ以外は既定のアプリで開く。
+# iTerm2 側の設定は bin/iterm-semantic-history が書き込む。
+#
+#   iterm-open-file <file> [cwd]
+set -euo pipefail
+
+file="$1"
+cwd="${2:-$HOME}"
+[[ "$file" = /* ]] || file="$cwd/$file"
+
+case "$file" in
+  *.md|*.markdown) exec "$(dirname "$0")/mdtree-open" "$file" "$cwd" ;;
+  *) exec open "$file" ;;
+esac

@@ -131,6 +131,9 @@ defaults write com.apple.screencapture show-thumbnail -bool FALSE
 defaults write com.apple.screencapture name -string "screenshot_"
 killall SystemUIServer 2>/dev/null || true
 
+# iTerm2 の cmd+クリックで .md を mdtree でプレビューする(bin/iterm-open-file)
+bash "$DOTFILES_DIR/bin/iterm-semantic-history" --no-restart
+
 # 画面ロック中もスリープさせず、Claude Code 等の作業を継続させる（ディスプレイはスリープする）
 if pmset -g custom | awk '$1=="sleep" && $2!="0"{found=1} END{exit !found}'; then
   sudo pmset -a sleep 0

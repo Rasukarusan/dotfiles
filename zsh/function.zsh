@@ -62,36 +62,19 @@ _look() {
 }
 
 # fzfでファイルを選び、mdtreeサーバー(ディレクトリごとに常駐)にその場でファイルを開かせる。
-# サーバーは既に起動していれば使い回し、なければバックグラウンドで起動してブラウザを開く。
-# Ctrl-C やターミナルを閉じてもサーバーは生き続け、ブラウザのリロードでも表示は消えない。
+# サーバーの起動・使い回しは mdtree-open が行う。
 alias md='_mdtree_fzf'
 _mdtree_fzf() {
   local input="${1:-.}"
-  local abs_dir rel
+  local abs_file root
 
   if [ -f "$input" ]; then
     # ファイルが直接渡された場合はfzfをスキップして即座にそれを開く。
-    # CWD配下のファイルならCWDをルートにして(`md .`で選ぶのと同じdaemonを再利用できる)、
-    # CWD外ならファイルの親ディレクトリをルートにする。
-    local abs_file
     abs_file="$(cd "$(dirname "$input")" 2>/dev/null && pwd)/$(basename "$input")"
-    if [ -z "$abs_file" ] || [ "$abs_file" = "/" ]; then
-      echo "md: ファイルが見つかりません: $input" >&2
-      return 1
-    fi
-    case "$abs_file" in
-      "$PWD"/*)
-        abs_dir="$PWD"
-        rel="${abs_file#$PWD/}"
-        ;;
-      *)
-        abs_dir="$(dirname "$abs_file")"
-        rel="$(basename "$abs_file")"
-        ;;
-    esac
+    root="$PWD"
   elif [ -d "$input" ]; then
-    abs_dir=$(cd "$input" 2>/dev/null && pwd)
-    if [ -z "$abs_dir" ]; then
+    root=$(cd "$input" 2>/dev/null && pwd)
+    if [ -z "$root" ]; then
       echo "md: ディレクトリが見つかりません: $input" >&2
       return 1
     fi
@@ -99,7 +82,7 @@ _mdtree_fzf() {
     # reload用にコマンドを文字列で持ち、初期表示と切替後で同じ定義を使い回す。
     # Gitリポジトリ内ではgit管理下のファイルに限定する(未追跡でもgitignore対象外なら含む)。
     local list_md list_all
-    if git -C "$abs_dir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    if git -C "$root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
       local git_ls="git ls-files --cached --others --exclude-standard"
       list_md="$git_ls -- '*.md' '*.html' '*.htm'"
       list_all="$git_ls"
@@ -114,8 +97,9 @@ _mdtree_fzf() {
       list_md="$find_base \\( -name '*.md' -o -name '*.html' -o -name '*.htm' \\) | cut -c3-"
       list_all="$find_base | cut -c3-"
     fi
+    local rel
     rel=$(
-      cd "$abs_dir" || exit 1
+      cd "$root" || exit 1
       eval "$list_md" \
       | fzf --popup 80% --prompt 'md [doc] ' --no-multi \
           --header 'ctrl-a: 全ファイル/md・htmlのみ切替' \
@@ -123,58 +107,18 @@ _mdtree_fzf() {
           --bind "ctrl-a:transform:if [[ \$FZF_PROMPT == 'md [doc] ' ]]; then echo \"change-prompt(md [all] )+reload($list_all)\"; else echo \"change-prompt(md [doc] )+reload($list_md)\"; fi"
     )
     [ -z "$rel" ] && return
+    abs_file="$root/$rel"
   else
     echo "md: ファイルまたはディレクトリが見つかりません: $input" >&2
     return 1
   fi
 
-  local state_dir="$HOME/.cache/mdtree"
-  mkdir -p "$state_dir"
-  local key=$(echo -n "$abs_dir" | shasum | cut -d' ' -f1)
-  local state_file="$state_dir/$key.state"
-  local log_file="$state_dir/$key.log"
-
-  local pid="" port=""
-  if [ -f "$state_file" ]; then
-    pid=$(sed -n '1p' "$state_file")
-    port=$(sed -n '2p' "$state_file")
-    if [ -z "$pid" ] || ! kill -0 "$pid" 2>/dev/null; then
-      pid=""; port=""
-    fi
-  fi
-
-  if [ -z "$port" ]; then
-    : > "$log_file"
-    # `&` をそのまま書くとzshが `[3] 12345` のジョブ通知を出す。コマンド置換の
-    # サブシェル内はジョブ制御が効かないので、そこで起動してPIDだけ受け取る。
-    pid=$( { nohup mdtree -no-open "$abs_dir" >"$log_file" 2>&1 < /dev/null & echo $!; } )
-    local i=0
-    while [ $i -lt 50 ]; do
-      port=$(grep -o 'http://127\.0\.0\.1:[0-9]*' "$log_file" | head -1 | sed 's/.*://')
-      [ -n "$port" ] && break
-      sleep 0.1
-      i=$((i + 1))
-    done
-    if [ -z "$port" ]; then
-      echo "md: サーバーの起動に失敗しました($log_file を確認してください)" >&2
-      return 1
-    fi
-    printf '%s\n%s\n' "$pid" "$port" > "$state_file"
-  fi
-
-  curl -s -o /dev/null -X POST \
-    -H 'Content-Type: application/json' \
-    -d "$(jq -n --arg path "$rel" '{path: $path}')" \
-    "http://127.0.0.1:$port/api/open"
-
-  # 既存タブが閉じられていても表示できるよう、daemonを使い回す場合も毎回開く。
-  # 既にタブが開いていれば大抵は既存タブがそのまま前面に来るか、新規タブが増える程度。
-  open "http://127.0.0.1:$port/"
+  mdtree-open "$abs_file" "$root" || return
 
   # fzfでの選択はコマンドとして実行されないためzshのヒストリーに残らない。
   # 上矢印+Enterでそのまま同じファイルを再オープンできるよう、実行可能な
   # `md <ファイルパス>` の形でヒストリーに追記する。
-  print -s "md '$abs_dir/$rel'"
+  print -s "md '$abs_file'"
 }
 
 # remoteに設定されているURLを開く
