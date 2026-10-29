@@ -295,6 +295,10 @@ bash "$DOTFILES_DIR/bin/mdtree/build.sh"
 echo "==> claude-caption"
 bash "$DOTFILES_DIR/bin/claude-caption/build.sh"
 
+# nosleep (メニューバーからスリープ無効化を切り替える常駐アプリをビルド)
+echo "==> nosleep"
+bash "$DOTFILES_DIR/bin/nosleep/build.sh"
+
 # ~/.codex
 echo "==> ~/.codex"
 mkdir -p "$HOME/.codex"
