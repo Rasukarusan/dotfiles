@@ -3,7 +3,7 @@
 # popup セッションを popup で開く。新規作成時は ~/dotfiles で開く。
 # popup 内にも TMUX が設定されるため unset しないとネスト扱いで即終了する。
 #
-# 使い方: tmux-popup-session <client> <pane>
+# 使い方: tmux-popup-session <pane>
 set -euo pipefail
 
-exec tmux-popup "$1" "$2" -w80% -h80% -E "env -u TMUX tmux new -A -s popup -c ~/dotfiles"
+exec tmux-popup "$1" -w 80% -h 80% "env -u TMUX tmux new -A -s popup -c ~/dotfiles"

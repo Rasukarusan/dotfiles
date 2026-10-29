@@ -2,23 +2,37 @@
 #
 # tmux の popup を起動する唯一の入口。tmux.conf の popup 系 bind はすべてこれを使う。
 #
-# 使い方(tmux.conf):
-#   bind x run-shell -b 'tmux-popup "#{client_name}" "#{pane_id}" [display-popup のオプション...] "コマンド"'
+# 使い方:
+#   tmux-popup <pane> [-d 開始ディレクトリ] [-w 幅%] [-h 高さ%] "コマンド"
 #
-# - display-popup は popup が閉じるまで呼び出し元 client のコマンドキューを止める。
-#   キー入力は popup のペインへ直接届くが、マウスイベントはキューを通るため処理されなくなる。
-#   そこで run-shell -b の別 client からこのスクリプト経由で起動し、呼び出し元のキューを止めない。
-# - run-shell のジョブからは呼び出し元の client / pane を特定できないため、
-#   bind 側で展開した #{client_name} と #{pane_id} を引数で受け取り、-c / -t に渡す。
+# - popup は <pane> の window に modal な floating pane として中央に開く(new-pane -O)。
+#   コマンドが終了すると閉じる。
+# - -C: popup の外をクリックすると閉じる。display-popup にはこの指定が無いため new-pane を使う。
+# - -K: prefix を含むすべてのキーを popup に渡す(popup 内の入れ子 tmux で prefix を使うため)。
 set -euo pipefail
 
-if [ "$#" -lt 2 ]; then
-  echo "usage: tmux-popup <client> <pane> [display-popup options...] [shell-command]" >&2
+usage() {
+  echo "usage: tmux-popup <pane> [-d dir] [-w width%] [-h height%] shell-command" >&2
   exit 1
-fi
+}
 
-client="$1"
-pane="$2"
-shift 2
+[ "$#" -ge 2 ] || usage
+pane="$1"
+shift
 
-exec tmux display-popup -c "$client" -t "$pane" "$@"
+dir="" width=50 height=50
+while getopts "d:w:h:" opt; do
+  case "$opt" in
+    d) dir="$OPTARG" ;;
+    w) width="${OPTARG%\%}" ;;
+    h) height="${OPTARG%\%}" ;;
+    *) usage ;;
+  esac
+done
+shift $((OPTIND - 1))
+[ "$#" -eq 1 ] || usage
+
+exec tmux new-pane -O -C -K -t "$pane" ${dir:+-c "$dir"} \
+  -x "${width}%" -y "${height}%" \
+  -X "$(((100 - width) / 2))%" -Y "$(((100 - height) / 2))%" \
+  "$1"

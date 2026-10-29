@@ -22,9 +22,7 @@ tmux select-window -t "$pane" \; select-pane -t "$pane"
 
 if [ "$session" = "popup" ]; then
   if [ -z "$popup_open" ]; then
-    current=$(tmux display-message -p -c "$client" '#{pane_id}')
-    # display-popup は popup が閉じるまで戻らないので、サーバー側でバックグラウンド実行する
-    tmux run-shell -b "tmux-popup-session '$client' '$current'"
+    tmux-popup-session "$(tmux display-message -p -c "$client" '#{pane_id}')"
   fi
 else
   [ -n "$popup_open" ] && tmux display-popup -C -c "$client"
