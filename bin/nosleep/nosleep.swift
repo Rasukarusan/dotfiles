@@ -73,6 +73,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
+// LaunchAgent で常駐中に Spotlight から開かれても二重に常駐させない
+let me = NSRunningApplication.current
+if let id = Bundle.main.bundleIdentifier,
+   NSRunningApplication.runningApplications(withBundleIdentifier: id).contains(where: { $0.processIdentifier != me.processIdentifier }) {
+    exit(0)
+}
+
 let app = NSApplication.shared
 let delegate = AppDelegate()
 app.delegate = delegate
