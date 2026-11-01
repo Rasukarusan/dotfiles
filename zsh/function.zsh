@@ -1907,7 +1907,6 @@ function _ssh_fzf() {
   # 選択したサーバーが1つなら現在のpaneでsshを実行する
   if [ $server_num -eq 1 ]; then
       _change_bg_color ${target_servers}
-      # ssh -t $target_servers  "/bin/bash --rcfile ~/me/bashrc"
       ssh -t $target_servers
       return
   fi
@@ -1918,7 +1917,6 @@ function _ssh_fzf() {
       count=$(expr $count + 1)
       tmux select-layout tiled
       _change_bg_color ${target_server}
-      # tmux send-keys "ssh -t $server '/bin/bash --rcfile ~/me/bashrc'" C-m
       tmux send-keys "ssh -t $server" C-m
       tmux send-keys "clear" C-m
       if [ $count -ne ${#target_servers[@]} ];then
