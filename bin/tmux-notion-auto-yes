@@ -22,7 +22,7 @@ def approval(screen):
         r"Your organization requires approval for this tool\s+"
         r"Do you want to proceed\?\s+"
         r"[❯>›]?\s*1\. Yes\s+2\. No\s+"
-        r"Esc to cancel[^\n]*\Z", dialog
+        r"Esc to cancel[^\n]*(?:\n─{3,}[^\n]*)?\Z", dialog
     ))
 
 
