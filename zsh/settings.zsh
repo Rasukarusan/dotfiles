@@ -100,7 +100,7 @@ edit_current_line() {
   zle reset-prompt
 }
 zle -N edit_current_line
-bindkey '^w' edit_current_line
+bindkey '^g' edit_current_line
 
 # terraform補完
 autoload -U +X bashcompinit && bashcompinit
