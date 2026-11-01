@@ -2,3 +2,6 @@
 for script in $(find ~/Documents/github/scripts/local -type f); do
   source $script
 done
+
+# _git_worktree_enter の worktree 集約先 (未設定なら ~/worktree)
+# export GIT_WORKTREE_ROOT="$HOME/worktree"

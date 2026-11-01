@@ -7,7 +7,7 @@ Markdown はレンダリング、その他のソースはシンタックスハ�
 
 ```sh
 mdtree              # カレントディレクトリを開く
-mdtree ~/work/docs   # 指定ディレクトリを開く
+mdtree ~/docs       # 指定ディレクトリを開く
 mdtree -port 8765   # ポート固定(省略時は空きポートを自動割り当て)
 mdtree -no-open     # ブラウザを自動で開かない
 mdtree -file a/b.md # 起動時にそのファイルを自動で開く(相対パス)

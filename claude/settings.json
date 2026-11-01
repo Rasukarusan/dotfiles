@@ -7,15 +7,12 @@
   "includeCoAuthoredBy": false,
   "autoMode": {
     "environment": [
-      "$defaults",
-      "Source control: github.com/example-org (the user's company org) and github.com/Rasukarusan (the user's personal account)",
-      "Jira: example.atlassian.net project PROJ is the user's team project"
+      "$defaults"
     ],
     "allow": [
       "$defaults",
       "Editing Claude Code harness files (.claude/skills in the user's repositories, ~/.claude/skills, ~/.claude/hooks, ~/dotfiles/claude, and Claude memory files under ~/.claude/projects/*/memory) is allowed when the user asked for that change in the current session, including deleting or merging memory files",
-      "Committing and pushing those harness changes on a feature/* branch and opening a draft PR is allowed",
-      "Git history operations (rebase, merge, reset of unpushed commits, restore, rm, push --force-with-lease) on the user's own feature/* branches in worktrees under ~/work/worktree or ~/work/app/.claude/worktrees are allowed before review has started"
+      "Committing and pushing those harness changes on a feature/* branch and opening a draft PR is allowed"
     ]
   },
   "permissions": {
@@ -87,7 +84,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/hooks/track-research.sh"
+            "command": "f=$HOME/.claude/hooks/local/track-research.sh; [ -f \"$f\" ] && bash \"$f\" || true"
           }
         ]
       }
@@ -98,7 +95,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/hooks/track-research-stop.sh"
+            "command": "f=$HOME/.claude/hooks/local/track-research-stop.sh; [ -f \"$f\" ] && bash \"$f\" || true"
           },
           {
             "type": "command",
@@ -128,7 +125,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.claude/hooks/save-plan-adr.sh"
+            "command": "f=$HOME/.claude/hooks/local/save-plan-adr.sh; [ -f \"$f\" ] && bash \"$f\" || true"
           }
         ]
       }

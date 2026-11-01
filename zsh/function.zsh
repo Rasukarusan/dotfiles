@@ -1561,7 +1561,7 @@ _cld_with_input() {
   cld
 }
 
-# ブランチのworktreeへ移動する。無ければ ~/work/worktree/<repo>/ に作成してから移動する
+# ブランチのworktreeへ移動する。無ければ $GIT_WORKTREE_ROOT/<repo>/ に作成してから移動する
 _git_worktree_enter() {
   local branch_name="$1"
 
@@ -1576,7 +1576,7 @@ _git_worktree_enter() {
   # リポジトリ名とworktree集約ディレクトリを取得
   local repo_root=$(git rev-parse --show-toplevel)
   local repo_name=$(basename "$repo_root")
-  local parent_dir="${HOME}/work/worktree/${repo_name}"
+  local parent_dir="${GIT_WORKTREE_ROOT:-$HOME/worktree}/${repo_name}"
 
   # ブランチ名の/を-に置換（ディレクトリ名として使用するため）
   local safe_branch_name=$(echo "$branch_name" | tr '/' '-')
@@ -2317,4 +2317,14 @@ _layout_tmux_pane() {
 # 例: 1234  06-16 13:52  git status
 history() {
   builtin fc -il "${1:-1}" | sed -E 's/^([[:space:]]*[0-9]+[[:space:]]+)[0-9]{4}-/\1/'
+}
+
+# マシン固有の Claude Code 設定 (gitignore 済み) があれば --settings で重ねて起動する
+claude() {
+  local local_settings="$HOME/dotfiles/claude/local/settings.json"
+  if [ -f "$local_settings" ]; then
+    command claude --settings "$local_settings" "$@"
+  else
+    command claude "$@"
+  fi
 }

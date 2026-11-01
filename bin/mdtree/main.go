@@ -2,7 +2,7 @@
 // Markdown はレンダリング、その他のテキストはシンタックスハイライトしてプレビューする CLI。
 //
 //	mdtree            # カレントディレクトリを開く
-//	mdtree ~/work/docs # 指定ディレクトリを開く
+//	mdtree ~/docs # 指定ディレクトリを開く
 //	mdtree -port 8765 # ポート固定(省略時は空きポート自動割り当て)
 //	mdtree -no-open   # ブラウザを自動で開かない
 package main

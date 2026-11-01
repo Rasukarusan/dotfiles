@@ -28,7 +28,7 @@ Claude Codeで文章を生成した後、「人間っぽくして」「humanize�
 ```
 /humanizer-ja path/to/article.md
 「README.md をhumanizeして」
-「~/work/docs/draft.md を人間っぽく直して」
+「~/docs/draft.md を人間っぽく直して」
 ```
 
 **ファイル指定時の手順:**
