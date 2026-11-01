@@ -1,7 +1,6 @@
 ---
 name: sayj
-description: '日本語で出力して'
-disable-model-invocation: true
+description: 出力を日本語に切り替える。ユーザーが「sayj」とだけ打ったとき、または「/sayj」で使う。
 ---
 
-日本語で出力して
+これ以降の出力をすべて日本語にする。直前の出力が日本語以外なら、その内容を日本語で出し直す。
