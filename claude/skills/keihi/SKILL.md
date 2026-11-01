@@ -1,10 +1,9 @@
 ---
 name: keihi
-description: レシート画像・PDFから経費情報を読み取り、勘定科目・取引先を自動分類して表に整理する。毎月の定期経費（出社交通費・ChatGPT Plus）の明細も追加し、ファイルリネームと画像圧縮も行う。
-allowed-tools: Bash(bash *)
+description: レシート画像・PDFから経費情報を読み取り、勘定科目・取引先を自動分類して表に整理する。毎月の定期経費（出社交通費・ChatGPT Plus）の明細も追加し、ファイルリネームと画像圧縮の後、Google Driveの領収書を照合してNotionの空の領収書URL列を補完する。
 ---
 
-カレントディレクトリに存在する全ての画像またはPDFから経費情報を読み取り、整理されたMarkdown表を出力するスキルです。
+カレントディレクトリの画像・PDFから経費表を作成し、Google Driveの領収書URLをNotionの経費明細に入力する。
 
 ## 処理フロー
 
@@ -14,6 +13,7 @@ allowed-tools: Bash(bash *)
 4. `hyou.md`に表を出力
 5. ファイル名にprefixを追加してリネーム
 6. 画像ファイルを圧縮
+7. Google Driveの領収書を照合し、Notionの空の領収書URL列を補完
 
 ## 出力フォーマット
 
@@ -124,3 +124,12 @@ bash ${CLAUDE_SKILL_DIR}/scripts/compress-images.sh <対象ディレクトリ>
 - jpeg, png, heic, webp が対象
 - PDFは圧縮対象外
 - 圧縮前後のサイズと削減率が表示される
+
+## Notionの領収書URL補完
+
+ローカル処理の完了後、[notion-receipt-url-fill](../notion-receipt-url-fill/SKILL.md) を読み、その手順に従って続けて実行する。ユーザーがローカル処理のみを指定した場合は省略する。
+
+- 対象月、`hyou.md`、リネーム後のファイル名を照合に引き継ぐ。
+- Notionの対象データベース・ビューとDriveの月別フォルダは、会話、接続先、現在のタブから特定する。情報が不足している場合だけ確認する。
+- 既存のNotion明細とDriveファイルを照合する。明細の登録や領収書の配置が未完了なら、必要な準備を具体的に伝える。準備後はURL補完から再開する。
+- 領収書のない定期経費はURLを空欄にする。完了報告には、ローカル処理の結果に加えてURLの入力件数と未照合の明細を含める。
