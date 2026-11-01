@@ -964,7 +964,7 @@ EOS
 # お天気情報を出力する
 alias tenki='_tenki'
 _tenki() {
-  local place=${1:-tokyo}
+  local place=${1:-${TENKI_PLACE:-tokyo}}
   curl -4 http://wttr.in/${place}
   # finger ${place}@graph.no
 }
