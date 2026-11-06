@@ -15,7 +15,10 @@ def approval(screen):
     if not headings:
         return False
     heading = headings[-1]
-    if not re.match(r"Notion\s*[-–—]\s*Notion-", heading[1]):
+    if not (
+        re.match(r"Notion\s*[-–—]\s*Notion-", heading[1])
+        or re.fullmatch(r"Slack\s*[-–—]\s*メッセージにリアクションを追加する Tool", heading[1])
+    ):
         return False
     dialog = text[heading.end():]
     return bool(re.search(
