@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# tmux のアクティブペインのカレントディレクトリを iTerm2 に知らせる。
+# iTerm2 は tmux 内のペインの cwd を知らないため、cmd+クリック (bin/iterm-open-file) で
+# 相対パスのファイルを解決できない。ペインのフォーカス時に tmux.conf から呼ぶ。
+#
+#   tmux-iterm-cwd <path> <client_tty>
+set -euo pipefail
+
+path="$1"
+tty="$2"
+[ -n "$path" ] && [ -w "$tty" ] || exit 0
+printf '\033]1337;CurrentDir=%s\007' "$path" > "$tty"
