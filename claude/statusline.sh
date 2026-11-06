@@ -2,6 +2,9 @@
 
 input=$(cat)
 
+# 文字数の判定・切り詰めを日本語でも文字単位で行う
+export LC_ALL=en_US.UTF-8
+
 # 各種情報を取得
 model=$(echo "$input" | jq -r '.model.display_name // "Claude"')
 used=$(echo "$input" | jq -r '.context_window.used_percentage // "0"')
@@ -15,6 +18,57 @@ branch=""
 if [ -n "$cwd" ] && git -C "$cwd" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   branch=$(git -C "$cwd" branch --show-current 2>/dev/null)
   [ -z "$branch" ] && branch=$(git -C "$cwd" rev-parse --short HEAD 2>/dev/null)
+fi
+
+# ブランチの PR を「URL<TAB>#123 タイトル」形式で返す
+# gh は遅いのでブランチごとにキャッシュし、古ければ裏で取り直して今回は前回の値を出す
+pr_cache_ttl=300
+get_pr() {
+  [ -z "$branch" ] && return
+  command -v gh >/dev/null 2>&1 || return
+
+  local toplevel cache_dir cache now mtime
+  toplevel=$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null) || return
+  cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/claude-statusline/pr-v2"
+  mkdir -p "$cache_dir"
+  cache="${cache_dir}/$(printf '%s:%s' "$toplevel" "$branch" | shasum | cut -c1-16)"
+
+  now=$(date +%s)
+  mtime=$(stat -f %m "$cache" 2>/dev/null || echo 0)
+  if [ $((now - mtime)) -ge "$pr_cache_ttl" ]; then
+    # 取得中に何度も起動しないよう、先に mtime を更新しておく
+    touch "$cache"
+    (
+      cd "$toplevel" &&
+        gh pr view "$branch" --json number,title,state,url \
+          -q 'select(.state == "OPEN") | "\(.url)\t#\(.number) \(.title)"' >"${cache}.tmp" 2>/dev/null
+      mv "${cache}.tmp" "$cache"
+    ) >/dev/null 2>&1 &
+  fi
+
+  [ -s "$cache" ] && head -n1 "$cache"
+}
+
+# セッションのタイトル（/rename の名前を優先し、無ければ自動で付くタイトル）
+get_session_title() {
+  local transcript title
+  transcript=$(echo "$input" | jq -r '.transcript_path // empty')
+  [ -f "$transcript" ] || return
+  title=$(grep -o '"customTitle":"[^"]*"' "$transcript" | tail -n1)
+  [ -z "$title" ] && title=$(grep -o '"aiTitle":"[^"]*"' "$transcript" | tail -n1)
+  title="${title#*\":\"}"
+  echo "${title%\"}"
+}
+
+# PR があれば「#123 PRタイトル」、無ければセッションのタイトルを出す
+pr=$(get_pr)
+pr_url=""
+if [ -n "$pr" ]; then
+  pr_url="${pr%%$'\t'*}"
+  pr="${pr#*$'\t'}"
+  title="$pr"
+else
+  title=$(get_session_title)
 fi
 
 # 使用量（サブスク契約時のみ渡ってくる）を「53%(2h30m)」形式で整形する
@@ -95,4 +149,12 @@ if [ "$width" -gt 0 ] && [ "${#plain}" -gt $((width - margin)) ]; then
   echo "$dir_colored"
 else
   echo "${head} | ${dir_colored}"
+fi
+
+# タイトルは長くなりがちなので常に独立した行に出す
+# PR は OSC 8 のリンクにして Cmd+クリックで開けるようにする
+if [ -n "$pr_url" ]; then
+  printf '\e]8;;%s\e\\%s%s%s\e]8;;\e\\\n' "$pr_url" "$yellow" "$title" "$reset"
+elif [ -n "$title" ]; then
+  echo "${yellow}${title}${reset}"
 fi
