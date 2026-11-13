@@ -11,6 +11,21 @@ import time
 def approval(screen):
     lines = [line.strip() for line in screen.rstrip().splitlines()]
     text = "\n".join(lines)
+    prompt = re.search(
+        r"Do you want to proceed\?\s+"
+        r"[❯>›]?\s*1\. Yes\s+2\. No\s+"
+        r"Esc to cancel[^\n]*(?:\n─{3,}[^\n]*)?\Z", text
+    )
+    if not prompt:
+        return False
+    context = text[:prompt.start()]
+    if re.search(
+        r"(?m)^[│|]?\s*Dangerous rm operation on possibly-empty variable path: [^\n]+"
+        r"(?:\n[^\n]+)*?\n"
+        r"(?:⚠[️︎]?\s*)?Claude Code will automatically block this request in "
+        r"\d+:\d{2}, to avoid holding up an unattended session\s*\Z", context
+    ):
+        return True
     headings = list(re.finditer(r"(?m)^About the (.+):\s*$", text))
     if not headings:
         return False
@@ -20,12 +35,9 @@ def approval(screen):
         or re.fullmatch(r"Slack\s*[-–—]\s*メッセージにリアクションを追加する Tool", heading[1])
     ):
         return False
-    dialog = text[heading.end():]
     return bool(re.search(
-        r"Your organization requires approval for this tool\s+"
-        r"Do you want to proceed\?\s+"
-        r"[❯>›]?\s*1\. Yes\s+2\. No\s+"
-        r"Esc to cancel[^\n]*(?:\n─{3,}[^\n]*)?\Z", dialog
+        r"(?m)^Your organization requires approval for this tool\s+\Z",
+        context[heading.end():],
     ))
 
 
