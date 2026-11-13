@@ -1618,14 +1618,22 @@ _git_worktree_from_pr() {
 }
 
 # PRを選んでそのブランチ名を返す
-# 引数がPRのブランチ名と一致すればそのPRを使う。無ければ引数を検索語に足してfzfで選ぶ（1件なら自動選択）
+# 引数がPRのURL(.../pull/1111)ならそのPRを使う。PRのブランチ名と一致すればそのPRを使う。
+# どちらでもなければ引数を検索語に足してfzfで選ぶ（1件なら自動選択）
 _git_pr_select_branch() {
   local query="NOT bump in:title is:open is:pr ${1:+$1}"
   local pr_number=""
-  [ -n "$1" ] && pr_number=$(gh pr list --head "$1" --json number -q '.[0].number')
+  if [[ "$1" =~ '/pull/([0-9]+)' ]]; then
+    pr_number=$match[1]
+  elif [ -n "$1" ]; then
+    pr_number=$(gh pr list --head "$1" --json number -q '.[0].number')
+  fi
   if [ -z "$pr_number" ]; then
+    # fzfの入力欄にPRのURLを貼ったら、1列目(PR番号)の完全一致に置き換えて絞る。入力欄を空にしたら全列の検索に戻す
+    local on_change='[ -z {q} ] && echo "change-nth()" || printf %s {q} | sed -nE "s#.*/pull/([0-9]+).*#change-nth(1)+change-query(^\1\$)#p"'
     local pr_line=$(gh pr list --search "$query" --limit 100 --json number,title,author,headRefName \
-      -q '.[] | [.number, .title, .author.login, .headRefName] | @tsv' | column -t -s $'\t' | fzf --select-1)
+      -q '.[] | [.number, .title, .author.login, .headRefName] | @tsv' | column -t -s $'\t' \
+      | fzf --select-1 --bind "change:transform:${on_change}")
     [ -z "$pr_line" ] && return
     pr_number=$(echo "$pr_line" | awk '{print $1}')
   fi
