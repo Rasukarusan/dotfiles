@@ -1554,8 +1554,14 @@ _cld_with_input() {
         sleep 0.2
       done
       tmux send-keys -t "$pane" -l "$text"
-      # スラッシュコマンドの補完候補が出るのを待ってから送信する
-      [ "$submit" = submit ] && sleep 0.5 && tmux send-keys -t "$pane" Enter
+      [ "$submit" = submit ] || exit 0
+      # 起動中や補完候補の表示中だと Enter が送信にならないことがあるため、
+      # 入力欄(最後の❯行)に文字が残っている間は Enter を送り直す
+      for _ in {1..10}; do
+        sleep 0.5
+        tmux capture-pane -p -t "$pane" | grep '❯' | tail -1 | grep -qF -- "$text" || break
+        tmux send-keys -t "$pane" Enter
+      done
     ) &!
   fi
   cld
