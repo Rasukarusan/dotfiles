@@ -21,7 +21,8 @@
 #   - Chrome     : 全プロファイルの History の visits(訪問ごとの記録)
 # 生成した日報は ~/.cache/daily_report/<日付>.md に保存し、次回からはそれを表示する。
 # 追加指示つきの実行はキャッシュを読み書きしない。
-# 複数の日付を選んだ場合は各日の日報を並列に作り、日付順に並べて最後に日付ごとの見出し一覧を付ける。
+# 日報は作業テーマごとの箇条書きを並べ、末尾の見出し一覧の直前にその日をひとことで表す1行を置く。
+# 複数の日付を選んだ場合は各日の日報を並列に作り、日付順に並べて最後に日付ごとのひとことと見出し一覧を付ける。
 #
 
 CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/daily_report"
@@ -336,6 +337,7 @@ daily_report() {
 これらを突き合わせて、その日に何をしていたかを推測し、日報風にまとめてください。
 
 - 出力は必ずMarkdown形式にする
+- 最初の '## 見出し' より前に、その日をひとことで表す見出しを '> ' で始まる1行で書く。「〜した日」の形で、主に何に取り組み何が前進したかが一目で分かるようにする(例: '> 連絡先メールアドレスの設計を固め、脆弱性診断の対応を進めた日')
 - 作業テーマ(リポジトリ・チケット・調べ物など)ごとにグルーピングし、'## 見出し' を付ける
 - 見出しには、その作業をしていたおおよその時間帯を '(10:00〜12:30)' のように添える
 - 各項目は '- ' から始まる箇条書きで1行ずつ簡潔に
@@ -353,9 +355,12 @@ $EXTRA_INSTRUCTION"
 
     # 素材は大きくなるので引数ではなく標準入力で渡す
     report=$(printf '%s\n\n--- 活動記録 ---\n%s\n' "$prompt" "$material" | claude -p) || return 1
+    # 冒頭のひとこと(最初の見出しより前の '>' 行)は、本文から外し '>' も取って末尾の見出し一覧の直前に置く
+    oneliner=$(printf '%s\n' "$report" | sed -n '/^## /q;s/^> *//p')
+    report=$(printf '%s\n' "$report" | awk '/^## /{h=1} h||!/^>/' | sed '/./,$!d')
     headings=$(printf '%s\n' "$report" | sed -n 's/^## *//p' | sed 's/^/- /')
     if [ -n "$headings" ]; then
-        report=$(printf '%s\n\n---\n\n%s' "$report" "$headings")
+        report=$(printf '%s\n\n---\n\n%s\n\n%s' "$report" "$oneliner" "$headings")
     fi
 
     if [ -z "$EXTRA_INSTRUCTION" ]; then
@@ -396,7 +401,7 @@ $(printf '%s\n' "$report" | sed '/^---$/,$d')
 "
     summary="$summary## $label
 
-$(printf '%s\n' "$report" | sed -n 's/^## *//p' | sed 's/^/- /')
+$(printf '%s\n' "$report" | sed '1,/^---$/d')
 
 "
 done
