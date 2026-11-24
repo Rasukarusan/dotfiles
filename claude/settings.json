@@ -2,7 +2,7 @@
   "cleanupPeriodDays": 365,
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CLAUDE_CODE_PLUGIN_DIRS": "~/.claude/mods/whiteboard"
+    "CLAUDE_CODE_PLUGIN_DIRS": "~/.claude/mods/whiteboard:~/.claude/mods/butler-board"
   },
   "includeCoAuthoredBy": false,
   "autoMode": {

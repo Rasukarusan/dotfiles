@@ -261,6 +261,8 @@ link "$DOTFILES_DIR/claude/settings.json" "$HOME/.claude/settings.json"
 link "$DOTFILES_DIR/claude/skills"        "$HOME/.claude/skills"
 link "$DOTFILES_DIR/claude/statusline.sh" "$HOME/.claude/statusLine.sh"
 link "$DOTFILES_DIR/claude/hooks"        "$HOME/.claude/hooks"
+mkdir -p "$HOME/.claude/mods"
+link "$DOTFILES_DIR/claude/mods/butler-board" "$HOME/.claude/mods/butler-board"
 
 # kaisetu スキル (別リポジトリ ~/Documents/github/kaisetu で管理)
 KAISETU_DIR="$HOME/Documents/github/kaisetu"

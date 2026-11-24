@@ -114,6 +114,8 @@ alias cld='claude --permission-mode auto'
 alias cldd='claude --dangerously-skip-permissions'
 alias cldc='cld --continue'
 alias cldi='_cld_with_input "/is-best" submit'
+# 執事: 話を聞いて作業を子のセッションに任せる。振る舞いは butler-prompt.md に書き、マシン固有の指示は claude/local/butler-prompt.md に書く
+alias cldb='cld --append-system-prompt "$(cat ~/dotfiles/claude/mods/butler-board/butler-prompt.md ~/dotfiles/claude/local/butler-prompt.md 2>/dev/null)" /board'
 alias day='daily_report' # その日のChrome履歴・Claude/Codexセッションから日報を作る
 alias codc='codex resume --last' # 直近のCodexセッションを継続
 alias rg="rg --hidden" # --no-ignoreで全検索

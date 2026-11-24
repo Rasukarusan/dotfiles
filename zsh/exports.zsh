@@ -78,4 +78,6 @@ export PATH="$HOME/.local/bin:$PATH"
 
 # /add-dir先のCLAUDE.mdを読み込むようにする
 export CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1
+# Claude Code を全画面表示で起動する (butler-board のボタンをクリックで押せるようにする)
+export CLAUDE_CODE_NO_FLICKER=1
 export PATH="$(brew --prefix curl)/bin:$PATH"
