@@ -4,6 +4,9 @@
 #
 # - 対象 client は popup セッションに attach した入れ子 client を除き、直近に操作されたもの。
 # - 対象が popup セッションの pane なら popup を開いて表示する(開いていればそのまま)。
+# - 執事 (Claude ボードを開いている pane。@cc_board が付く) がいて、対象が workers セッションか
+#   執事の window の pane なら、ボードと同じく執事の表示枠に呼び出して執事の window へ移る。
+#   workers は見えないセッションなので、そのまま移ると執事に戻るのにセッションを切り替える必要がある。
 # - それ以外なら、開いている popup を閉じてから client をその pane へ切り替える。
 #
 # 使い方: tmux-focus-pane <pane_id>
@@ -17,6 +20,27 @@ client=$(tmux list-clients -F '#{client_activity} #{session_name} #{client_name}
 [ -n "$client" ] || exit 0
 
 popup_open=$(tmux list-clients -t popup 2>/dev/null || true)
+
+butler=$(tmux list-panes -a -F '#{pane_id} #{@cc_board}' | awk '$2 == "1" { print $1; exit }')
+if [ -n "$butler" ] && [ "$pane" != "$butler" ]; then
+  butler_window=$(tmux display-message -p -t "$butler" '#{window_id}')
+  pane_window=$(tmux display-message -p -t "$pane" '#{window_id}')
+  if [ "$session" = "workers" ] || [ "$pane_window" = "$butler_window" ]; then
+    if [ "$pane_window" != "$butler_window" ]; then
+      # 表示枠 = 執事の window にある執事以外の pane。無ければ右に 50% で作る
+      slot=$(tmux list-panes -t "$butler_window" -F '#{pane_id}' | grep -vxF "$butler" | head -1 || true)
+      if [ -z "$slot" ]; then
+        tmux join-pane -d -h -l 50% -s "$pane" -t "$butler"
+      else
+        tmux swap-pane -d -s "$pane" -t "$slot"
+      fi
+    fi
+    [ -n "$popup_open" ] && tmux display-popup -C -c "$client"
+    tmux select-window -t "$pane" \; select-pane -t "$pane"
+    tmux switch-client -c "$client" -t "$pane"
+    exit 0
+  fi
+fi
 
 tmux select-window -t "$pane" \; select-pane -t "$pane"
 

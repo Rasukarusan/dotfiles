@@ -1,11 +1,11 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register, Timer } from 'claude-code'
 
-import type { SessionRow } from '../types'
+import type { RecentRow, SessionRow } from '../types'
 
 // 各セッションは自分の状態を tmux の pane 変数 (@cc_*) に書き、
 // ボードは tmux list-panes で全 pane の変数をまとめて読む。
-// pane を閉じれば変数も消えるので、後片付けのファイルを持たない。
+// pane を閉じれば変数も消える。閉じたセッションだけは再開できるよう ~/.claude/butler-board/recent.json に残す。
 //
 // 執事が始めるタスクは見えない tmux セッション (WORKERS) に 1 タスク 1 window で置く。
 // 執事の window には執事のほかに「表示枠」の pane を 1 つだけ置き、ボードで選んだ
@@ -27,9 +27,14 @@ const iconOf = (state: string): Icon =>
   (ICON as Record<string, Icon>)[state] ?? { mark: '?', color: 'gray', label: state }
 
 const rows = atom({ plugin: 'butler-board', key: 'rows' } as const, [], {
-  shape: 'rows-2',
+  shape: 'rows-3',
+})
+const recent = atom({ plugin: 'butler-board', key: 'recent' } as const, [], {
+  shape: 'recent-1',
 })
 const isOpen = atom({ plugin: 'butler-board', key: 'isOpen' } as const, false)
+// ボードに出す一覧。t で「動いている」と「最近閉じた」を切り替える。
+const view = atom({ plugin: 'butler-board', key: 'view' } as const, 'live')
 // d か [ × ] を 1 回押された pane。もう一度押すと閉じる。
 const killing = atom({ plugin: 'butler-board', key: 'killing' } as const, null)
 // キーボードのフォーカスがある行。その行の [消す] に d キーを割り当てる。
@@ -38,6 +43,14 @@ const focused = atom({ plugin: 'butler-board', key: 'focused' } as const, null)
 // このセッション自身の状態。PostToolUse のたびに tmux を叩かないために持つ。
 let myState: string | undefined
 let pollTimer: Timer | undefined
+// 3 秒ごとに tmux を読み直す。mod の読み直しで every は止まるが開いたボードは残るので、session.start でも動かす。
+// ボードを開いている pane には @cc_board を付ける。通知のクリック (bin/tmux-focus-pane) が執事の表示枠を探すのに使う。
+const startPolling = ($: EngineInterface): void => {
+  if (pollTimer !== undefined) return
+  void setPaneVars($, { board: '1' }).catch(() => undefined)
+  pollTimer = $.clock.every(POLL_MS, () => void poll($).catch(() => undefined))
+  void poll($).catch(() => undefined)
+}
 // 帯の [-] (ctrl+x ctrl+a) で折りたたまれているか。描くたびに更新する。
 let isBandCollapsed = false
 // 帯に描いた順の pane ID と、キーボードのフォーカスがある行の pane ID
@@ -88,6 +101,31 @@ const currentBranch = async ($: EngineInterface): Promise<string> => {
   return exitCode === 0 ? stdout.trim() : ''
 }
 
+// 閉じたセッションの記録。閉じた本人と、ボードを開いている執事が書くのでファイルで共有する。
+const RECENT_MAX = 20
+const recentFile = async ($: EngineInterface): Promise<string> =>
+  `${(await $.env.get('HOME')) ?? ''}/.claude/butler-board/recent.json`
+
+const loadRecent = async ($: EngineInterface): Promise<RecentRow[]> => {
+  try {
+    const parsed: unknown = JSON.parse(await $.fs.read(await recentFile($)))
+
+    return Array.isArray(parsed) ? (parsed as RecentRow[]) : []
+  } catch {
+    return []
+  }
+}
+
+// 会話のないセッションは再開できないので残さない。同じセッションは新しい記録で置き換える。
+const remember = async ($: EngineInterface, closed: RecentRow[]): Promise<void> => {
+  const worth = closed.filter(row => row.sessionId !== '' && row.task !== '')
+  if (worth.length === 0) return
+  const ids = new Set(worth.map(row => row.sessionId))
+  const kept = (await loadRecent($)).filter(row => !ids.has(row.sessionId))
+  const next = [...worth, ...kept].sort((a, b) => b.closedAt - a.closedAt).slice(0, RECENT_MAX)
+  await $.fs.write(await recentFile($), JSON.stringify(next, null, 2))
+}
+
 const poll = async ($: EngineInterface): Promise<void> => {
   const { exitCode, stdout } = await $.process.run([
     'tmux',
@@ -104,6 +142,8 @@ const poll = async ($: EngineInterface): Promise<void> => {
       '#{@cc_branch}',
       '#{@cc_last}',
       '#{@cc_since}',
+      '#{@cc_session}',
+      '#{@cc_cwd}',
     ].join('\t'),
   ])
   if (exitCode !== 0) return
@@ -111,7 +151,7 @@ const poll = async ($: EngineInterface): Promise<void> => {
   const list: SessionRow[] = stdout
     .split('\n')
     .map(line => line.split('\t'))
-    .filter(cols => cols.length >= 9 && cols[4] !== '')
+    .filter(cols => cols.length >= 11 && cols[4] !== '')
     .map(cols => ({
       paneId: cols[0] ?? '',
       location: cols[1] ?? '',
@@ -122,12 +162,26 @@ const poll = async ($: EngineInterface): Promise<void> => {
       branch: cols[6] ?? '',
       last: cols[7] ?? '',
       since: Number(cols[8]) || 0,
+      sessionId: cols[9] ?? '',
+      cwd: cols[10] ?? '',
     }))
     // 状態や時刻で並べ替えると、押そうとした瞬間に行がずれる。起動順 (pane ID) で固定する。
     .sort((a, b) => Number(a.paneId.slice(1)) - Number(b.paneId.slice(1)))
 
+  // 前回あって今回ない pane は閉じられた。閉じた本人が session.end で書けなかったとき (kill-pane など) のために残す。
+  const alive = new Set(list.map(row => row.paneId))
+  const now = await $.clock.now()
+  const closed = (await read($, rows))
+    .filter(row => !alive.has(row.paneId))
+    .map(({ sessionId, cwd, branch, task, last }) => ({ sessionId, cwd, branch, task, last, closedAt: now }))
+  await remember($, closed).catch(() => undefined)
+
   // 変わっていないときは描き直さない (描き直しの最中のクリックを取りこぼさないため)
   await update($, rows, before => (JSON.stringify(before) === JSON.stringify(list) ? before : list))
+  // 再開して今動いているものは「最近閉じた」に出さない
+  const liveIds = new Set(list.map(row => row.sessionId))
+  const closedList = (await loadRecent($)).filter(row => !liveIds.has(row.sessionId))
+  await update($, recent, before => (JSON.stringify(before) === JSON.stringify(closedList) ? before : closedList))
 
   const count = (state: string) => list.filter(row => row.state === state).length
   $.ui.status(
@@ -165,8 +219,19 @@ const age = (now: number, since: number): string => {
   if (minutes < 1) return 'たった今'
   if (minutes < 60) return `${minutes}分前`
 
-  return `${Math.floor(minutes / 60)}時間前`
+  if (minutes < 60 * 24) return `${Math.floor(minutes / 60)}時間前`
+
+  return `${Math.floor(minutes / (60 * 24))}日前`
 }
+
+// 何分前の表示。桁が変わっても後ろの文字がずれないよう、表示幅を 8 桁にそろえる
+const ageCell = (now: number, since: number): string => {
+  const text = age(now, since)
+
+  return text + ' '.repeat(Math.max(0, 8 - widthOf(text)))
+}
+
+const dirName = (cwd: string): string => cwd.split('/').filter(part => part !== '').at(-1) ?? cwd
 
 const tmux = async ($: EngineInterface, argv: string[]): Promise<string> => {
   const { exitCode, stdout, stderr } = await $.process.run(['tmux', ...argv])
@@ -190,7 +255,7 @@ const slotPane = async ($: EngineInterface, butler: Butler): Promise<string | un
     .split('\n')
     .find(id => id !== '' && id !== butler.paneId)
 
-const show = async ($: EngineInterface, row: SessionRow): Promise<void> => {
+const show = async ($: EngineInterface, row: Pick<SessionRow, 'paneId'>): Promise<void> => {
   try {
     const butler = await butlerPane($)
     if (butler === undefined) return
@@ -286,11 +351,10 @@ const focusedRow = async ($: EngineInterface): Promise<SessionRow | undefined> =
   return (await read($, rows)).find(row => row.paneId === paneId)
 }
 
-// 見えない WORKERS セッションに window を作り、依頼文を渡して claude を起動する
-const startTask = async ($: EngineInterface, task: string): Promise<string> => {
-  const name = oneLine(task, 24).replace(/[.:]/g, ' ')
-  const { stdout: cwd } = await $.process.run(['pwd'])
-  const launch = ['-n', name, '-c', cwd.trim(), '-P', '-F', '#{pane_id}', 'claude', task]
+// 見えない WORKERS セッションに window を作り、claude を起動する
+const openWorker = async ($: EngineInterface, title: string, cwd: string, args: string[]): Promise<string> => {
+  const name = oneLine(title, 24).replace(/[.:]/g, ' ')
+  const launch = ['-n', name, '-c', cwd, '-P', '-F', '#{pane_id}', 'claude', ...args]
   const { exitCode } = await $.process.run(['tmux', 'has-session', '-t', `=${WORKERS}`])
   const paneId =
     exitCode === 0
@@ -300,6 +364,48 @@ const startTask = async ($: EngineInterface, task: string): Promise<string> => {
 
   return paneId
 }
+
+// 依頼文を渡して起動する
+const startTask = async ($: EngineInterface, task: string): Promise<string> => {
+  const { stdout: cwd } = await $.process.run(['pwd'])
+
+  return openWorker($, task, cwd.trim(), [task])
+}
+
+const setView = async ($: EngineInterface, next: 'live' | 'recent'): Promise<void> => {
+  focusedKey = undefined
+  await update($, focused, () => null)
+  await update($, killing, () => null)
+  await update($, view, () => next)
+}
+
+// 閉じたセッションを workers で再開し、表示枠に出して「動いている」に戻る
+const resume = async ($: EngineInterface, row: RecentRow): Promise<void> => {
+  const { exitCode } = await $.process.run(['test', '-d', row.cwd])
+  if (exitCode !== 0) {
+    $.ui.toast(`${row.cwd} が無いため再開できません`)
+    return
+  }
+  try {
+    const paneId = await openWorker($, row.branch || row.task, row.cwd, ['--resume', row.sessionId])
+    await setView($, 'live')
+    await show($, { paneId })
+  } catch (error) {
+    $.ui.toast(`再開できませんでした: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
+const focusedRecent = async ($: EngineInterface): Promise<RecentRow | undefined> => {
+  const sessionId = (await read($, focused)) ?? bandOrder[0]
+
+  return (await read($, recent)).find(row => row.sessionId === sessionId)
+}
+
+// claude --resume に渡す ID と作業ディレクトリ。/clear で ID が変わるのでターンごとに書き直す。
+const whoAmI = async ($: EngineInterface): Promise<Record<string, string>> => ({
+  session: await $.session.id(),
+  cwd: await $.session.cwd(),
+})
 
 export const register: Register = on => {
   // --- 各セッション: 自分の状態を書き出す ---
@@ -313,6 +419,7 @@ export const register: Register = on => {
         task: oneLine(e.text, 80),
         branch: await currentBranch($),
         last: '',
+        ...(await whoAmI($)),
       })
     }
 
@@ -345,8 +452,14 @@ export const register: Register = on => {
   on('session.end', async ($, e, next) => {
     const paneId = await $.env.get('TMUX_PANE')
     if (paneId !== undefined) {
+      // 消す前に「最近閉じた」へ残す
+      const { stdout } = await $.process.run(['tmux', 'display', '-p', '-t', paneId, '#{@cc_task}\t#{@cc_branch}\t#{@cc_last}\t#{@cc_cwd}'])
+      const [task = '', branch = '', last = '', cwd = ''] = stdout.replace(/\n$/, '').split('\t')
+      await remember($, [
+        { sessionId: e.resume.id, cwd: cwd || (await $.session.cwd()), branch, task, last, closedAt: await $.clock.now() },
+      ]).catch(() => undefined)
       const argv = ['tmux']
-      for (const name of ['state', 'task', 'branch', 'last', 'since']) {
+      for (const name of ['state', 'task', 'branch', 'last', 'since', 'session', 'cwd', 'board']) {
         if (argv.length > 1) argv.push(';')
         argv.push('set', '-p', '-u', '-t', paneId, `@cc_${name}`)
       }
@@ -360,6 +473,7 @@ export const register: Register = on => {
 
   // 起動・再開した時点でボードに出す。再開 (cldr) なら会話の最後の依頼と返事を出す。
   on('session.start', async ($, e, next) => {
+    if (await read($, isOpen)) startPolling($)
     if (e.isInteractive) {
       const messages = await $.session.messages({ last: 50 }).catch(() => [])
       const list = Array.isArray(messages) ? messages : []
@@ -369,6 +483,7 @@ export const register: Register = on => {
         task: oneLine(lastUser?.text, 80),
         branch: await currentBranch($),
         last: oneLine(lastAnswer?.text, 120),
+        ...(await whoAmI($)),
       }).catch(() => undefined)
     }
     await $.command.register({
@@ -469,7 +584,7 @@ export const register: Register = on => {
     if (!(await read($, isOpen))) {
       await update($, isOpen, () => true)
       await poll($)
-      pollTimer ??= $.clock.every(POLL_MS, () => void poll($))
+      startPolling($)
     }
 
     return {
@@ -490,11 +605,13 @@ export const register: Register = on => {
       pollTimer?.cancel()
       pollTimer = undefined
       $.ui.status(undefined)
+      const paneId = await $.env.get('TMUX_PANE')
+      if (paneId !== undefined) await $.process.run(['tmux', 'set', '-p', '-u', '-t', paneId, '@cc_board'])
 
       return { text: 'Claude ボードを閉じました。' }
     }
     await poll($)
-    pollTimer ??= $.clock.every(POLL_MS, () => void poll($))
+    startPolling($)
 
     return {
       text: e.presentation.isFullscreen
@@ -521,79 +638,136 @@ export const register: Register = on => {
 
     const { Box, Text, Button } = $.ui.resolve(e)
     const list = await read($, rows)
+    const closedList = await read($, recent)
+    const current = await read($, view)
     const now = await $.clock.now()
     const butler = await butlerPane($).catch(() => undefined)
     const killingPane = await read($, killing)
     // 執事自身は一覧に出さない
     const others = list.filter(row => row.paneId !== butler?.paneId)
 
-    if (others.length === 0) {
-      return (
-        <Box borderStyle="round" borderDimColor paddingX={1}>
-          <Text dimColor>Claude ボード: 状態を書き出している Claude はまだいません。</Text>
-        </Box>
-      )
-    }
-
-    bandOrder = others.map(row => row.paneId)
     bandRequestId = e.requestId
-    // 枠の上下で 2 行使う。空行を挟んで全部入るなら挟み、入らなければ詰める。
+    bandOrder = current === 'live' ? others.map(row => row.paneId) : closedList.map(row => row.sessionId)
+    // 枠の上下 2 行と見出し 1 行。空行を挟んで全部入るなら挟み、入らなければ詰める。
     // 詰めても入らない分は切り捨てず、帯の中でスクロールさせる。
-    const isSpacious = 2 + others.length * 2 - 1 <= e.props.maxRows
+    const isSpacious = 2 + (bandOrder.length + 1) * 2 - 1 <= e.props.maxRows
     // 枠の内側の幅 (罫線と左右の余白で 4 桁)
     const innerColumns = Math.max(10, e.props.bodyColumns - 4)
+    // 先頭の行にフォーカスを置く (ctrl+w ctrl+w で入った直後に j/k/l を効かせるため)
+    const first = (index: number) => (index === 0 ? { autoFocus: true as const } : {})
+    const tab = (name: 'live' | 'recent', label: string, count: number) => (
+      <Button key={`tab-${name}`} plain onPress={() => setView($, name)}>
+        {current === name ? (
+          <Text bold underline>
+            {label} {count}
+          </Text>
+        ) : (
+          <Text dimColor>
+            {label} {count}
+          </Text>
+        )}
+      </Button>
+    )
+
+    const liveRows = others.map((row, index) => {
+      // 消す確認待ちの行は、状態を赤字の「削除」に置き換える (同じ幅なので行がずれない)
+      const icon = killingPane === row.paneId ? { mark: '✗', color: 'red', label: '削除' } : iconOf(row.state)
+      // 行の文字 (head + text) は 1 行に収める。[ × ] (5 桁) は文字のすぐ右、収まらなければ右端に重ねる
+      // 場所 (session:window.pane) は表示枠に出すたびに変わって行がずれるので出さない
+      const name = row.branch || dirName(row.cwd) || row.location
+      const head = `${icon.mark} ${icon.label} ${name} ${ageCell(now, row.since)} `
+      const text = fitWidth(row.last || row.task, innerColumns - widthOf(head))
+
+      return (
+        // 行全体が 1 つのボタン。クリック・Enter・l で表示する。
+        // マウスを乗せた行は、右端に閉じるボタン [ × ] を重ねて出す。確認待ちの間は出したまま。
+        <Box key={`row-${row.paneId}`} flexDirection="row">
+          <Button key={`show-${row.paneId}`} plain {...first(index)} onPress={() => show($, row)}>
+            <Text color={icon.color} bold>
+              {icon.mark} {icon.label}
+            </Text>{' '}
+            <Text bold>{name}</Text> <Text dimColor>{ageCell(now, row.since)}</Text>{' '}
+            {text}
+          </Button>
+          <Box
+            position="absolute"
+            top={0}
+            left={Math.min(widthOf(head + text) + 1, innerColumns - 5)}
+            {...(killingPane === row.paneId
+              ? { display: 'flex' as const }
+              : { display: 'none' as const, hover: { display: 'flex' as const } })}
+          >
+            <Button key={`close-${row.paneId}`} label="×" onPress={() => kill($, row)} />
+          </Box>
+        </Box>
+      )
+    })
+
+    // 閉じたセッション。クリック・Enter・l で再開する。最後の依頼を出す。
+    const recentRows = closedList.map((row, index) => {
+      const place = dirName(row.cwd)
+      const head = `↺ ${row.branch || place} ${place} ${ageCell(now, row.closedAt)} `
+      const text = fitWidth(row.task, innerColumns - widthOf(head))
+
+      return (
+        <Button key={`show-${row.sessionId}`} plain {...first(index)} onPress={() => resume($, row)}>
+          <Text color="cyan" bold>
+            ↺
+          </Text>{' '}
+          <Text bold>{row.branch || place}</Text>{' '}
+          <Text dimColor>
+            {place} {ageCell(now, row.closedAt)}
+          </Text>{' '}
+          {text}
+        </Button>
+      )
+    })
+
+    const rowsOfView = current === 'live' ? liveRows : recentRows
+
     return (
       <Box flexDirection="column" gap={isSpacious ? 1 : 0} borderStyle="round" borderDimColor paddingX={1}>
-        {others.map((row, index) => {
-          // 消す確認待ちの行は、状態を赤字の「削除」に置き換える (同じ幅なので行がずれない)
-          const icon =
-            killingPane === row.paneId ? { mark: '✗', color: 'red', label: '削除' } : iconOf(row.state)
-          const isShown = row.windowId === butler?.windowId
-          // 行の文字 (head + text) は 1 行に収める。[ × ] (5 桁) は文字のすぐ右、収まらなければ右端に重ねる
-          const head = `${icon.mark} ${icon.label} ${row.branch || row.location} ${isShown ? '表示中' : row.location} · ${age(now, row.since)} `
-          const text = fitWidth(row.last || row.task, innerColumns - widthOf(head))
-
-          return (
-            // 行全体が 1 つのボタン。クリック・Enter・l で表示する。
-            // マウスを乗せた行は、右端に閉じるボタン [ × ] を重ねて出す。確認待ちの間は出したまま。
-            <Box key={`row-${row.paneId}`} flexDirection="row">
-              <Button
-                key={`show-${row.paneId}`}
-                plain
-                {...(index === 0 ? { autoFocus: true as const } : {})}
-                onPress={() => show($, row)}
-              >
-                <Text color={icon.color} bold>
-                  {icon.mark} {icon.label}
-                </Text>{' '}
-                <Text bold>{row.branch || row.location}</Text>{' '}
-                <Text dimColor>
-                  {isShown ? '表示中' : row.location} · {age(now, row.since)}
-                </Text>{' '}
-                {text}
-              </Button>
-              <Box
-                position="absolute"
-                top={0}
-                left={Math.min(widthOf(head + text) + 1, innerColumns - 5)}
-                {...(killingPane === row.paneId
-                  ? { display: 'flex' as const }
-                  : { display: 'none' as const, hover: { display: 'flex' as const } })}
-              >
-                <Button key={`close-${row.paneId}`} label="×" onPress={() => kill($, row)} />
-              </Box>
-            </Box>
-          )
-        })}
-        {/* キー (j/k/l/d/r) を受けるだけのボタン。画面には出さない */}
+        <Box flexDirection="row" gap={2}>
+          {tab('live', '動いている', others.length)}
+          {tab('recent', '最近閉じた', closedList.length)}
+        </Box>
+        {rowsOfView.length > 0 ? (
+          rowsOfView
+        ) : (
+          <Text dimColor>
+            {current === 'live' ? '状態を書き出している Claude はまだいません。' : '最近閉じたセッションはありません。'}
+          </Text>
+        )}
+        {/* キー (j/k/l/d/r/t) を受けるだけのボタン。画面には出さない */}
         <Box display="none">
           {(
             [
               ['j', '↓', () => move($, 'j')],
               ['k', '↑', () => move($, 'k')],
-              ['l', '表示', async () => { const row = await focusedRow($); if (row) await show($, row) }],
-              ['d', '消す', async () => { const row = await focusedRow($); if (row) await kill($, row) }],
+              [
+                'l',
+                '開く',
+                async () => {
+                  if ((await read($, view)) === 'recent') {
+                    const row = await focusedRecent($)
+                    if (row) await resume($, row)
+                    return
+                  }
+                  const row = await focusedRow($)
+                  if (row) await show($, row)
+                },
+              ],
+              [
+                'd',
+                '消す',
+                async () => {
+                  if ((await read($, view)) !== 'live') return
+                  const row = await focusedRow($)
+                  if (row) await kill($, row)
+                },
+              ],
               ['r', '更新', async () => { await poll($); $.ui.toast('ボードを更新しました') }],
+              ['t', '切替', async () => setView($, (await read($, view)) === 'live' ? 'recent' : 'live')],
             ] as const
           ).map(([hotkey, label, onPress]) => (
             <Button key={`key-${hotkey}`} label={label} hotkey={hotkey} plain dimColor onPress={onPress} />
