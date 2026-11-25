@@ -30,7 +30,7 @@ const rows = atom({ plugin: 'butler-board', key: 'rows' } as const, [], {
   shape: 'rows-2',
 })
 const isOpen = atom({ plugin: 'butler-board', key: 'isOpen' } as const, false)
-// 「消す」を 1 回押された pane。もう一度押すと閉じる。
+// d か [ × ] を 1 回押された pane。もう一度押すと閉じる。
 const killing = atom({ plugin: 'butler-board', key: 'killing' } as const, null)
 // キーボードのフォーカスがある行。その行の [消す] に d キーを割り当てる。
 const focused = atom({ plugin: 'butler-board', key: 'focused' } as const, null)
@@ -135,9 +135,17 @@ const poll = async ($: EngineInterface): Promise<void> => {
   )
 }
 
-// 端末での表示幅。全角 (CJK・記号など) は 2 桁として数える
+// 端末での表示幅。漢字・かな・全角記号・絵文字は 2 桁、それ以外 (✓ ● などの記号を含む) は 1 桁
+const WIDE: readonly (readonly [number, number])[] = [
+  [0x1100, 0x115f], [0x2e80, 0xa4cf], [0xac00, 0xd7a3], [0xf900, 0xfaff],
+  [0xfe30, 0xfe4f], [0xff00, 0xff60], [0xffe0, 0xffe6], [0x1f300, 0x1faff],
+]
 const widthOf = (text: string): number =>
-  [...text].reduce((sum, char) => sum + ((char.codePointAt(0) ?? 0) >= 0x1100 ? 2 : 1), 0)
+  [...text].reduce((sum, char) => {
+    const code = char.codePointAt(0) ?? 0
+
+    return sum + (WIDE.some(([from, to]) => code >= from && code <= to) ? 2 : 1)
+  }, 0)
 
 // 表示幅が columns に収まるよう末尾を切り、切ったら … を付ける
 const fitWidth = (text: string, columns: number): string => {
@@ -537,10 +545,12 @@ export const register: Register = on => {
     return (
       <Box flexDirection="column" gap={isSpacious ? 1 : 0} borderStyle="round" borderDimColor paddingX={1}>
         {others.map((row, index) => {
-          const icon = iconOf(row.state)
+          // 消す確認待ちの行は、状態を赤字の「削除」に置き換える (同じ幅なので行がずれない)
+          const icon =
+            killingPane === row.paneId ? { mark: '✗', color: 'red', label: '削除' } : iconOf(row.state)
           const isShown = row.windowId === butler?.windowId
           // 行の文字 (head + text) は 1 行に収める。[ × ] (5 桁) は文字のすぐ右、収まらなければ右端に重ねる
-          const head = `${killingPane === row.paneId ? 'もう一度 × か d で消す ' : ''}${icon.mark} ${icon.label} ${row.branch || row.location} ${isShown ? '表示中' : row.location} · ${age(now, row.since)} `
+          const head = `${icon.mark} ${icon.label} ${row.branch || row.location} ${isShown ? '表示中' : row.location} · ${age(now, row.since)} `
           const text = fitWidth(row.last || row.task, innerColumns - widthOf(head))
 
           return (
@@ -553,7 +563,6 @@ export const register: Register = on => {
                 {...(index === 0 ? { autoFocus: true as const } : {})}
                 onPress={() => show($, row)}
               >
-                {killingPane === row.paneId && <Text color="red" bold>もう一度 × か d で消す </Text>}
                 <Text color={icon.color} bold>
                   {icon.mark} {icon.label}
                 </Text>{' '}
@@ -576,7 +585,7 @@ export const register: Register = on => {
             </Box>
           )
         })}
-        {/* キー (j/k/l/d) を受けるだけのボタン。画面には出さない */}
+        {/* キー (j/k/l/d/r) を受けるだけのボタン。画面には出さない */}
         <Box display="none">
           {(
             [
@@ -584,6 +593,7 @@ export const register: Register = on => {
               ['k', '↑', () => move($, 'k')],
               ['l', '表示', async () => { const row = await focusedRow($); if (row) await show($, row) }],
               ['d', '消す', async () => { const row = await focusedRow($); if (row) await kill($, row) }],
+              ['r', '更新', async () => { await poll($); $.ui.toast('ボードを更新しました') }],
             ] as const
           ).map(([hotkey, label, onPress]) => (
             <Button key={`key-${hotkey}`} label={label} hotkey={hotkey} plain dimColor onPress={onPress} />
