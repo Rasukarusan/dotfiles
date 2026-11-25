@@ -16,7 +16,6 @@ const POLL_MS = 3000
 const WORKERS = 'workers'
 // bin/tmux-popup-session が popup で開くセッション
 const POPUP = 'popup'
-const ORDER: Record<string, number> = { waiting: 0, running: 1, done: 2, idle: 3 }
 type Icon = { mark: string; color: string; label: string }
 const ICON = {
   running: { mark: '●', color: 'yellow', label: '実行中' },
@@ -33,12 +32,19 @@ const rows = atom({ plugin: 'butler-board', key: 'rows' } as const, [], {
 const isOpen = atom({ plugin: 'butler-board', key: 'isOpen' } as const, false)
 // 「消す」を 1 回押された pane。もう一度押すと閉じる。
 const killing = atom({ plugin: 'butler-board', key: 'killing' } as const, null)
+// キーボードのフォーカスがある行。その行の [消す] に d キーを割り当てる。
+const focused = atom({ plugin: 'butler-board', key: 'focused' } as const, null)
 
 // このセッション自身の状態。PostToolUse のたびに tmux を叩かないために持つ。
 let myState: string | undefined
 let pollTimer: Timer | undefined
 // 帯の [-] (ctrl+x ctrl+a) で折りたたまれているか。描くたびに更新する。
 let isBandCollapsed = false
+// 帯に描いた順の pane ID と、キーボードのフォーカスがある行の pane ID
+let bandOrder: string[] = []
+// 帯の id と、キーボードのフォーカスがある [表示] ボタンの key (show-<pane>)
+let bandRequestId: string | undefined
+let focusedKey: string | undefined
 
 const oneLine = (text: string | undefined, max: number): string =>
   (text ?? '')
@@ -117,12 +123,11 @@ const poll = async ($: EngineInterface): Promise<void> => {
       last: cols[7] ?? '',
       since: Number(cols[8]) || 0,
     }))
-    .sort(
-      (a, b) =>
-        (ORDER[a.state] ?? 9) - (ORDER[b.state] ?? 9) || b.since - a.since,
-    )
+    // 状態や時刻で並べ替えると、押そうとした瞬間に行がずれる。起動順 (pane ID) で固定する。
+    .sort((a, b) => Number(a.paneId.slice(1)) - Number(b.paneId.slice(1)))
 
-  await update($, rows, () => list)
+  // 変わっていないときは描き直さない (描き直しの最中のクリックを取りこぼさないため)
+  await update($, rows, before => (JSON.stringify(before) === JSON.stringify(list) ? before : list))
 
   const count = (state: string) => list.filter(row => row.state === state).length
   $.ui.status(
@@ -162,37 +167,41 @@ const slotPane = async ($: EngineInterface, butler: Butler): Promise<string | un
     .find(id => id !== '' && id !== butler.paneId)
 
 const show = async ($: EngineInterface, row: SessionRow): Promise<void> => {
-  $.ui.toast(`${row.branch || row.location} (${row.location}) を表示します`)
   try {
     const butler = await butlerPane($)
     if (butler === undefined) return
-    if (row.windowId === butler.windowId) {
-      await tmux($, ['select-pane', '-t', row.paneId])
+    // ボードの一覧は数秒前のものなので、今どこにいるかは押した時点で tmux に聞き直す
+    const [session, windowId] = (
+      await tmux($, ['display', '-p', '-t', row.paneId, '#{session_name}\t#{window_id}'])
+    ).split('\t')
+    // すでに表示枠にいる。フォーカスは執事に残す (ボードの操作を続けられるように)
+    if (windowId === butler.windowId) {
       return
     }
     // popup セッションの Claude は、中でその pane を選んでから popup を開く。
     // switch-client で移るとメインの画面ごと popup セッションに切り替わってしまう。
-    if (row.session === POPUP) {
+    if (session === POPUP) {
       await tmux($, ['select-window', '-t', row.paneId, ';', 'select-pane', '-t', row.paneId])
       await tmux($, ['run-shell', '-b', `tmux-popup-session ${butler.paneId}`])
       return
     }
     const slot = await slotPane($, butler)
     if (slot === undefined) {
-      await tmux($, ['join-pane', '-h', '-l', '50%', '-s', row.paneId, '-t', butler.paneId])
+      await tmux($, ['join-pane', '-d', '-h', '-l', '50%', '-s', row.paneId, '-t', butler.paneId])
     } else {
-      await tmux($, ['swap-pane', '-s', row.paneId, '-t', slot, ';', 'select-pane', '-t', row.paneId])
+      await tmux($, ['swap-pane', '-d', '-s', row.paneId, '-t', slot])
     }
   } catch (error) {
     $.ui.toast(`表示できませんでした: ${error instanceof Error ? error.message : String(error)}`)
   }
+  await poll($)
 }
 
 // 1 回目は確認待ちにし、同じ pane をもう一度押したら閉じる。会話は残るので cldr で再開できる。
 const kill = async ($: EngineInterface, row: SessionRow): Promise<void> => {
   if ((await read($, killing)) !== row.paneId) {
     await update($, killing, () => row.paneId)
-    $.clock.after(5000, () => void update($, killing, id => (id === row.paneId ? null : id)))
+    $.clock.after(2000, () => void update($, killing, id => (id === row.paneId ? null : id)))
     return
   }
   await update($, killing, () => null)
@@ -226,6 +235,30 @@ const describeTasks = (list: SessionRow[], butler: string | undefined): string =
       ].join('\n'),
     )
     .join('\n')
+}
+
+// 帯の中のキー操作。j/k で行を移り、l (Enter と同じ) で表示、d で消す。
+// Claude Code のキー設定には「次へ/前へ」しか無いため、案内行のボタンにキーを割り当てて
+// ここで処理する。mod が動かしたフォーカスは ui.focus として届かないので自分で覚える。
+const move = async ($: EngineInterface, direction: 'j' | 'k'): Promise<void> => {
+  if (bandRequestId === undefined || bandOrder.length === 0) return
+  const index = bandOrder.indexOf((focusedKey ?? '').replace(/^show-/, ''))
+  const row =
+    index < 0 ? 0 : direction === 'j' ? Math.min(index + 1, bandOrder.length - 1) : Math.max(index - 1, 0)
+  // 動いたら消すの確認待ちは取り消す
+  await update($, killing, () => null)
+  const key = `show-${bandOrder[row] ?? ''}`
+  const moved = await $.ui.focus({ requestId: bandRequestId, key })
+  if (moved.deny === undefined) {
+    focusedKey = key
+    await update($, focused, () => bandOrder[row] ?? null)
+  }
+}
+
+const focusedRow = async ($: EngineInterface): Promise<SessionRow | undefined> => {
+  const paneId = await read($, focused)
+
+  return (await read($, rows)).find(row => row.paneId === paneId)
 }
 
 // 見えない WORKERS セッションに window を作り、依頼文を渡して claude を起動する
@@ -445,6 +478,18 @@ export const register: Register = on => {
     }
   })
 
+  // フォーカスのあるボタンを覚えておく (hjkl の移動元と、d キーを割り当てる行)
+  on('ui.focus', { component: 'AbovePrompt' }, async ($, e, next) => {
+    bandRequestId = e.requestId
+    const element = e.element
+    if (element !== undefined && element.startsWith('show-')) {
+      focusedKey = element
+      await update($, focused, () => element.slice('show-'.length))
+    }
+
+    return next(e)
+  })
+
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     isBandCollapsed = e.props.isCollapsed
     if (e.props.hasSurvey || !(await read($, isOpen))) return next(e)
@@ -465,6 +510,8 @@ export const register: Register = on => {
       )
     }
 
+    bandOrder = others.map(row => row.paneId)
+    bandRequestId = e.requestId
     // 枠の上下で 2 行使う。空行を挟んで全部入るなら挟み、入らなければ詰める。
     // 詰めても入らない分は切り捨てず、帯の中でスクロールさせる。
     const isSpacious = 2 + others.length * 2 - 1 <= e.props.maxRows
@@ -475,32 +522,33 @@ export const register: Register = on => {
           const isShown = row.windowId === butler?.windowId
 
           return (
-            <Box flexDirection="row" gap={1}>
-              <Button
-                key={`show-${row.paneId}`}
-                label="表示"
-                variant="primary"
-                onPress={() => show($, row)}
-              />
-              <Button
-                key={`kill-${row.paneId}`}
-                label={killingPane === row.paneId ? 'もう一度押すと消す' : '消す'}
-                dimColor={killingPane !== row.paneId}
-                onPress={() => kill($, row)}
-              />
-              <Text wrap="truncate-end">
-                <Text color={icon.color} bold>
-                  {icon.mark} {icon.label}
-                </Text>{' '}
-                <Text bold>{row.branch || row.location}</Text>{' '}
-                <Text dimColor>
-                  {isShown ? '表示中' : row.location} · {age(now, row.since)}
-                </Text>{' '}
-                {row.last || row.task}
-              </Text>
-            </Box>
+            // 行全体が 1 つのボタン。クリック・Enter・l で表示する
+            <Button key={`show-${row.paneId}`} plain onPress={() => show($, row)}>
+              {killingPane === row.paneId && <Text color="red" bold>もう一度 d で消す </Text>}
+              <Text color={icon.color} bold>
+                {icon.mark} {icon.label}
+              </Text>{' '}
+              <Text bold>{row.branch || row.location}</Text>{' '}
+              <Text dimColor>
+                {isShown ? '表示中' : row.location} · {age(now, row.since)}
+              </Text>{' '}
+              {(row.last || row.task).slice(0, 160)}
+            </Button>
           )
         })}
+        {/* キー (j/k/l/d) を受けるだけのボタン。画面には出さない */}
+        <Box display="none">
+          {(
+            [
+              ['j', '↓', () => move($, 'j')],
+              ['k', '↑', () => move($, 'k')],
+              ['l', '表示', async () => { const row = await focusedRow($); if (row) await show($, row) }],
+              ['d', '消す', async () => { const row = await focusedRow($); if (row) await kill($, row) }],
+            ] as const
+          ).map(([hotkey, label, onPress]) => (
+            <Button key={`key-${hotkey}`} label={label} hotkey={hotkey} plain dimColor onPress={onPress} />
+          ))}
+        </Box>
       </Box>
     )
   })

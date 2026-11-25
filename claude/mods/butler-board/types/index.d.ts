@@ -12,6 +12,6 @@ export type SessionRow = {
 
 declare module 'claude-code' {
   interface PluginState {
-    'butler-board': { rows: Shaped<SessionRow[]>; isOpen: boolean; killing: string | null }
+    'butler-board': { rows: Shaped<SessionRow[]>; isOpen: boolean; killing: string | null; focused: string | null }
   }
 }
