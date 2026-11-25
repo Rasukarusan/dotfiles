@@ -135,6 +135,22 @@ const poll = async ($: EngineInterface): Promise<void> => {
   )
 }
 
+// 端末での表示幅。全角 (CJK・記号など) は 2 桁として数える
+const widthOf = (text: string): number =>
+  [...text].reduce((sum, char) => sum + ((char.codePointAt(0) ?? 0) >= 0x1100 ? 2 : 1), 0)
+
+// 表示幅が columns に収まるよう末尾を切り、切ったら … を付ける
+const fitWidth = (text: string, columns: number): string => {
+  if (widthOf(text) <= columns) return text
+  let out = ''
+  for (const char of text) {
+    if (widthOf(out + char) > columns - 1) break
+    out += char
+  }
+
+  return `${out}…`
+}
+
 const age = (now: number, since: number): string => {
   if (since === 0) return ''
   const minutes = Math.floor((now - since) / 60000)
@@ -243,8 +259,9 @@ const describeTasks = (list: SessionRow[], butler: string | undefined): string =
 const move = async ($: EngineInterface, direction: 'j' | 'k'): Promise<void> => {
   if (bandRequestId === undefined || bandOrder.length === 0) return
   const index = bandOrder.indexOf((focusedKey ?? '').replace(/^show-/, ''))
-  const row =
-    index < 0 ? 0 : direction === 'j' ? Math.min(index + 1, bandOrder.length - 1) : Math.max(index - 1, 0)
+  // 帯に入った直後は 1 行目にフォーカスがある (autoFocus。mod には届かない)
+  const from = index < 0 ? 0 : index
+  const row = direction === 'j' ? Math.min(from + 1, bandOrder.length - 1) : Math.max(from - 1, 0)
   // 動いたら消すの確認待ちは取り消す
   await update($, killing, () => null)
   const key = `show-${bandOrder[row] ?? ''}`
@@ -256,7 +273,7 @@ const move = async ($: EngineInterface, direction: 'j' | 'k'): Promise<void> => 
 }
 
 const focusedRow = async ($: EngineInterface): Promise<SessionRow | undefined> => {
-  const paneId = await read($, focused)
+  const paneId = (await read($, focused)) ?? bandOrder[0]
 
   return (await read($, rows)).find(row => row.paneId === paneId)
 }
@@ -515,25 +532,48 @@ export const register: Register = on => {
     // 枠の上下で 2 行使う。空行を挟んで全部入るなら挟み、入らなければ詰める。
     // 詰めても入らない分は切り捨てず、帯の中でスクロールさせる。
     const isSpacious = 2 + others.length * 2 - 1 <= e.props.maxRows
+    // 枠の内側の幅 (罫線と左右の余白で 4 桁)
+    const innerColumns = Math.max(10, e.props.bodyColumns - 4)
     return (
       <Box flexDirection="column" gap={isSpacious ? 1 : 0} borderStyle="round" borderDimColor paddingX={1}>
-        {others.map(row => {
+        {others.map((row, index) => {
           const icon = iconOf(row.state)
           const isShown = row.windowId === butler?.windowId
+          // 行の文字 (head + text) は 1 行に収める。[ × ] (5 桁) は文字のすぐ右、収まらなければ右端に重ねる
+          const head = `${killingPane === row.paneId ? 'もう一度 × か d で消す ' : ''}${icon.mark} ${icon.label} ${row.branch || row.location} ${isShown ? '表示中' : row.location} · ${age(now, row.since)} `
+          const text = fitWidth(row.last || row.task, innerColumns - widthOf(head))
 
           return (
-            // 行全体が 1 つのボタン。クリック・Enter・l で表示する
-            <Button key={`show-${row.paneId}`} plain onPress={() => show($, row)}>
-              {killingPane === row.paneId && <Text color="red" bold>もう一度 d で消す </Text>}
-              <Text color={icon.color} bold>
-                {icon.mark} {icon.label}
-              </Text>{' '}
-              <Text bold>{row.branch || row.location}</Text>{' '}
-              <Text dimColor>
-                {isShown ? '表示中' : row.location} · {age(now, row.since)}
-              </Text>{' '}
-              {(row.last || row.task).slice(0, 160)}
-            </Button>
+            // 行全体が 1 つのボタン。クリック・Enter・l で表示する。
+            // マウスを乗せた行は、右端に閉じるボタン [ × ] を重ねて出す。確認待ちの間は出したまま。
+            <Box key={`row-${row.paneId}`} flexDirection="row">
+              <Button
+                key={`show-${row.paneId}`}
+                plain
+                {...(index === 0 ? { autoFocus: true as const } : {})}
+                onPress={() => show($, row)}
+              >
+                {killingPane === row.paneId && <Text color="red" bold>もう一度 × か d で消す </Text>}
+                <Text color={icon.color} bold>
+                  {icon.mark} {icon.label}
+                </Text>{' '}
+                <Text bold>{row.branch || row.location}</Text>{' '}
+                <Text dimColor>
+                  {isShown ? '表示中' : row.location} · {age(now, row.since)}
+                </Text>{' '}
+                {text}
+              </Button>
+              <Box
+                position="absolute"
+                top={0}
+                left={Math.min(widthOf(head + text) + 1, innerColumns - 5)}
+                {...(killingPane === row.paneId
+                  ? { display: 'flex' as const }
+                  : { display: 'none' as const, hover: { display: 'flex' as const } })}
+              >
+                <Button key={`close-${row.paneId}`} label="×" onPress={() => kill($, row)} />
+              </Box>
+            </Box>
           )
         })}
         {/* キー (j/k/l/d) を受けるだけのボタン。画面には出さない */}
