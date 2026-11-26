@@ -402,6 +402,7 @@ const focusedRecent = async ($: EngineInterface): Promise<RecentRow | undefined>
 }
 
 // claude --resume に渡す ID と作業ディレクトリ。/clear で ID が変わるのでターンごとに書き直す。
+// 作業ディレクトリは worktree に移った先を指し、ペイン分割 (bin/tmux-pane-cwd) でも使う。
 const whoAmI = async ($: EngineInterface): Promise<Record<string, string>> => ({
   session: await $.session.id(),
   cwd: await $.session.cwd(),
@@ -443,6 +444,8 @@ export const register: Register = on => {
     if (e.agentId === undefined) {
       await setState($, 'done', {
         last: e.reason === 'refusal' ? '拒否で止まりました' : oneLine(e.answer, 120),
+        // ターンの途中で worktree に移っていれば、ここで移り先に書き直す
+        ...(await whoAmI($)),
       })
     }
 

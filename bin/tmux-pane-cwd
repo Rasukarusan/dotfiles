@@ -9,7 +9,9 @@
 # そのため /cd スキルが移動先を pane オプション @claude_cwd に "pid:dir" で記録し、
 # ここではそれを最優先で使う。pid が今の claude と違えば (再起動後など) 古い値として無視する。
 #
-# 記録が無ければ claude 本体の cwd を lsof で読み、claude がいなければ pane_current_path を使う。
+# 次に Claude ボードの mod (claude/mods/butler-board) がターンごとに書く @cc_cwd を使う。
+# worktree に移ったセッションでも、移った先を指す。claude が終わると mod が消す。
+# どちらも無ければ claude 本体の cwd を lsof で読み、claude がいなければ pane_current_path を使う。
 # (#{pane_current_path} は tty のフォアグラウンドプロセスの cwd を見るため、
 #  claude がサブプロセスを走らせている最中は別ディレクトリを指すことがある)
 
@@ -36,6 +38,11 @@ if [ -n "$pid" ]; then
   recorded=$(tmux show-options -pqv -t "$pane" @claude_cwd)
   dir=${recorded#*:}
   if [ "${recorded%%:*}" = "$pid" ] && [ -d "$dir" ]; then
+    printf %s "$dir"
+    exit
+  fi
+  dir=$(tmux show-options -pqv -t "$pane" @cc_cwd)
+  if [ -n "$dir" ] && [ -d "$dir" ]; then
     printf %s "$dir"
     exit
   fi
